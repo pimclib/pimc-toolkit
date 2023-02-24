@@ -1,0 +1,27 @@
+add_executable(
+        mclst
+        Main.cpp
+        Config.hpp
+        Config.cpp
+        MclstBeacon.hpp
+        PacketInfo.hpp
+        OutputHandler.hpp
+        MclstBase.hpp
+        ReceiverBase.hpp
+        Receiver.hpp
+        IPRawReceiver.hpp
+        Sender.hpp
+        Sender.cpp
+        RxStats.hpp
+        Timer.hpp
+)
+
+target_link_libraries(
+        mclst
+        PRIVATE
+            -static-libgcc
+            -static-libstdc++
+            ProjectSettings
+            PimcLib
+            fmt
+)

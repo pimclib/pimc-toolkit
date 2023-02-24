@@ -1,0 +1,15 @@
+# gdb
+.gdb*
+
+# Emacs
+*~
+
+# Bazel
+BUILD
+
+# cmake
+build/
+
+# JetBrains
+.idea
+cmake-build-*
