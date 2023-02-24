@@ -8,7 +8,7 @@ is used to build them.
 ## mclst
 
 mclst is a multicast listener/sender tool. It's documented in
-[mclst](pimc-toolkit/main/docs/source/apps-sources/mclst.rst).
+[mclst](docs/source/apps-sources/mclst.rst).
 
 ## PIMC Library
 
