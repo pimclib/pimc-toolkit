@@ -11,7 +11,6 @@ target_sources(
     PUBLIC
         core/CompilerUtils.hpp
         core/TypeUtils.hpp
-        core/Called.hpp
         core/Deferred.hpp
         core/Result.hpp
         core/Endian.hpp

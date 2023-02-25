@@ -10,5 +10,4 @@ PIMC Core API
    core-api/TypeUtils
    core-api/Result
    core-api/Deferred
-   core-api/Called
 

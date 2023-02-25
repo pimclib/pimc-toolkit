@@ -17,8 +17,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'PIMC Library'
-copyright = '2022, Kesha Rudenko'
+project = 'PIMC Toolkit'
+copyright = '2023, Kesha Rudenko'
 author = 'Kesha Rudenko'
 
 
