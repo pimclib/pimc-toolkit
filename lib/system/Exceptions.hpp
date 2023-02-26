@@ -9,7 +9,7 @@
 
 namespace pimc {
 
-/**
+/*!
  * Throws the specified exception with the error message formatted
  * per the supplied parameters.
  *

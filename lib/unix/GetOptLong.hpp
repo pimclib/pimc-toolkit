@@ -11,7 +11,7 @@
 
 namespace pimc {
 
-/**
+/*!
  * This exception is thrown by the functions of GetOptLong and GetOptLongResult
  * when they encounter errors. Such errors are indicative of the semantic issues
  * therefore they should not be caught, but instead the errors should be corrected
@@ -22,7 +22,7 @@ struct GetOptLongError: public std::logic_error {
     : std::logic_error{msg} {}
 };
 
-/**
+/*!
  * This exception is thrown while processing the actual command line and it
  * should be caught to report the error.
  */
@@ -33,7 +33,7 @@ struct CommandLineError: public std::runtime_error {
 
 class GetOptLongResult;
 
-/**
+/*!
  * The class which builds the internal structures required for the
  * command line processing as well as the arguments to the
  * ``getopt_long`` function and which invokes the ``getopt_long``
@@ -42,12 +42,12 @@ class GetOptLongResult;
  */
 class GetOptLong final {
 public:
-    /**
+    /*!
      * The constant which indicates that the short option is not
      * present.
      */
     static constexpr inline char LongOnly{0};
-    /**
+    /*!
      * The constant which indicates that the corresponding value
      * option may be specified multiple times on the command line.
      */
@@ -59,7 +59,7 @@ public:
     GetOptLong& operator= (GetOptLong&&) noexcept = default;
     ~GetOptLong();
 
-    /**
+    /*!
      * Adds a command line flag with the specified numeric ID,
      * the specified single character short option, the specified
      * multi-character long option and the specified help description.
@@ -74,7 +74,7 @@ public:
             uint32_t id, char shortOpt, std::string longOpt,
             std::string help);
 
-    /**
+    /*!
      * Adds a required value option with the specified numeric ID,
      * the specified single character short option, the specified
      * multi-character long option, the specified metavariable and the
@@ -93,7 +93,7 @@ public:
     GetOptLong& required(
             uint32_t id, char shortOpt, std::string longOpt,
             std::string metavar, std::string help, bool multiple = false);
-    /**
+    /*!
      * Adds an optional value option with the specified numeric ID,
      * the specified single character short option, the specified
      * multi-character long option, the specified metavariable and the
@@ -113,7 +113,7 @@ public:
             uint32_t id, char shortOpt, std::string longOpt,
             std::string metavar, std::string help, bool multiple = false);
 
-    /**
+    /*!
      * Processes the command line using the added flag and value options
      * and returns the result object containing the values of the options.
      *
@@ -127,7 +127,7 @@ public:
      */
     GetOptLongResult args(int argc, char * const* argv);
 
-    /**
+    /*!
      * The factory function which creates an instance of this object.
      * The argument to this function is the *help legend*, which in
      * this context is the text which follows the text ``USAGE: <progname>``,
@@ -141,7 +141,7 @@ public:
         return GetOptLong(std::string{}, std::move(helpLegend));
     }
 
-    /**
+    /*!
      * The factory function which creates an instance of this object.
      * The first argument to this function is the program name, and the
      * second argument *help legend*.
@@ -162,7 +162,7 @@ private:
     std::unique_ptr<Impl> impl_;
 };
 
-/**
+/*!
  * An object containing the values of the command line options.
  */
 class GetOptLongResult final {
@@ -170,7 +170,7 @@ class GetOptLongResult final {
 public:
     ~GetOptLongResult();
 
-    /**
+    /*!
      * Returns the value of the flag with the specified ID. If the flag was
      * present on the command line this function returns true, if not, it
      * returns false.
@@ -180,7 +180,7 @@ public:
     [[nodiscard]]
     bool flag(unsigned) const;
 
-    /**
+    /*!
      * Returns the values of the value option with the specified ID. The following
      * rules apply:
      *
@@ -208,7 +208,7 @@ public:
     [[nodiscard]]
     std::vector<std::string> const& values(unsigned) const;
 
-    /**
+    /*!
      * This function returns the positional command line arguments.
      *
      * @return the positional command line arguments.

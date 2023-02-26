@@ -56,7 +56,7 @@ auto parseDecimalUnsignedInteger(
 
     for (std::input_iterator auto ii = first; ii != last; ++ii) {
         auto c = *ii;
-        if (! std::isdigit(static_cast<unsigned char>(c)))
+        if (not std::isdigit(static_cast<unsigned char>(c)))
             return fail(NumberParseError::Invalid);
 
         if (ovf) continue;
@@ -301,7 +301,7 @@ auto parseDecimalSignedInteger(
 
     for (std::input_iterator auto ii = first; ii != last; ++ii) {
         c = *ii;
-        if (! std::isdigit(static_cast<unsigned char>(c)))
+        if (not std::isdigit(static_cast<unsigned char>(c)))
             return fail(NumberParseError::Invalid);
 
         if (ovf) continue;

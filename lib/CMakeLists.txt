@@ -22,7 +22,6 @@ target_sources(
         net/IPv4IntfTable.hpp
         formatters/IPv4Formatters.hpp
         formatters/IPv4Ostream.hpp
-        formatters/NanosText.hpp
         parsers/IPv4Parsers.hpp
         parsers/NumberParsers.hpp
         dissect/PacketView.hpp

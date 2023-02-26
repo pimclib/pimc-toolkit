@@ -97,7 +97,7 @@ public:
         auto fid = flowId(source, sport, dport);
 
         auto fme = fsMap_.emplace(fid, udpBytes);
-        if (! fme.second)
+        if (not fme.second)
             fme.first->second.add(udpBytes);
         else fids_.emplace(fid);
     }

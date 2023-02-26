@@ -6,7 +6,7 @@
 
 namespace pimc {
 
-/**
+/*!
  * Formats the \p sz bytes of binary data starting at the pointer \p data
  * into an output object accessible through the output iterator \p oi. The
  * produced output contains a hex pane on the left and printable pane on the

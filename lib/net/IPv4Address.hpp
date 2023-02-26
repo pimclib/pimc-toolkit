@@ -192,7 +192,7 @@ public:
     [[nodiscard]]
     uint32_t toMask() const {
         if (addr_ == LocalBroadcastAddressValue) return 32;
-        if (! isMask())
+        if (not isMask())
             throw std::logic_error("address is not mask");
 
         uint32_t pl{16};

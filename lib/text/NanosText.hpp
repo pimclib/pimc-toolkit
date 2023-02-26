@@ -3,18 +3,16 @@
 #include <cstdint>
 #include <tuple>
 
-#include "pimc/core/CompilerUtils.hpp"
-
 namespace pimc {
 
-/**
+/*!
  * Nanosecond formatter object.
  */
 class NanosText final {
 public:
     constexpr NanosText() {};
 
-    /**
+    /*!
      * Formats the specified nanoseconds to the specified precision
      * and returns a tuple consisting of a pointer to the internal buffer
      * containing a c-string representing the formatted value and an
@@ -32,7 +30,6 @@ public:
      * @return a tuple of the formatted nanosecond value with the specified
      * precision and a carry
      */
-    PIMC_ALWAYS_INLINE
     std::tuple<char const*, uint64_t> prc(uint64_t nanos, unsigned prec) {
         carry = 0;
         if (prec == 0 || nanos == 0) buf[0] = '\0';
@@ -46,7 +43,7 @@ public:
                 else carry = 0;
 
                 if (static_cast<unsigned>(i) < prec) {
-                    if (! ln0set) {
+                    if (not ln0set) {
                         if (lastD == 0) continue;
 
                         ln0set = true;

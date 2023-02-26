@@ -120,10 +120,10 @@ The library as well as the apps are written in C++20.
 
 The library as well as the apps are written in C++20.
 
-The library and the apps can currently be built in Linux and MacOS.
+The library and the apps can currently be built in Linux and macOS.
 
-> :warning: The library relies C++20 ranges, which are not available in clang that
-> ships with XCode. To compile in MacOS please install gcc (e.g. `brew install gcc`)
+> :warning: The library relies on C++20 ranges, which are not available in clang that
+> ships with XCode. To compile in macOS please install gcc (e.g. `brew install gcc`)
 
 ### Prerequisites
 
@@ -141,7 +141,7 @@ The following are required to build PIMC toolkit:
 
 The other two prerequisites are [Google test]( https://github.com/google/googletest)
 and [C++ fmt]( https://github.com/fmtlib/fmt) library. Both will be installed by cmake
-from github.com, so nothing special needs to be done for them.
+from GitHub, so nothing special needs to be done for them.
 
 #### Installing Python prerequisites in a Virtual Environment and building documentation
 
@@ -161,7 +161,7 @@ the directory where the PIMC Toolkit was cloned is in the environment variable P
 $ python3 --version
 Python 3.6.8
 $ python3 -m venv --prompt pimc-toolkit .venv
-$ activate .venv/bin/acti
+$ activate .venv/bin/activate
 $ pip install --upgrade pip
  ...
  <em>[output skipped]</em>
@@ -203,13 +203,13 @@ $ make mclst
 
 The binary will be located in the subdirectory `bin`.
 
-To build the documentation `make PimcLib-Sphinx` should be issued. This will produce
-some nasty warnings resulting from doxygen failing to handle some of the doxygen markup
-in some of the C++ header files. The resulting documentation will mostly be ok, with
-some minor glitches. The resulting documentation is located in ` docs/docs/sphinx`.
+To build the documentation `make docs` should be issued. This will produce
+some nasty warnings resulting from doxygen failing to handle some doxygen markup
+in some C++ header files. The resulting documentation will mostly be ok, with some
+minor glitches. The resulting documentation is located in `docs/docs/sphinx`.
 
 <pre>
-$ make PimcLib-Sphinx
+$ make docs
  ...
  <em>[lots of output with some nasty warnings]</em>
  ...

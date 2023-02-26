@@ -7,7 +7,7 @@
 
 namespace pimc {
 
-/**
+/*!
  * Reads the symbols starting at the ``first`` iterator for as long as the
  * symbols pass the ``accept`` predicate and passes the symbols to the
  * ``cons`` function. If a symbol that would not pass the ``accept``
@@ -71,7 +71,7 @@ std::tuple<unsigned, I> consumeIfUnlessEscaped(
     return {count, first};
 }
 
-/**
+/*!
  * Reads the symbols from the specified range for as long as they pass
  * the ``accept`` predicate and sends them to the ``cons`` function.
  * If a symbol that would not pass the ``accept`` predicate needs to be

@@ -233,7 +233,7 @@ private:
              cmsgp != nullptr;
              cmsgp = CMSG_NXTHDR(&msg, cmsgp)) {
 
-            // Technically, we should only be looking for IP_TTL, but on Apple MacOS
+            // Technically, we should only be looking for IP_TTL, but in macOS
             // this doesn't work, instead what we get is IP_RECVTTL
             if (cmsgp->cmsg_level == IPPROTO_IP and
                 (cmsgp->cmsg_type == IP_TTL or cmsgp->cmsg_type == IP_RECVTTL) and

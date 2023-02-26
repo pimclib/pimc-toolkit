@@ -32,7 +32,7 @@ public:
     [[nodiscard]]
     net::IPv4Address intfAddr() const { return intfAddr_; }
 
-    /**
+    /*!
      * If the returned address is default, the subscription is (*,G),
      * otherwise it's (S,G) where S is the value returned by this
      * function

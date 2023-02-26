@@ -57,7 +57,7 @@ void Sender::sendLoop() {
     dst.sin_port = htons(cfg_.dport());
     dst.sin_addr.s_addr = cfg_.group().to_nl();
 
-    while (! stopped_) {
+    while (not stopped_) {
         pkt_.hdr.timeNs = htobe64(gethostnanos());
         pkt_.hdr.seq = htobe64(seq_);
         if (sendto(socket_, &pkt_, pktSize_, 0,

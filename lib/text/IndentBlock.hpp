@@ -14,7 +14,7 @@
 
 namespace pimc {
 
-/**
+/*!
  * Copies an indented version of the text block into the specified output
  * iterator. The following rules apply:
  *
@@ -157,7 +157,7 @@ std::ranges::in_out_result<I, O> indentBlock(
     return {pchr, oi};
 }
 
-/**
+/*!
  * A range specific overload of ``indentBlock``.
  *
  * @tparam R a range of symbols type
@@ -201,7 +201,7 @@ auto indentBlock(
             sp, std::ranges::begin(nl), std::ranges::end(nl));
 }
 
-/**
+/*!
  * This struct is a namespace for the three typical primitives
  * for the use with the ``indentBlock`` functions:
  *   - ``esc()`` which designations ``\`` as the escape character
@@ -212,14 +212,14 @@ auto indentBlock(
 struct stdstr final {
     stdstr() = delete;
 
-    /**
+    /*!
      * Returns true if c is ``\``, false otherwise
      * @param c the character to test
      * @return true if c is ``\``, false otherwise
      */
     static constexpr inline bool esc(char c) { return c == '\\'; }
 
-    /**
+    /*!
      * Returns true if c is a standard whitespace character, false
      * otherwise.
      *
@@ -229,7 +229,7 @@ struct stdstr final {
      */
     static inline bool ws(char c) { return std::isspace(c); }
 
-    /**
+    /*!
      * The UNIX end of line sequence, which is a single character
      * ``\n``
      */

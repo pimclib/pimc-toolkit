@@ -4,6 +4,8 @@
 #include <concepts>
 #include <functional>
 
+#include "pimc/core/CompilerUtils.hpp"
+
 namespace pimc {
 
 /*!
@@ -22,11 +24,13 @@ public:
     : data_{data}, len_{len}, taken_{0u} {}
 
     /*!
-     * Attempts to measure the \p sz bytes at the current position in
-     * the view and if there is enough data remaining calls the \p viewer
-     * passing the pointer to the data to it and returns `true`. If there
-     * isn't enough data remaining, this function does not call the
-     * \p viewer and it returns `false`.
+     * \brief Invokes \p viewer on the current position in the packet
+     * data and advances the internal position in the data by \p sz.
+     *
+     * The \p viewer is called only if the packet data contains enough
+     * remaining bytes to satisfy \p sz. If it does, this function calls
+     * \p viewer and returns `true`. Otherwise, it does not call \p viewer,
+     * it does not change the internal position and returns `false`.
      *
      * @tparam Viewer the type of the viewer function
      * @param sz the desired size to data at the current position to view
@@ -37,7 +41,7 @@ public:
     template <typename Viewer>
     requires std::regular_invocable<Viewer, void const*>
     bool take(std::size_t sz, Viewer&& viewer) {
-        if (taken_ + sz <= len_) {
+        if (PIMC_LIKELY(taken_ + sz <= len_)) {
             std::invoke(
                     std::forward<Viewer>(viewer),
                     static_cast<void const*>(data_ + taken_));
@@ -56,7 +60,7 @@ public:
      * @return `true` if there is enough data, `false` otherwise
      */
     bool skip(std::size_t sz) {
-        if (taken_ + sz <= len_) {
+        if (PIMC_LIKELY(taken_ + sz <= len_)) {
             taken_ += sz;
             return true;
         }
@@ -103,8 +107,8 @@ private:
 class ReversePacketView final {
 public:
     /*!
-     * Constructs a view over the data passed as the pointer \p data
-     * and whose size is \p len.
+     * Constructs a reverse view over the data passed as the pointer
+     * \p data and whose size is \p len.
      *
      * @param data the pointer to the start of the packet data
      * @param len the size of the packet data
@@ -113,11 +117,14 @@ public:
             : data_{data}, len_{len}, taken_{0u} {}
 
     /*!
-     * Attempts to measure the \p sz bytes at the current position in
-     * the view and if there is enough data remaining calls the \p viewer
-     * passing the pointer to the data to it and returns `true`. If there
-     * isn't enough data remaining, this function does not call the
-     * \p viewer and it returns `false`.
+     * \brief Invokes \p viewer on the current position minus \p sz in
+     * the packet data and advances the internal position in the data
+     * by \p sz.
+     *
+     * The \p viewer is called only if the packet data contains enough
+     * remaining bytes to satisfy \p sz. If it does, this function calls
+     * \p viewer and returns `true`. Otherwise, it does not call \p viewer,
+     * it does not change the internal position and returns `false`.
      *
      * @tparam Viewer the type of the viewer function
      * @param sz the desired size to data at the current position to view
@@ -128,7 +135,7 @@ public:
     template <typename Viewer>
     requires std::regular_invocable<Viewer, void const*>
     bool take(std::size_t sz, Viewer&& viewer) {
-        if (taken_ + sz <= len_) {
+        if (PIMC_LIKELY(taken_ + sz <= len_)) {
             std::invoke(
                     std::forward<Viewer>(viewer),
                     static_cast<void const*>(data_ - taken_ - sz));

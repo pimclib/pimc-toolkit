@@ -42,7 +42,7 @@ endfunction()
 # LibName-Doxygen and LibNameSphinx, where "LibName" is the name of the specified
 # library. The optional additional parameters are the names of the .rst files,
 # which provide the contents for the library help pages.
-function(SphinxDoxyLibs LibName)
+function(SphinxDoxyLibs TargetName LibName)
     set(DOXY_LIB_DEPS)
     set(BREATHE_PROJECT_XML_DEFS)
     set(DOXYGEN_INDEX_LIST)
@@ -70,6 +70,6 @@ function(SphinxDoxyLibs LibName)
             COMMENT "Generating documentation with Sphinx"
     )
 
-    add_custom_target(${LibName}-Sphinx ALL DEPENDS ${SPHINX_INDEX_FILE})
+    add_custom_target(${TargetName} ALL DEPENDS ${SPHINX_INDEX_FILE})
 endfunction()
 

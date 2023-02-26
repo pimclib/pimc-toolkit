@@ -4,7 +4,7 @@
 
 namespace pimc {
 
-/**
+/*!
  * A sentinel for a 0-terminated strings.
  */
 struct cssentinel {};

@@ -11,9 +11,3 @@
 #ifdef __linux__
 #define IF_INDEX(v) static_cast<unsigned>(v)
 #endif
-
-namespace pimc {
-
-
-
-} // namespace pic
