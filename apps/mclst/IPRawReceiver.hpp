@@ -1,11 +1,88 @@
 #pragma once
 
+#include <fmt/format.h>
+
+#include "pimc/core/Result.hpp"
+#include "pimc/system/SysError.hpp"
+
 #include "pimc/net/IPv4HdrView.hpp"
 #include "pimc/net/UDPHdrView.hpp"
+
+#ifdef __linux__
+
+#include <sys/capability.h>
+
+namespace pimc {
+
+static inline Result<void, std::string> raiseCapNetRaw() {
+    cap_t caps;
+    cap_value_t capv[1];
+
+    caps = cap_get_proc();
+    if (caps == nullptr)
+        return fail(fmt::format("cap_get_proc() failed: {}", sysError()));
+
+    capv[0] = CAP_NET_RAW;
+    if (cap_set_flag(caps, CAP_ERRECTIVE, 1, capv, CAP_SET) == -1) {
+        cap_free(caps);
+        return fail(fmt::format("cap_set_flag() failed: {}", sysError()));
+    }
+
+    // TODO this is probably the place to check if errno is EPERM and reports
+    //      this differently
+    if (cap_set_proc(caps) == -1) {
+        cap_free(caps);
+        return fail(fmt::format("cap_set_proc() failed: {}", sysError()));
+    }
+
+    if (cap_free(caps) == -1)
+        fail(fmt::format("cap_free() failed: {}", sysError()));
+
+    return {};
+}
+
+static inline Result<void, std::string> dropAllCaps() {
+    cap_t empty;
+    int s;
+
+    empty = cap_init();
+    if (empty == nullptr)
+        return fail(fmt::format("cap_init() failed: {}", sysError()));
+
+    if (cap_set_proc(empty) == -1) {
+        cap_free(caps);
+        return fail(fmt::format(
+                "unable to drop capabilities: cap_set_proc() failed: {}", sysError()));
+    }
+
+    if (cap_free(caps) == -1)
+        fail(fmt::format("cap_free() failed: {}", sysError()));
+
+    return {};
+}
+
+} // namespace pimc
+#else
+
+namespace pimc {
+
+static inline Result<void, std::string> raiseCapNetRaw() {
+    return {};
+}
+
+static inline Result<void, std::string> dropAllCaps() {
+    return {};
+}
+
+} // namespace pimc
+
+#endif
 
 #include "ReceiverBase.hpp"
 
 namespace pimc {
+
+
 
 template <Limiter Limit>
 class IPRawReceiver: public ReceiverBase<IPRawReceiver<Limit>, Limit> {
@@ -24,6 +101,10 @@ public:
     auto openSocket() -> int {
         int s = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 
+        auto r = raiseCapNetRaw();
+        if (not r)
+            throw std::runtime_error{r.error()};
+
         if (s == -1) {
             if (errno == EPERM)
                 raise<std::runtime_error>(
@@ -33,6 +114,10 @@ public:
             else raise<std::runtime_error>(
                     "unable to open raw IP socket: {}", sysError());
         }
+
+        r = dropAllCaps();
+        if (not r)
+            throw std::runtime_error{r.error()};
 
         return s;
     }

@@ -57,6 +57,7 @@ target_sources(
             core/tests/Failure-Tests.cpp
             core/tests/ResultConstexpr-Tests.cpp
             core/tests/Result-Tests.cpp
+            core/tests/Result-AdHoc-Tests.cpp
             core/tests/Deferred-Tests.cpp
             net/tests/IPv4Net-tests.cpp
             parsers/tests/IPv4Parser-tests.cpp
