@@ -5,6 +5,7 @@
 
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/system/SysError.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
 
 namespace pimc {
 
@@ -30,7 +31,7 @@ struct RuntimeErrorHandler {
     static inline void failedSignal(int signal) {
         raise<std::runtime_error>(
                 "unable to install handler for signal {}: {}",
-                signal, sysError());
+                signal, SysError{});
     }
 };
 

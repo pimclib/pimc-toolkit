@@ -5,6 +5,12 @@
 
 namespace pimc {
 
-std::string sysError(int syserr = errno);
+struct SysError final {
+    int const syserr;
+
+    SysError(): syserr{errno} {}
+
+    constexpr explicit SysError(int ec): syserr{ec} {}
+};
 
 } // namespace pimc

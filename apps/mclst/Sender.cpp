@@ -10,6 +10,7 @@
 #include "pimc/system/SysError.hpp"
 #include "pimc/time/TimeUtils.hpp"
 #include "pimc/formatters/IPv4Formatters.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
 
 #include "Sender.hpp"
 
@@ -19,7 +20,7 @@ namespace pimc {
 
 void Sender::init() {
     if (gethostname(pkt_.message, sizeof(pkt_.message)) == -1)
-        raise<std::runtime_error>("unable to get local host name: {}", sysError());
+        raise<std::runtime_error>("unable to get local host name: {}", SysError{});
 
     auto msgLen = strlen(pkt_.message);
     pkt_.message[sizeof(pkt_.message)-1] = '\0';
@@ -29,26 +30,26 @@ void Sender::init() {
 
     socket_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_ == -1)
-        raise<std::runtime_error>("unable to create socket: {}", sysError());
+        raise<std::runtime_error>("unable to create socket: {}", SysError{});
 
     auto ttl = static_cast<u_char>(cfg_.ttl());
     if (setsockopt(socket_, IPPROTO_IP,
                    IP_MULTICAST_TTL, &ttl, sizeof(ttl)) == -1)
-        raise<std::runtime_error>("unable to set multicast TTL: {}", sysError());
+        raise<std::runtime_error>("unable to set multicast TTL: {}", SysError{});
 
     // this is required to allow this host to receive its own packets
     u_char loopback{1};
     if (setsockopt(socket_, IPPROTO_IP,
                    IP_MULTICAST_LOOP, &loopback, sizeof(loopback)) == -1)
         raise<std::runtime_error>(
-                "unable to set loopback mode on socket: {}", sysError());
+                "unable to set loopback mode on socket: {}", SysError{});
 
     in_addr intfAddr { .s_addr = cfg_.intfAddr().to_nl() };
     if (setsockopt(socket_, IPPROTO_IP,
                    IP_MULTICAST_IF, &intfAddr, sizeof(intfAddr)) == -1)
         raise<std::runtime_error>(
                 "unable to make {} ({}) multicast output interface: {}",
-                cfg_.intf(), cfg_.intfAddr(), sysError());
+                cfg_.intf(), cfg_.intfAddr(), SysError{});
 }
 
 void Sender::sendLoop() {
@@ -64,7 +65,7 @@ void Sender::sendLoop() {
                    reinterpret_cast<sockaddr*>(&dst), sizeof(dst)) == -1)
             raise<std::runtime_error>(
                     "failed to send packet to {}:{}: {}",
-                    cfg_.group(), cfg_.dport(), sysError());
+                    cfg_.group(), cfg_.dport(), SysError{});
 
         oh_.showSentPacket(gethostnanos(), seq_);
         ++seq_;

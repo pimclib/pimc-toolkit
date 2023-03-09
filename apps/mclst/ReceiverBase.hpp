@@ -6,11 +6,13 @@
 
 #include <concepts>
 
+#include "pimc/core/CompilerUtils.hpp"
 #include "pimc/core/Endian.hpp"
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/net/IPv4PktInfo.hpp"
 #include "pimc/dissect/PacketView.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
 
 #include "MclstBeacon.hpp"
 #include "MclstBase.hpp"
@@ -84,7 +86,7 @@ protected:
     void dissectMclstBeaconPayload() {
         PacketView pv{pktInfo_.payload, pktInfo_.payloadSize};
 
-        if (not pv.take(sizeof(MclstBeaconHdr), [this] (auto const* p) {
+        if (PIMC_UNLIKELY(not pv.take(sizeof(MclstBeaconHdr), [this] (auto const* p) {
             auto const& hdr = *static_cast<MclstBeaconHdr const*>(p);
             if (be64toh(hdr.magic) == MclstMagic) {
                 pktInfo_.mclstBeacon = true;
@@ -92,11 +94,11 @@ protected:
                 pktInfo_.remoteTimestamp = be64toh(hdr.timeNs);
                 pktInfo_.remoteMsgLen = be16toh(hdr.dataLen);
             }
-        })) return;
+        }))) return;
 
-        if (not pv.take(pktInfo_.remoteMsgLen, [this] (auto const* p) {
+        if (PIMC_UNLIKELY(not pv.take(pktInfo_.remoteMsgLen, [this] (auto const* p) {
             pktInfo_.remoteMsg = static_cast<char const*>(p);
-        })) {
+        }))) {
             pktInfo_.mclstBeacon = false;
             oh_.warningTs(
                     pktInfo_.timestamp,
@@ -124,38 +126,38 @@ private:
         int flags = fcntl(socket_, F_GETFL);
         if (flags == -1)
             raise<std::runtime_error>(
-                    "fcntl() failed to get socket flags: {}", sysError());
+                    "fcntl() failed to get socket flags: {}", SysError{});
 
         flags |= O_NONBLOCK;
         fcntl(socket_, F_SETFL, flags);
         if (flags == -1)
             raise<std::runtime_error>(
-                    "fcntl() failed to make socket non-blocking: {}", sysError());
+                    "fcntl() failed to make socket non-blocking: {}", SysError{});
 
         // allow multiple sockets use the same UDP ports
         int allowReuse = 1;
         if (setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
                        &allowReuse, sizeof(allowReuse)) == -1)
-            raise<std::runtime_error>("cannot enable UDP port reuse: {}", sysError());
+            raise<std::runtime_error>("cannot enable UDP port reuse: {}", SysError{});
 
         int bufSize{BufferSize};
         if (setsockopt(socket_, SOL_SOCKET,
                        SO_RCVBUF, &bufSize, sizeof(bufSize)) == -1) {
             oh_.warning(
                     "failed to set receive buffer size to {} bytes: {}",
-                    bufSize, sysError(errno));
+                    bufSize, SysError{});
         }
 
         int ttl = 1;
 
         if (setsockopt(socket_, IPPROTO_IP, IP_RECVTTL, &ttl, sizeof(ttl)) == -1)
-            raise<std::runtime_error>("cannot enable receiving TTL: {}", sysError());
+            raise<std::runtime_error>("cannot enable receiving TTL: {}", SysError{});
 
         int pktinfo{1};
         if (setsockopt(socket_, IPPROTO_IP, IP_PKTINFO, &pktinfo, sizeof(pktinfo)) == -1)
             raise<std::runtime_error>(
                     "cannot enable receiving the interface on which packet is received{}",
-                    sysError());
+                    SysError{});
 
         // Bind the socket to any interface. The join will be sent
         // from the interface specified on the command line
@@ -168,12 +170,11 @@ private:
         if (bind(socket_, reinterpret_cast<sockaddr*>(&src), sizeof(src)) == -1)
             raise<std::runtime_error>(
                     "cannot bind socket to UDP port {}: {}",
-                    cfg_.dport(), sysError(errno));
+                    cfg_.dport(), SysError{});
 
         // Activate poller
         FD_ZERO(&rfds_);
         FD_SET(socket_, &rfds_);
-
     }
 
     void join() {
@@ -187,7 +188,7 @@ private:
                            &mreq_source, sizeof(mreq_source)) == -1)
                 raise<std::runtime_error>(
                         "failed to join ({}, {}) on {}: {}",
-                        cfg_.source(), cfg_.group(), cfg_.intf(), sysError());
+                        cfg_.source(), cfg_.group(), cfg_.intf(), SysError{});
         } else {
             ip_mreq mreq{};
             mreq.imr_interface.s_addr = cfg_.intfAddr().to_nl();
@@ -197,7 +198,7 @@ private:
                            IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1)
                 raise<std::runtime_error>(
                         "failed to join (*, {}) on {}: {}",
-                        cfg_.group(), cfg_.intf(), sysError());
+                        cfg_.group(), cfg_.intf(), SysError{});
         }
     }
 
@@ -224,7 +225,7 @@ private:
         ssize_t rsz = recvmsg(socket_, &msg, 0);
 
         if (rsz < 0)
-            raise<std::runtime_error>("recvmsg() failed: {}", sysError());
+            raise<std::runtime_error>("recvmsg() failed: {}", SysError{});
 
         pktInfo_.timestamp = recvTime;
         pktInfo_.receivedSize = static_cast<unsigned>(rsz);
@@ -238,7 +239,8 @@ private:
             if (cmsgp->cmsg_level == IPPROTO_IP and
                 (cmsgp->cmsg_type == IP_TTL or cmsgp->cmsg_type == IP_RECVTTL) and
                 cmsgp->cmsg_len > 0) {
-                pktInfo_.ttl = *reinterpret_cast<int16_t const *>(CMSG_DATA(cmsgp));
+                auto ttl = *reinterpret_cast<uint8_t const*>(CMSG_DATA(cmsgp));
+                pktInfo_.ttl = static_cast<int16_t>(ttl);
                 continue;
             }
 
@@ -269,7 +271,7 @@ private:
             if (rc < 0) {
                 if (errno == EINTR) continue;
 
-                raise<std::runtime_error>("select() failed: {}", sysError());
+                raise<std::runtime_error>("select() failed: {}", SysError{});
             }
 
             if (rc == 0) {
@@ -281,13 +283,13 @@ private:
                 continue;
             }
 
-            if (FD_ISSET(socket_, &rfds_)) {
+            if (PIMC_LIKELY(FD_ISSET(socket_, &rfds_))) {
                 auto ps = static_cast<unsigned>(receive(timer.timestamp()));
 
-                if (ps & Accepted) {
+                if (PIMC_LIKELY(ps & Accepted)) {
                     timer.reset();
 
-                    if (ps & Show) {
+                    if (PIMC_LIKELY(ps & Show)) {
                         oh_.showReceivedPacket(pktInfo_);
 
                         // NoShow means pktInfo_ is incomplete and instead the

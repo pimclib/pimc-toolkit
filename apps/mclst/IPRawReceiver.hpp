@@ -7,6 +7,7 @@
 
 #include "pimc/net/IPv4HdrView.hpp"
 #include "pimc/net/UDPHdrView.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
 
 #ifdef __linux__
 
@@ -112,7 +113,7 @@ public:
                         "all UDP ports denied; try running under sudo or "
                         "granting the binary the CAP_NET_RAW capability");
             else raise<std::runtime_error>(
-                    "unable to open raw IP socket: {}", sysError());
+                    "unable to open raw IP socket: {}", SysError{});
         }
 
         r = dropAllCaps();
@@ -127,9 +128,9 @@ public:
         PacketView pv{pktInfo.receivedData, pktInfo.receivedSize};
 
         IPv4HdrView ipHdr;
-        if (not pv.take(IPv4HdrView::HdrSize, [&ipHdr] (auto const* p) {
+        if (PIMC_UNLIKELY(not pv.take(IPv4HdrView::HdrSize, [&ipHdr] (auto const* p) {
             ipHdr = p;
-        })) {
+        }))) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "recvmsg() returned size {} which is smaller than the minimum "
@@ -138,11 +139,11 @@ public:
             return PacketStatus::Filtered;
         }
 
-        if (ipHdr.daddr() != groupNl_) return PacketStatus::Filtered;
-        if (ipHdr.protocol() != UDPProto) return PacketStatus::Filtered;
+        if (PIMC_UNLIKELY(ipHdr.daddr() != groupNl_)) return PacketStatus::Filtered;
+        if (PIMC_UNLIKELY(ipHdr.protocol() != UDPProto)) return PacketStatus::Filtered;
 
         auto effIPHdrSize = ipHdr.headerSizeBytes();
-        if (effIPHdrSize < IPv4HdrView::HdrSize) {
+        if (PIMC_UNLIKELY(effIPHdrSize < IPv4HdrView::HdrSize)) {
             // This will really never happen
             oh_.warningTs(
                     pktInfo.timestamp,
@@ -152,7 +153,7 @@ public:
             return PacketStatus::AcceptedNoShow;
         }
 
-        if (not pv.skip(effIPHdrSize - IPv4HdrView::HdrSize)) {
+        if (PIMC_UNLIKELY(not pv.skip(effIPHdrSize - IPv4HdrView::HdrSize))) {
             // This can also not really happen...
             oh_.warningTs(
                     pktInfo.timestamp,
@@ -163,9 +164,9 @@ public:
         }
 
         UDPHdrView udpHdr;
-        if (not pv.take(UDPHdrView::HdrSize, [&udpHdr] (auto const* p) {
+        if (PIMC_UNLIKELY(not pv.take(UDPHdrView::HdrSize, [&udpHdr] (auto const* p) {
             udpHdr = p;
-        })) {
+        }))) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "recvmsg() returned size {} which is insufficient for IPv4 "
@@ -180,7 +181,7 @@ public:
         pktInfo.dport = ntohs(udpHdr.dport());
 
         auto ipTTL = static_cast<int16_t>(ipHdr.ttl());
-        if (pktInfo.ttl != ipTTL) {
+        if (PIMC_UNLIKELY(pktInfo.ttl != ipTTL)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} TTL received from recvmsg() is {} whereas "
@@ -193,7 +194,7 @@ public:
         auto remSize = pv.remaining();
         uint16_t udpSize = ntohs(udpHdr.len());
 
-        if (udpSize < UDPHdrView::HdrSize) {
+        if (PIMC_UNLIKELY(udpSize < UDPHdrView::HdrSize)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} UDP size {} is less than the UDP header size {}",
@@ -206,7 +207,7 @@ public:
         // from the original value
         udpSize -= static_cast<uint16_t>(UDPHdrView::HdrSize);
 
-        if (udpSize > remSize) {
+        if (PIMC_UNLIKELY(udpSize > remSize)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} UDP size {} is larger than the "
@@ -216,7 +217,7 @@ public:
             return PacketStatus::AcceptedNoShow;
         }
 
-        if (udpSize < remSize) {
+        if (PIMC_UNLIKELY(udpSize < remSize)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} UDP size {} is less than the "
