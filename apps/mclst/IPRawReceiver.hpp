@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef WITH_LIBCAP
+#include <unistd.h>
+#include <sys/capability.h>
+#endif
+
 #include <fmt/format.h>
 
 #include "pimc/core/Result.hpp"
@@ -9,9 +14,7 @@
 #include "pimc/net/UDPHdrView.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
 
-#ifdef __linux__
-
-#include <sys/capability.h>
+#ifdef WITH_LIBCAP
 
 namespace pimc {
 
@@ -21,43 +24,47 @@ static inline Result<void, std::string> raiseCapNetRaw() {
 
     caps = cap_get_proc();
     if (caps == nullptr)
-        return fail(fmt::format("cap_get_proc() failed: {}", sysError()));
+        return fail(fmt::format("cap_get_proc() failed: {}", SysError{}));
 
     capv[0] = CAP_NET_RAW;
-    if (cap_set_flag(caps, CAP_ERRECTIVE, 1, capv, CAP_SET) == -1) {
+    if (cap_set_flag(caps, CAP_EFFECTIVE, 1, capv, CAP_SET) == -1) {
         cap_free(caps);
-        return fail(fmt::format("cap_set_flag() failed: {}", sysError()));
+        return fail(fmt::format("cap_set_flag() failed: {}", SysError{}));
     }
 
-    // TODO this is probably the place to check if errno is EPERM and reports
-    //      this differently
     if (cap_set_proc(caps) == -1) {
         cap_free(caps);
-        return fail(fmt::format("cap_set_proc() failed: {}", sysError()));
+        auto ec = errno;
+        if (ec == EPERM)
+            return fail(
+                    "permission to receive multicast on all UDP ports denied. "
+                    "try granting mclst the CAP_NET_RAW capability by running "
+                    "setcap cap_net_raw=p mclst");
+
+        return fail(fmt::format("cap_set_proc() failed: {}", SysError{ec}));
     }
 
     if (cap_free(caps) == -1)
-        fail(fmt::format("cap_free() failed: {}", sysError()));
+        return fail(fmt::format("cap_free() failed: {}", SysError{}));
 
     return {};
 }
 
 static inline Result<void, std::string> dropAllCaps() {
     cap_t empty;
-    int s;
 
     empty = cap_init();
     if (empty == nullptr)
-        return fail(fmt::format("cap_init() failed: {}", sysError()));
+        return fail(fmt::format("cap_init() failed: {}", SysError{}));
 
     if (cap_set_proc(empty) == -1) {
-        cap_free(caps);
+        cap_free(empty);
         return fail(fmt::format(
-                "unable to drop capabilities: cap_set_proc() failed: {}", sysError()));
+                "unable to drop capabilities: cap_set_proc() failed: {}", SysError{}));
     }
 
-    if (cap_free(caps) == -1)
-        fail(fmt::format("cap_free() failed: {}", sysError()));
+    if (cap_free(empty) == -1)
+        return fail(fmt::format("cap_free() failed: {}", SysError{}));
 
     return {};
 }

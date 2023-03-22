@@ -5,10 +5,11 @@
 
 #include "pimc/system/SysError.hpp"
 
+#include "detect_strerror_r.hpp"
+
 inline std::ostream& operator<< (
         std::ostream& os, pimc::SysError const& se) {
     char buf[1024];
-    strerror_r(se.syserr, buf, sizeof(buf));
-    os << buf;
+    os << pimc::detail::invoke_strerror_r<sizeof(buf)>(se.syserr, buf);
     return os;
 }
