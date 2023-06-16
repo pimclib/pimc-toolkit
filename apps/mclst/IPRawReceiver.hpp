@@ -37,8 +37,8 @@ static inline Result<void, std::string> raiseCapNetRaw() {
         auto ec = errno;
         if (ec == EPERM)
             return fail(
-                    "permission to receive multicast on all UDP ports denied. "
-                    "try granting mclst the CAP_NET_RAW capability by running "
+                    "cap_set_proc() failed; try running under sudo or "
+                    "grant mclst the CAP_NET_RAW capability by running "
                     "setcap cap_net_raw=p mclst");
 
         return fail(fmt::format("cap_set_proc() failed: {}", SysError{ec}));
@@ -107,18 +107,18 @@ protected:
 
 public:
     auto openSocket() -> int {
-        int s = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
-
         auto r = raiseCapNetRaw();
         if (not r)
             throw std::runtime_error{r.error()};
 
+        int s = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+
         if (s == -1) {
             if (errno == EPERM)
                 raise<std::runtime_error>(
-                        "permission to receive multicast on "
-                        "all UDP ports denied; try running under sudo or "
-                        "granting the binary the CAP_NET_RAW capability");
+                        "permission to receive multicast on all UDP ports denied "
+                        "even though the process now has the effective CAP_NET_RAW; "
+                        "as a last resort try running under sudo");
             else raise<std::runtime_error>(
                     "unable to open raw IP socket: {}", SysError{});
         }
