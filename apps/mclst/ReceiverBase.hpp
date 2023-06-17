@@ -283,7 +283,7 @@ private:
                 continue;
             }
 
-            if (FD_ISSET(socket_, &rfds_)) {
+            if (PIMC_LIKELY(FD_ISSET(socket_, &rfds_))) {
                 auto ps = static_cast<unsigned>(receive(timer.timestamp()));
 
                 if (PIMC_LIKELY(ps & Accepted)) {
