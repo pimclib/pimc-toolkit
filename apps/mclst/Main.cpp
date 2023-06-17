@@ -1,3 +1,8 @@
+#if __GNUC__ >= 13
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
+#endif
+
 #include <fmt/format.h>
 
 #include "pimc/unix/SignalHandler.hpp"
@@ -56,3 +61,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 }
+
+#if __GNUC__ >= 13
+#pragma GCC diagnostic pop
+#endif

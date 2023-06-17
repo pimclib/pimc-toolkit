@@ -99,7 +99,7 @@ struct formatter<pimc::Timestamp>: formatter<string_view> {
         tt += static_cast<long>(carry);
         tm tms;
 
-        return format_to(
+        return fmt::format_to(
                 ctx.out(), "{:%H:%M:%S}.{:<6}",
                 *localtime_r(&tt, &tms), nstext);
     }
@@ -118,7 +118,7 @@ struct formatter<pimc::BeaconTime>: formatter<string_view> {
         tt += static_cast<long>(carry);
         tm tms;
 
-        return format_to(
+        return fmt::format_to(
                 ctx.out(), "{:%Y-%m-%d %H:%M:%S}.{}", *localtime_r(&tt, &tms), nstext);
     }
 };
@@ -133,7 +133,7 @@ struct formatter<pimc::Duration>: formatter<string_view> {
         char const* nstext;
         uint64_t carry;
         std::tie(nstext, carry) = nt.prc(nanos, 6);
-        return format_to(ctx.out(), "{}.{}", secs, nstext);
+        return fmt::format_to(ctx.out(), "{}.{}", secs, nstext);
     }
 };
 

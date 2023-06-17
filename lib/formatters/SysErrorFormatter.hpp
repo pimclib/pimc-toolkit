@@ -19,7 +19,7 @@ struct formatter<pimc::SysError>: formatter<string_view> {
     auto format(pimc::SysError const& se, FormatContext& ctx) {
         char buf[1024];
         auto p = pimc::detail::invoke_strerror_r<sizeof(buf)>(se.syserr, buf);
-        return format_to(ctx.out(), "{}", p);
+        return fmt::format_to(ctx.out(), "{}", p);
     }
 };
 

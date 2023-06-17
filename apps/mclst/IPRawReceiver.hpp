@@ -16,6 +16,11 @@
 
 #ifdef WITH_LIBCAP
 
+#define LAST_RESORT_MSG                                               \
+        "permission to receive multicast on all UDP ports denied "    \
+        "even though the process now has the effective CAP_NET_RAW; " \
+        "as a last resort try running under sudo"
+
 namespace pimc {
 
 static inline Result<void, std::string> raiseCapNetRaw() {
@@ -72,6 +77,10 @@ static inline Result<void, std::string> dropAllCaps() {
 } // namespace pimc
 #else
 
+#define LAST_RESORT_MSG                                             \
+        "permission to receive multicast on all UDP ports denied, " \
+        "try running under sudo"
+
 namespace pimc {
 
 static inline Result<void, std::string> raiseCapNetRaw() {
@@ -115,10 +124,7 @@ public:
 
         if (s == -1) {
             if (errno == EPERM)
-                raise<std::runtime_error>(
-                        "permission to receive multicast on all UDP ports denied "
-                        "even though the process now has the effective CAP_NET_RAW; "
-                        "as a last resort try running under sudo");
+                raise<std::runtime_error>(LAST_RESORT_MSG);
             else raise<std::runtime_error>(
                     "unable to open raw IP socket: {}", SysError{});
         }
