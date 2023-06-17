@@ -4,6 +4,11 @@
 #include <string_view>
 #include <algorithm>
 
+#if __GNUC__ >= 13
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdangling-reference"
+#endif
+
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/parsers/NumberParsers.hpp"
@@ -16,6 +21,7 @@
 #include "Config.hpp"
 
 #define OID(id) static_cast<uint32_t>(Options::id)
+
 
 namespace pimc {
 
@@ -35,10 +41,9 @@ enum class Options: uint32_t {
 
 char const* legend =
     "[Options] group[:port]\n\n"
-    "where group[:port] may be specified either as 'group:port', e.g. 239.1.2.3:12345 \n"
-    "or just as a group, e.g. 239.1.2.3. The latter implies receiving multicast traffic \n"
-    "destined for all UDP ports; this option requires privileged access, which at a \n"
-    "minimum can be set using the capability CAP_NET_RAW";
+    "where group[:port] may be specified either as 'group:port', e.g. 239.1.2.3:12345\n"
+    "or just as a group, e.g. 239.1.2.3, which implies receiving multicast traffic\n"
+    "destined for all UDP ports";
 
 auto parseGroupPort(
         std::string const& gp) -> std::tuple<net::IPv4Address, uint16_t, bool> {
@@ -315,3 +320,7 @@ void Config::show() const {
 }
 
 } // namespace pimc
+
+#if __GNUC__ >= 13
+#pragma GCC diagnostic pop
+#endif
