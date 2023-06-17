@@ -1,3 +1,19 @@
+add_custom_target(
+        ProjectVersionHeader
+        ALL
+        DEPENDS ${CMAKE_BINARY_DIR}/version.h
+)
+
+add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/version.h
+        COMMAND ${CMAKE_COMMAND}
+                -DGIT=${GIT}
+                -DOUTPUT_HEADER_FILE=${CMAKE_BINARY_DIR}/version.h
+                -P ${CMAKE_SOURCE_DIR}/cmake/update_version_header.cmake
+        DEPENDS ${CMAKE_SOURCE_DIR}/cmake/version.h.in
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 set_target_properties(
         PimcLib
         PROPERTIES EFFECTIVE_SOURCES_DIR ${CMAKE_CURRENT_LIST_DIR}
@@ -8,6 +24,7 @@ target_sources(
     PRIVATE
         net/IPv4IntfTable.cpp
     PUBLIC
+        ${CMAKE_BINARY_DIR}/version.h
         core/CompilerUtils.hpp
         core/TypeUtils.hpp
         core/Deferred.hpp
