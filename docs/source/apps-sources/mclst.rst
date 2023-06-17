@@ -3,9 +3,9 @@ Multicast Listener/Sender Tool :program:`mclst`
 ===============================================
 
 Overview
---------
+========
 
-:program:`mclst` is a network scentric multicast listener and sender tool.
+:program:`mclst` is a network centric multicast listener and sender tool.
 It has two distinct modes of operation as follows:
 
   #. The receiver mode allows subscribing to multicast and showing the
@@ -16,20 +16,44 @@ It has two distinct modes of operation as follows:
 .. _overview-subscribing:
      
 Subscribing to Multicast
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
 
 .. _receiver-modes:
 
 :program:`mclst` supports two ways to subscribe to multicast. The normal way
 requires the user to specify the desired group and UDP port. The alternative
 way allows the user to specify only the group, in which case :program:`mclst`
-will show multicast traffic destined for the group and all UDP ports. The latter
-*portless* mode, however, requires privileged execution of :program:`mclst`.
-The easiest way to do so is to run :program:`mclst` under :program:`sudo`.
-Alternatively :program:`mclst` binary may be granted ``CAP_NET_RAW`` capability
-(see `capabilities`_), which would allow any user to run :program:`mclst` in
-the portless mode without :program:`sudo`.
+will show multicast traffic destined for the group and any UDP ports. The latter
+*portless* mode, however, requires the ``CAP_NET_RAW`` capability to be added
+to the permitted capabilities set for :program:`mclst`.
 
+.. note::
+   The *portless* mode exploits the fact that the network routers and switches
+   do not use UDP ports for forwarding multicast traffic to the subscribers.
+   This means that if some sources send traffic to the same group but to
+   different destination UDP ports, all packets destined for this group will
+   be received by any host subscribing to the group, regardless of the
+   destination port. The sockets API on the receiving host will filter the
+   received multicast traffic and it will deliver only the traffic that matches
+   the UDP port to which the subscription was made.
+
+   To overcome the automatic filtering :program:`mclst` uses a raw IP UDP socket
+   which allows it to receive all UDP packets that the host receives (not only
+   the multicast packets). By default, programs cannot create raw sockets. There
+   are two ways to overcome this limitation. The simplest one is to run
+   :program:`mclst` under :program:`sudo`. But a better way is to grant the
+   :program:`mclst` binary the ``CAP_NET_RAW`` capability by adding it to the
+   permitted set. :program:`mclst` is capability aware, which means it raises
+   the capability only to create the raw socket, but once this is done it
+   immediately drops it.
+
+   The following command should be used to add ``CAP_NET_RAW`` to the
+   permitted capabilities set of :program:`mclst`:
+
+   .. code-block:: bash
+
+      $ sudo setcap cap_net_raw=p mclst
+   
 .. warning::
    The *portless* mode does not work in MacOS.
 
@@ -75,22 +99,39 @@ the user has to press :kbd:`Ctrl-C`. Alternatively there is an option to force
 Once :program:`mclst` exits it shows a summary of the statistics of the received
 multicast traffic per each source/source UDP port/destination UDP port combination.
 
-Sending multicast
-^^^^^^^^^^^^^^^^^
+.. warning::
+   If firewall is active, it may prevent :program:`mclst` from receiving multicast.
+   For systems with :program:`firewall` the following command will enable
+   receiving multicast:
 
-:program:`mclst` supports a simple multicast publisher, which sends a *mclst beacon*
-packet every second. As mentioned in :ref:`overview-subscribing` when the receiving
-:program:`mclst` processes receive the beacon traffic, they show the information that
-was put in it by the sending :program:`mclst` process.
+   .. code-block:: bash
+
+      sudo firewall-cmd \
+             --add-rich-rule='rule family=ipv4 destination address="224.0.0.0/4" accept' \
+             --permanent
+      sudo firewall-cmd --reload
+      
+Sending multicast
+-----------------
+
+:program:`mclst` sends multicast packets to the specified destination multicast
+group and UDP port at the rate of one packet per second.
+
+The contents of the traffic sent by :program:`mclst` is such that the receiving
+:program:`mclst` recognizes it and shows additional information from the received
+contents, such as the sending host's name, the sequence number of the packet,
+and the delta between the timestamp in the received packet and the time when
+the packet was received locally (the accuracy of the delta depends on the quality
+of the clock synchronization amongst the hosts running :program:`mclst`).
 
 :program:`mclst` provides a way to specify the TTL of the generated traffic. By
 default, however, it sends the traffic with the TTL of 255.
 
 Running :program:`mclst`
-------------------------
+========================
 
 Receiver Mode
-^^^^^^^^^^^^^
+-------------
 
 To run :program:`mclst` in the receiver mode the minimal command line form is as
 follows:
@@ -124,7 +165,7 @@ For example:
    sudo mclst -i enp0s5 239.1.2.3
 
 Sender Mode
-^^^^^^^^^^^
+-----------
 
 To run :program:`mclst` in the sender mode the minimal command line form is as
 follows:
@@ -141,7 +182,7 @@ For example:
 
 
 Command Line Options
-^^^^^^^^^^^^^^^^^^^^
+====================
 
 .. option:: -i <interface>, --interface <interface>
 
@@ -196,11 +237,30 @@ Command Line Options
 	    This flag causes :program:`mclst` to check the command line parameters,
 	    display its iterpretation of them and exit.
 
+	    For example:
+
+	    .. code-block:: bash
+
+	       $ ./mclst -s -i wlan0 239.1.1.1:2222 --show-config
+               Send to 239.1.1.1:2222, 1pps, TTL 255
+               Interface: wlan0 (192.168.0.51)
+               Colors: YES
+               
+               Host IPv4 interfaces:
+               
+                 Index Interface       Address
+                 ===== =============== ============
+                 1     lo              127.0.0.1
+                 3     wlan0           192.168.0.51
+                 4     docker0         172.17.0.1
+                 56    br-4064c9b52f9f 172.18.0.1
+                 107   br-62447bbeaa67 172.19.0.1
+                
 Examples
---------
+========
 
 Basic Receiver
-^^^^^^^^^^^^^^
+--------------
 
 .. code-block:: text
 
@@ -227,7 +287,7 @@ Basic Receiver
    		
 
 Receiver which shows the UDP payload in Hex/ASCII
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------------------
 
 .. code-block:: text
    
@@ -266,7 +326,7 @@ Receiver which shows the UDP payload in Hex/ASCII
    10.211.55.5:34511 12345    5   405 81.00 631.94bps
 
 Receiver in the portless mode
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 
 .. code-block:: text
 
@@ -323,7 +383,7 @@ Receiver in the portless mode
    10.211.55.5:58735 54321    3   516 172.00  1.62Kbps
    
 Sender
-^^^^^^
+------
 
 .. code-block:: text
    

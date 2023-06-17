@@ -20,7 +20,7 @@ public:
         int s = socket(AF_INET, SOCK_DGRAM, 0);
 
         if (s == -1)
-            raise<std::runtime_error>("unable to create socket: {}", sysError());
+            raise<std::runtime_error>("unable to create socket: {}", SysError{});
 
         return s;
     }

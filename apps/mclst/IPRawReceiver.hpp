@@ -1,11 +1,96 @@
 #pragma once
 
+#ifdef WITH_LIBCAP
+#include <unistd.h>
+#include <sys/capability.h>
+#endif
+
+#include <fmt/format.h>
+
+#include "pimc/core/Result.hpp"
+#include "pimc/system/SysError.hpp"
+
 #include "pimc/net/IPv4HdrView.hpp"
 #include "pimc/net/UDPHdrView.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
+
+#ifdef WITH_LIBCAP
+
+namespace pimc {
+
+static inline Result<void, std::string> raiseCapNetRaw() {
+    cap_t caps;
+    cap_value_t capv[1];
+
+    caps = cap_get_proc();
+    if (caps == nullptr)
+        return fail(fmt::format("cap_get_proc() failed: {}", SysError{}));
+
+    capv[0] = CAP_NET_RAW;
+    if (cap_set_flag(caps, CAP_EFFECTIVE, 1, capv, CAP_SET) == -1) {
+        cap_free(caps);
+        return fail(fmt::format("cap_set_flag() failed: {}", SysError{}));
+    }
+
+    if (cap_set_proc(caps) == -1) {
+        cap_free(caps);
+        auto ec = errno;
+        if (ec == EPERM)
+            return fail(
+                    "cap_set_proc() failed; try running under sudo or "
+                    "grant mclst the CAP_NET_RAW capability by running "
+                    "setcap cap_net_raw=p mclst");
+
+        return fail(fmt::format("cap_set_proc() failed: {}", SysError{ec}));
+    }
+
+    if (cap_free(caps) == -1)
+        return fail(fmt::format("cap_free() failed: {}", SysError{}));
+
+    return {};
+}
+
+static inline Result<void, std::string> dropAllCaps() {
+    cap_t empty;
+
+    empty = cap_init();
+    if (empty == nullptr)
+        return fail(fmt::format("cap_init() failed: {}", SysError{}));
+
+    if (cap_set_proc(empty) == -1) {
+        cap_free(empty);
+        return fail(fmt::format(
+                "unable to drop capabilities: cap_set_proc() failed: {}", SysError{}));
+    }
+
+    if (cap_free(empty) == -1)
+        return fail(fmt::format("cap_free() failed: {}", SysError{}));
+
+    return {};
+}
+
+} // namespace pimc
+#else
+
+namespace pimc {
+
+static inline Result<void, std::string> raiseCapNetRaw() {
+    return {};
+}
+
+static inline Result<void, std::string> dropAllCaps() {
+    return {};
+}
+
+} // namespace pimc
+
+#endif
 
 #include "ReceiverBase.hpp"
 
 namespace pimc {
+
+
 
 template <Limiter Limit>
 class IPRawReceiver: public ReceiverBase<IPRawReceiver<Limit>, Limit> {
@@ -22,17 +107,25 @@ protected:
 
 public:
     auto openSocket() -> int {
+        auto r = raiseCapNetRaw();
+        if (not r)
+            throw std::runtime_error{r.error()};
+
         int s = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
 
         if (s == -1) {
             if (errno == EPERM)
                 raise<std::runtime_error>(
-                        "permission to receive multicast on "
-                        "all UDP ports denied; try running under sudo or "
-                        "granting the binary the CAP_NET_RAW capability");
+                        "permission to receive multicast on all UDP ports denied "
+                        "even though the process now has the effective CAP_NET_RAW; "
+                        "as a last resort try running under sudo");
             else raise<std::runtime_error>(
-                    "unable to open raw IP socket: {}", sysError());
+                    "unable to open raw IP socket: {}", SysError{});
         }
+
+        r = dropAllCaps();
+        if (not r)
+            throw std::runtime_error{r.error()};
 
         return s;
     }
@@ -42,9 +135,9 @@ public:
         PacketView pv{pktInfo.receivedData, pktInfo.receivedSize};
 
         IPv4HdrView ipHdr;
-        if (not pv.take(IPv4HdrView::HdrSize, [&ipHdr] (auto const* p) {
+        if (PIMC_UNLIKELY(not pv.take(IPv4HdrView::HdrSize, [&ipHdr] (auto const* p) {
             ipHdr = p;
-        })) {
+        }))) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "recvmsg() returned size {} which is smaller than the minimum "
@@ -53,11 +146,11 @@ public:
             return PacketStatus::Filtered;
         }
 
-        if (ipHdr.daddr() != groupNl_) return PacketStatus::Filtered;
-        if (ipHdr.protocol() != UDPProto) return PacketStatus::Filtered;
+        if (PIMC_UNLIKELY(ipHdr.daddr() != groupNl_)) return PacketStatus::Filtered;
+        if (PIMC_UNLIKELY(ipHdr.protocol() != UDPProto)) return PacketStatus::Filtered;
 
         auto effIPHdrSize = ipHdr.headerSizeBytes();
-        if (effIPHdrSize < IPv4HdrView::HdrSize) {
+        if (PIMC_UNLIKELY(effIPHdrSize < IPv4HdrView::HdrSize)) {
             // This will really never happen
             oh_.warningTs(
                     pktInfo.timestamp,
@@ -67,7 +160,7 @@ public:
             return PacketStatus::AcceptedNoShow;
         }
 
-        if (not pv.skip(effIPHdrSize - IPv4HdrView::HdrSize)) {
+        if (PIMC_UNLIKELY(not pv.skip(effIPHdrSize - IPv4HdrView::HdrSize))) {
             // This can also not really happen...
             oh_.warningTs(
                     pktInfo.timestamp,
@@ -78,9 +171,9 @@ public:
         }
 
         UDPHdrView udpHdr;
-        if (not pv.take(UDPHdrView::HdrSize, [&udpHdr] (auto const* p) {
+        if (PIMC_UNLIKELY(not pv.take(UDPHdrView::HdrSize, [&udpHdr] (auto const* p) {
             udpHdr = p;
-        })) {
+        }))) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "recvmsg() returned size {} which is insufficient for IPv4 "
@@ -95,7 +188,7 @@ public:
         pktInfo.dport = ntohs(udpHdr.dport());
 
         auto ipTTL = static_cast<int16_t>(ipHdr.ttl());
-        if (pktInfo.ttl != ipTTL) {
+        if (PIMC_UNLIKELY(pktInfo.ttl != ipTTL)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} TTL received from recvmsg() is {} whereas "
@@ -108,7 +201,7 @@ public:
         auto remSize = pv.remaining();
         uint16_t udpSize = ntohs(udpHdr.len());
 
-        if (udpSize < UDPHdrView::HdrSize) {
+        if (PIMC_UNLIKELY(udpSize < UDPHdrView::HdrSize)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} UDP size {} is less than the UDP header size {}",
@@ -121,7 +214,7 @@ public:
         // from the original value
         udpSize -= static_cast<uint16_t>(UDPHdrView::HdrSize);
 
-        if (udpSize > remSize) {
+        if (PIMC_UNLIKELY(udpSize > remSize)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} UDP size {} is larger than the "
@@ -131,7 +224,7 @@ public:
             return PacketStatus::AcceptedNoShow;
         }
 
-        if (udpSize < remSize) {
+        if (PIMC_UNLIKELY(udpSize < remSize)) {
             oh_.warningTs(
                     pktInfo.timestamp,
                     "in packet {}:{}->{}:{} UDP size {} is less than the "

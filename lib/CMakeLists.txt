@@ -7,7 +7,6 @@ target_sources(
     PimcLib
     PRIVATE
         net/IPv4IntfTable.cpp
-        system/SysError.cpp
     PUBLIC
         core/CompilerUtils.hpp
         core/TypeUtils.hpp
@@ -20,8 +19,11 @@ target_sources(
         net/IPv4Prefix.hpp
         net/IPv4Address.hpp
         net/IPv4IntfTable.hpp
+        formatters/detect_strerror_r.hpp
         formatters/IPv4Formatters.hpp
+        formatters/SysErrorFormatter.hpp
         formatters/IPv4Ostream.hpp
+        formatters/SysErrorOstream.hpp
         parsers/IPv4Parsers.hpp
         parsers/NumberParsers.hpp
         dissect/PacketView.hpp
@@ -57,6 +59,7 @@ target_sources(
             core/tests/Failure-Tests.cpp
             core/tests/ResultConstexpr-Tests.cpp
             core/tests/Result-Tests.cpp
+            core/tests/Result-AdHoc-Tests.cpp
             core/tests/Deferred-Tests.cpp
             net/tests/IPv4Net-tests.cpp
             parsers/tests/IPv4Parser-tests.cpp

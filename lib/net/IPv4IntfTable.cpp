@@ -7,6 +7,7 @@
 #include "pimc/core/Deferred.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/text/MemoryBuffer.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
 
 #include "IPv4IntfTable.hpp"
 
@@ -18,7 +19,7 @@ Result<IPv4IntfTable, std::string> IPv4IntfTable::newTable() {
     if (getifaddrs(&ifaddrList) == -1) {
         auto& buf = getMemoryBuffer();
         auto bi = std::back_inserter(buf);
-        fmt::format_to(bi, "getifaddrs() failed: {}", sysError());
+        fmt::format_to(bi, "getifaddrs() failed: {}", SysError{});
         return fail(fmt::to_string(buf));
     }
 
