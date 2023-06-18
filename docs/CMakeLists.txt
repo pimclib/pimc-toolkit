@@ -1,23 +1,21 @@
 include(${PROJECT_SOURCE_DIR}/cmake/DoxygenSphinxSupport.cmake)
 
-SphinxDoxyLibs(
-        docs
+SphinxDoxyLib(
+        api-docs
         PimcLib
-        ${PROJECT_SOURCE_DIR}/docs/source/apps.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/index.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/apps-sources/mclst.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/time.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/formatters.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/system.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/net.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/dissect.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/unix.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/core.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/core-api/Deferred.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/core-api/Result.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/core-api/TypeUtils.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/core-api/CompilerUtils.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/text.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api-sources/parsers.rst
-        ${PROJECT_SOURCE_DIR}/docs/source/api.rst
+        api-source
+        ${PROJECT_SOURCE_DIR}/docs/api-source/index.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/time.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/formatters.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/system.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/net.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/dissect.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/unix.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/core.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/core-api/Deferred.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/core-api/Result.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/core-api/TypeUtils.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/core-api/CompilerUtils.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/text.rst
+        ${PROJECT_SOURCE_DIR}/docs/api-source/api-sources/parsers.rst
 )
