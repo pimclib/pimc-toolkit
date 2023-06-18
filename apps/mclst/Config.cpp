@@ -17,6 +17,7 @@
 #include "pimc/text/NumberLengths.hpp"
 #include "pimc/text/SCLine.hpp"
 #include "pimc/unix/GetOptLong.hpp"
+#include "pimc/version.hpp"
 
 #include "Config.hpp"
 
@@ -37,6 +38,7 @@ enum class Options: uint32_t {
     Count = 7,
     NoColors = 8,
     ShowConfig = 9,
+    ShowVersion = 10,
 };
 
 char const* legend =
@@ -182,7 +184,7 @@ void showIPv4IntfTable(OI oi, IPv4IntfTable const& intfTable, unsigned indent) {
 
 Config Config::fromArgs(int argc, char** argv) {
     auto args = GetOptLong::with(legend)
-            .required(
+            .optional(
                     OID(Interface), 'i', "interface", "Interface",
                     "The host interface on which to receive/send multicast. The "
                     "interface can be specified by name, e.g. eth0, or by its "
@@ -220,15 +222,26 @@ Config Config::fromArgs(int argc, char** argv) {
                   "Do not use colored output")
             .flag(OID(ShowConfig), GetOptLong::LongOnly, "show-config",
                   "Show config and exit")
+            .flag(OID(ShowVersion), 'v', "version",
+                  "show version and exit")
             .args(argc, argv);
 
+    if (args.flag(OID(ShowVersion))) {
+        fmt::print("mclst\n{}", version());
+        exit(0);
+    }
+
     auto const& gp = args.positional();
+    auto const& intf = args.values(OID(Interface));
 
     if (gp.empty())
         raise<CommandLineError>("no group and destination port specified");
 
     if (gp.size() > 1)
         raise<CommandLineError>("too many positional parameters");
+
+    if (intf.empty())
+        raise<CommandLineError>("interface is required");
 
     net::IPv4Address group;
     uint16_t dport;
@@ -242,7 +255,7 @@ Config Config::fromArgs(int argc, char** argv) {
 
     auto intfTable = std::move(rIntfTable).value();
 
-    auto const& intfName = args.values(OID(Interface))[0];
+    auto const& intfName = intf[0];
     auto intfInfo = intfTable.byName(intfName);
     if (not intfInfo) {
         auto& buf = getMemoryBuffer();
