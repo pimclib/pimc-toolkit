@@ -18,7 +18,7 @@ if (GIT)
 		OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     configure_file(
-			${CMAKE_SOURCE_DIR}/cmake/version.h.in
+			${INPUT_TEMPLATE_FILE}
 			${OUTPUT_HEADER_FILE}
     )
 else()
