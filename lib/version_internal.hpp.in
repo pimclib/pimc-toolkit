@@ -1,6 +1,6 @@
 namespace pimc {
 
-char const* version{"${GIT_VER_TAG}"};
+char const* taggedVersion{"${GIT_VER_TAG}"};
 char const* gitCommitId{"${GIT_HASH}"};
 char const* gitBranch{"${GIT_BRANCH}"};
   
