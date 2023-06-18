@@ -1,31 +1,34 @@
-===============================================
-Multicast Listener/Sender Tool :program:`mclst`
-===============================================
+============================================
+ mclst - multicast listener and sender tool
+============================================
 
-Overview
+
+SYNOPSIS
 ========
 
-:program:`mclst` is a network centric multicast listener and sender tool.
-It has two distinct modes of operation as follows:
+mclst -i intf [receiver options] group[:port]
+mclst -i intf -s [sender options] group:port
+
+DESCRIPTION
+===========
+
+The mclst utility is a network centric multicast listener and sender tool.
+It has two distinct modes of operation:
 
   #. The receiver mode allows subscribing to multicast and showing the
      received traffic
   #. The sender mode allows Sending test multicast traffic to a desired
      IPv4 multicast group and UDP port
 
-.. _overview-subscribing:
      
 Subscribing to Multicast
 ------------------------
 
-.. _receiver-modes:
-
-:program:`mclst` supports two ways to subscribe to multicast. The normal way
+The mclst utility supports two ways to subscribe to multicast. The normal way
 requires the user to specify the desired group and UDP port. The alternative
-way allows the user to specify only the group, in which case :program:`mclst`
-will show multicast traffic destined for the group and any UDP ports. The latter
-*portless* mode, however, requires the ``CAP_NET_RAW`` capability to be added
-to the permitted capabilities set for :program:`mclst`.
+way lets the user to specify only the group, in which case mclst will show
+multicast traffic destined for the group and any UDP ports. The latter is
+referred to as the *portless* mode.
 
 .. note::
    The *portless* mode exploits the fact that the network routers and switches
@@ -37,187 +40,69 @@ to the permitted capabilities set for :program:`mclst`.
    received multicast traffic and it will deliver only the traffic that matches
    the UDP port to which the subscription was made.
 
-   To overcome the automatic filtering :program:`mclst` uses a raw IP UDP socket
-   which allows it to receive all UDP packets that the host receives (not only
-   the multicast packets). By default, programs cannot create raw sockets. There
-   are two ways to overcome this limitation. The simplest one is to run
-   :program:`mclst` under :program:`sudo`. But a better way is to grant the
-   :program:`mclst` binary the ``CAP_NET_RAW`` capability by adding it to the
-   permitted set. :program:`mclst` is capability aware, which means it raises
-   the capability only to create the raw socket, but once this is done it
-   immediately drops it.
+   To overcome the automatic filtering mclst uses a raw IP UDP socket which
+   allows it to receive all UDP packets that the host receives (not only
+   the multicast packets). By default, programs cannot create raw sockets.
 
-   The following command should be used to add ``CAP_NET_RAW`` to the
-   permitted capabilities set of :program:`mclst`:
-
-   .. code-block:: bash
-
-      $ sudo setcap cap_net_raw=p mclst
-   
 .. warning::
    The *portless* mode does not work in MacOS.
 
-When receiving traffic :program:`mclst` will show the following information:
+When receiving traffic mclst will show the following information:
 
   * The local host timestamp of when the packet was received. This is as accurate
-    as the `select()`_ / sockets API allow.
+    as the ``select()``/sockets API allow.
   * The actual interface on which the packet was received. In the case of multipe
     subscriptions to the same multicast group on the same host on different
     interfaces, regarless of where the packet is received, all processes which
     subscribed to the group will receive the packet. This may cause confusion
     as to where the traffic is arriving. It can also cause duplicate packets to
     be received by the subscribing processes if the same multicast group is
-    available on multiple host's interfaces. The ability of :program:`mclst`
-    to show the interface may come very handy in troubleshooting of such situations.
+    available on multiple host's interfaces. The ability of mclst to show the
+    interface may come very handy in troubleshooting of such situations.
   * The source IP address and source UDP port as well as the destination multicast
     group and destination UDP port.
   * The TTL of the packet as recveived by the host.
 
-If addition, if a multicast packet was sent by :program:`mclst` running in the
-sender mode, the receiving :program:`mclst` process will detect it by looking at
-the UDP payload and it will show the remote host's sequence number, remote host's
-time and remote host's name. The packets sent by :program:`mclst` are called
-*mclst beacon* packets.
+In addition, if a multicast packet was sent by mclst running in the sender mode,
+the receiving mclst process will detect it by looking at the UDP payload and it
+will show the remote host's sequence number, time and hostname.
 
-There is also an option to show the UDP payload using the splict Hex/ASCII mode
-similar to how :program:`tcpdump` shows the contents of the packets when used
-with the ``-XX`` option.
+The mclst utility` also supports source specific multicast subscriptions. The
+caveat, however, is that it requires IGMPv3. This may or may not be enabled on
+the host, and mclst doesn't have any control over it. If the IGMPv3 is enabled,
+mclst process will send an IGMPv3 source specific join. Otherwise, it will fall
+back to the usual any-source IGMPv2 join and the kernel will filter the traffic
+by the requested source before delivering the packets to mclst.
 
-.. _source-specific-joins:
-
-:program:`mclst` also supports source specific multicast subscriptions. The caveat,
-however, is that it requires IGMPv3. This may or may not be enabled on the host,
-and :program:`mclst` doesn't have any control over it. If the IGMPv3 is enabled,
-:program:`mclst` process will send an IGMPv3 source specific join request. Otherwise,
-it will fall back to the usual any-source IGMPv2 join request and the host will
-filter the traffic by the requested source before delivering the packets to
-:program:`mclst`.
-
-By default :program:`mclst` receives packets indefinitely. To exit :program:`mclst`
-the user has to press :kbd:`Ctrl-C`. Alternatively there is an option to force
-:program:`mclst` exit automatically after receiving a desired number of packets.
-Once :program:`mclst` exits it shows a summary of the statistics of the received
-multicast traffic per each source/source UDP port/destination UDP port combination.
-
-.. warning::
-   If firewall is active, it may prevent :program:`mclst` from receiving multicast.
-   For systems with :program:`firewall` the following command will enable
-   receiving multicast:
-
-   .. code-block:: bash
-
-      sudo firewall-cmd \
-             --add-rich-rule='rule family=ipv4 destination address="224.0.0.0/4" accept' \
-             --permanent
-      sudo firewall-cmd --reload
+By default mclst receives packets indefinitely. To exit mclst the user has to
+interrupt mclst, for example by pressing Ctrl-C. Alternatively there is an option
+to force mclst exit automatically after receiving a desired number of packets.
+Once mclst exits it shows a summary of the statistics of the received multicast
+traffic per each source/source UDP port/destination UDP port combination.
       
 Sending multicast
 -----------------
 
-:program:`mclst` sends multicast packets to the specified destination multicast
+The mclst utility sends multicast packets to the specified destination multicast
 group and UDP port at the rate of one packet per second.
 
-The contents of the traffic sent by :program:`mclst` is such that the receiving
-:program:`mclst` recognizes it and shows additional information from the received
-contents, such as the sending host's name, the sequence number of the packet,
-and the delta between the timestamp in the received packet and the time when
-the packet was received locally (the accuracy of the delta depends on the quality
-of the clock synchronization amongst the hosts running :program:`mclst`).
-
-:program:`mclst` provides a way to specify the TTL of the generated traffic. By
+There is a sender specific option to set the TTL of the generated traffic. By
 default, however, it sends the traffic with the TTL of 255.
 
-Running :program:`mclst`
-========================
-
-Receiver Mode
--------------
-
-To run :program:`mclst` in the receiver mode the minimal command line form is as
-follows:
-
-.. code-block:: text
-
-   mclst -i <interface> <target>
-
-The :code:`-i <interface>` option specifies the host's interface where a multicast
-IGMP join will be ussued.
-
-The :code:`<target>` specifies the multicast group to which :program:`mclst` should
-subsribe.
-
-In the normal receiver mode, the :code:`<target>` is a multicast group followed by
-:code:`:` followed by a UDP port number, e.g. 239.1.2.3:12345.
-
-For example:
-
-.. code-block:: text
-		
-   mclst -i enp0s5 239.1.2.3:12345
-
-In the portless receiver mode, the :code:`<target>` is just the multicast group.
-(See `receiver modes <receiver-modes>`_).
-
-For example:
-
-.. code-block:: text
-		
-   sudo mclst -i enp0s5 239.1.2.3
-
-Sender Mode
------------
-
-To run :program:`mclst` in the sender mode the minimal command line form is as
-follows:
-
-.. code-block:: text
-
-   mclst -i <interface> -s <group>:<UDP-port>
-
-For example:
-
-.. code-block:: text
-
-   mclst -i enp0s5 -s 239.1.2.3:12345
-
+Similarly to the receiver mode, the mclst utility in the sender mode send
+packets indefinitely. The same option can be used to force mclst terminate
+after sending the requested number of packets.
 
 Command Line Options
 ====================
+
+General Options
+---------------
 
 .. option:: -i <interface>, --interface <interface>
 
 	    This option specifies the interface on which to subscribe to multicast
 	    traffic, or from which to send traffic. This option is mandatory.
-
-.. option:: -S <IP-address>, --source <IP-address>
-
-	    With this option :program:`mclst` will attempt to perform a source
-	    specific join using IGMPv3, where the source is the IP address specified
-	    with this option. (See the caveats in
-	    :ref:`source specific joins <source-specific-joins>`)
-
-.. option:: -t <seconds>, --timeout <seconds>
-
-	    This option allows specifyin the timeout which will be reported by
-	    :program:`mclst` if no traffic is received after the specified number
-	    of seconds elapses.
-
-.. option:: -X, --hex-ascii
-
-	    This flag causes :program:`mclst` to show the UDP payload using the
-	    split Hex/ASCII output similar to ``tcpdimp -XX``.
-
-.. option:: -s, --sender
-
-	    This flag should be used to run :program:`mclst` in the sender mode. The
-	    sender may not be used in the *portless* mode.
-
-.. option:: --ttl <TTL>
-
-	    This option allows specifying a desired TTL for the mclst beacon traffic.
-	    If omitted the TTL is 255. This option accepts values in  range 1-255.
-	    This option is only available when running :program:`mclst` in the sender
-	    mode.
 
 .. option:: -c <number-of-packets>, --count <number-of-packets>
 
@@ -237,24 +122,42 @@ Command Line Options
 	    This flag causes :program:`mclst` to check the command line parameters,
 	    display its iterpretation of them and exit.
 
-	    For example:
 
-	    .. code-block:: bash
+Receiver Mode Options
+---------------------
+	    
+.. option:: -S <IP-address>, --source <IP-address>
 
-	       $ ./mclst -s -i wlan0 239.1.1.1:2222 --show-config
-               Send to 239.1.1.1:2222, 1pps, TTL 255
-               Interface: wlan0 (192.168.0.51)
-               Colors: YES
-               
-               Host IPv4 interfaces:
-               
-                 Index Interface       Address
-                 ===== =============== ============
-                 1     lo              127.0.0.1
-                 3     wlan0           192.168.0.51
-                 4     docker0         172.17.0.1
-                 56    br-4064c9b52f9f 172.18.0.1
-                 107   br-62447bbeaa67 172.19.0.1
+	    With this option :program:`mclst` will attempt to perform a source
+	    specific join using IGMPv3, where the source is the IP address specified
+	    with this option.
+
+.. option:: -t <seconds>, --timeout <seconds>
+
+	    This option allows specifyin the timeout which will be reported by
+	    :program:`mclst` if no traffic is received after the specified number
+	    of seconds elapses.
+
+.. option:: -X, --hex-ascii
+
+	    This flag causes :program:`mclst` to show the UDP payload using the
+	    split Hex/ASCII output similar to ``tcpdimp -XX``.
+
+Sender Mode Options
+-------------------
+	    
+.. option:: -s, --sender
+
+	    This flag should be used to run :program:`mclst` in the sender mode. The
+	    sender may not be used in the *portless* mode.
+
+.. option:: --ttl <TTL>
+
+	    This option allows specifying a desired TTL for the mclst beacon traffic.
+	    If omitted the TTL is 255. This option accepts values in  range 1-255.
+	    This option is only available when running :program:`mclst` in the sender
+	    mode.
+
                 
 Examples
 ========
@@ -396,6 +299,22 @@ Sender
    ^C
    Sent 6 packets
    
+Viewing Configuration
+---------------------
 
-.. _capabilities: https://man7.org/linux/man-pages/man7/capabilities.7.html
-.. _select(): https://man7.org/linux/man-pages/man2/select.2.html
+.. code-block:: bash
+
+   $ ./mclst -s -i wlan0 239.1.1.1:2222 --show-config
+   Send to 239.1.1.1:2222, 1pps, TTL 255
+   Interface: wlan0 (192.168.0.51)
+   Colors: YES
+   
+   Host IPv4 interfaces:
+   
+     Index Interface       Address
+     ===== =============== ============
+     1     lo              127.0.0.1
+     3     wlan0           192.168.0.51
+     4     docker0         172.17.0.1
+     56    br-4064c9b52f9f 172.18.0.1
+     107   br-62447bbeaa67 172.19.0.1

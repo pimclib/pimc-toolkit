@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'mclst'
-copyright = '2023, Kesha Rudenko'
+# copyright = '2023, Kesha Rudenko'
 author = 'Kesha Rudenko'
 
 
