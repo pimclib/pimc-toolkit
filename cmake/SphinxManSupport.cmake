@@ -12,21 +12,28 @@
 # on all of the resulting man pages.
 #
 function(SphinxManPages TargetName SourceSubdir)
-    set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/${SourceSubdir})
-    set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/${TargetName}/sphinx)
-    set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
+    list(LENGTH ARGN ArgnLen)
+    if (${ArgnLen} EQUAL 0)
+        message(FATAL_ERROR "No man sources given")
+    endif()
 
-    add_custom_command(
-            OUTPUT ${SPHINX_INDEX_FILE}
-            COMMAND ${SPHINX_EXECUTABLE} -b html
-            ${BREATHE_PROJECT_XML_DEFS} ${SPHINX_SOURCE} ${SPHINX_BUILD}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            DEPENDS
-            ${ARGN}
-            ${DOXYGEN_INDEX_LIST}
-            MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
-            COMMENT "Generating documentation with Sphinx"
-    )
+    set(SPHINX_MAN_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${SourceSubdir}")
+    set(SPHINX_MAN_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/${TargetName}")
+    unset(SPHINX_MAN_PAGES)
 
-    add_custom_target(${TargetName} ALL DEPENDS ${SPHINX_INDEX_FILE})
+    foreach(ManSubdir IN LISTS ARGN)
+        set(SPHINX_MAN_SOURCE "${SPHINX_MAN_SOURCE_DIR}/${ManSubdir}")
+        set(SPHINX_MAN_PAGE "${SPHINX_MAN_BUILD_DIR}/${ManSubdir}.1")
+        add_custom_command(
+                OUTPUT ${SPHINX_MAN_PAGE}
+                COMMAND ${SPHINX_EXECUTABLE} -b man
+                ${SPHINX_MAN_SOURCE} ${SPHINX_MAN_BUILD_DIR}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                MAIN_DEPENDENCY "${SPHINX_MAN_SOURCE}/index.rst"
+                COMMENT "Generating man page for ${ManSubdir}"
+        )
+        list(APPEND SPHINX_MAN_PAGES ${SPHINX_MAN_PAGE})
+    endforeach()
+
+    add_custom_target(${TargetName} ALL DEPENDS ${SPHINX_MAN_PAGES})
 endfunction()

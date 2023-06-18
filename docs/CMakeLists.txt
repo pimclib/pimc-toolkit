@@ -1,4 +1,11 @@
+include(${PROJECT_SOURCE_DIR}/cmake/SphinxManSupport.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/DoxygenSphinxSupport.cmake)
+
+SphinxManPages(
+        man-pages
+        man-source
+        mclst
+)
 
 SphinxDoxyLib(
         api-docs
