@@ -2,11 +2,11 @@
  mclst - multicast listener and sender tool
 ============================================
 
-
 SYNOPSIS
 ========
 
 mclst -i intf [receiver options] group[:port]
+
 mclst -i intf -s [sender options] group:port
 
 DESCRIPTION
@@ -17,7 +17,7 @@ It has two distinct modes of operation:
 
   #. The receiver mode allows subscribing to multicast and showing the
      received traffic
-  #. The sender mode allows Sending test multicast traffic to a desired
+  #. The sender mode allows sending test multicast traffic to a desired
      IPv4 multicast group and UDP port
 
      
@@ -42,41 +42,44 @@ referred to as the *portless* mode.
 
    To overcome the automatic filtering mclst uses a raw IP UDP socket which
    allows it to receive all UDP packets that the host receives (not only
-   the multicast packets). By default, programs cannot create raw sockets.
+   the multicast packets).
 
 .. warning::
-   The *portless* mode does not work in MacOS.
+   The *portless* mode does not work in macOS.
 
 When receiving traffic mclst will show the following information:
 
-  * The local host timestamp of when the packet was received. This is as accurate
-    as the ``select()``/sockets API allow.
-  * The actual interface on which the packet was received. In the case of multipe
+  * The host time when the packet was received. This is as accurate as the
+    ``select()``/sockets API allow.
+  * The host interface on which the packet was received. In the case of multipe
     subscriptions to the same multicast group on the same host on different
     interfaces, regarless of where the packet is received, all processes which
     subscribed to the group will receive the packet. This may cause confusion
     as to where the traffic is arriving. It can also cause duplicate packets to
     be received by the subscribing processes if the same multicast group is
-    available on multiple host's interfaces. The ability of mclst to show the
-    interface may come very handy in troubleshooting of such situations.
+    available and subscribed to on multiple interfaces. The ability of mclst to
+    show the interfaces on which the packets are received is useful in
+    troubleshooting of such situations.
   * The source IP address and source UDP port as well as the destination multicast
     group and destination UDP port.
   * The TTL of the packet as recveived by the host.
 
 In addition, if a multicast packet was sent by mclst running in the sender mode,
-the receiving mclst process will detect it by looking at the UDP payload and it
-will show the remote host's sequence number, time and hostname.
+the receiving mclst process will detect it and will show the remote host's
+sequence number, time and hostname, as well as the delta between the time the
+packet was sent and the time it was received (the accuracy of the delta depends
+on the precision of time synchronization on the hosts where mclst is run).
 
-The mclst utility` also supports source specific multicast subscriptions. The
+The mclst utility also supports source specific multicast subscriptions. The
 caveat, however, is that it requires IGMPv3. This may or may not be enabled on
-the host, and mclst doesn't have any control over it. If the IGMPv3 is enabled,
+the host, and mclst doesn't have any control over it. If IGMPv3 is enabled,
 mclst process will send an IGMPv3 source specific join. Otherwise, it will fall
-back to the usual any-source IGMPv2 join and the kernel will filter the traffic
+back to the any-source IGMPv2 join and the kernel will filter the traffic
 by the requested source before delivering the packets to mclst.
 
-By default mclst receives packets indefinitely. To exit mclst the user has to
-interrupt mclst, for example by pressing Ctrl-C. Alternatively there is an option
-to force mclst exit automatically after receiving a desired number of packets.
+By default mclst receives packets indefinitely. To force mclst to exit it should
+be interrupted, for example by pressing Ctrl-C. Alternatively there is an option
+to force mclst to exit automatically after receiving a desired number of packets.
 Once mclst exits it shows a summary of the statistics of the received multicast
 traffic per each source/source UDP port/destination UDP port combination.
       
@@ -89,8 +92,8 @@ group and UDP port at the rate of one packet per second.
 There is a sender specific option to set the TTL of the generated traffic. By
 default, however, it sends the traffic with the TTL of 255.
 
-Similarly to the receiver mode, the mclst utility in the sender mode send
-packets indefinitely. The same option can be used to force mclst terminate
+Similarly to the receiver mode, the mclst utility in the sender mode sends
+packets indefinitely. The same option can be used to force mclst to terminate
 after sending the requested number of packets.
 
 Command Line Options
@@ -106,58 +109,54 @@ General Options
 
 .. option:: -c <number-of-packets>, --count <number-of-packets>
 
-	    This option causes :program:`mclst` in the receiver mode to exit after
-	    receiving the specified number of packets. Likewise, in the sender mode
-	    :program:`mclst` will send the specified number of packets and then exit.
+	    This option causes mclst in the receiver mode to exit after receiving
+	    the specified number of packets. Likewise, in the sender mode mclst
+	    will send the specified number of packets and then exit.
 
 .. option:: --no-colors
 
-	    By default :program:`mclst` uses ANSI terminal colors to show the
-	    received traffic. This flag allows turning off the colored output. If,
-	    however, the standard output or stanndard error are redirected to a
-	    file, :program:`mclst` will not use colors.
+	    By default mclst uses ANSI terminal colors to show the received traffic.
+	    This flag allows turning off the colored output. If, however, the standard
+	    output or stanndard error is redirected to a file, mclst will not use colors.
 
 .. option:: --show-config
 
-	    This flag causes :program:`mclst` to check the command line parameters,
-	    display its iterpretation of them and exit.
-
+	    This flag causes mclst to check the command line parameters, show their
+	    interpretation and exit. It will also show a table of the IPv4 interfaces.
 
 Receiver Mode Options
 ---------------------
 	    
 .. option:: -S <IP-address>, --source <IP-address>
 
-	    With this option :program:`mclst` will attempt to perform a source
-	    specific join using IGMPv3, where the source is the IP address specified
-	    with this option.
+	    With this option mclst will attempt to perform a source specific join
+	    using IGMPv3, where the source is the IP address specified with this
+	    option.
 
 .. option:: -t <seconds>, --timeout <seconds>
 
-	    This option allows specifyin the timeout which will be reported by
-	    :program:`mclst` if no traffic is received after the specified number
-	    of seconds elapses.
+	    This option allows specifying the timeout which will be reported by
+	    mclst if no traffic is received after the specified number of seconds
+	    elapses.
 
 .. option:: -X, --hex-ascii
 
-	    This flag causes :program:`mclst` to show the UDP payload using the
-	    split Hex/ASCII output similar to ``tcpdimp -XX``.
+	    This flag causes mclst to show the UDP payload of the received packers
+	    using a split Hex/ASCII view similar to ``tcpdimp -XX``.
 
 Sender Mode Options
 -------------------
 	    
 .. option:: -s, --sender
 
-	    This flag should be used to run :program:`mclst` in the sender mode. The
-	    sender may not be used in the *portless* mode.
+	    Run mclst in the sender mode. In the sender mode the target must always
+	    include the group and the destination UDP port.
 
 .. option:: --ttl <TTL>
 
-	    This option allows specifying a desired TTL for the mclst beacon traffic.
-	    If omitted the TTL is 255. This option accepts values in  range 1-255.
-	    This option is only available when running :program:`mclst` in the sender
-	    mode.
-
+	    This option allows specifying a desired TTL for the traffic mclst
+	    generates. If omitted the TTL is 255. This option accepts values in
+	    range 1-255.
                 
 Examples
 ========
@@ -299,7 +298,7 @@ Sender
    ^C
    Sent 6 packets
    
-Viewing Configuration
+Showing Configuration
 ---------------------
 
 .. code-block:: bash

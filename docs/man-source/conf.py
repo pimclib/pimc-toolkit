@@ -17,10 +17,17 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'mclst'
+project = "PIMC Toolkit"
 # copyright = '2023, Kesha Rudenko'
-author = 'Kesha Rudenko'
+#author = 'Kesha Rudenko'
 
+man_pages = [(
+    "mclst",
+    "mclst",
+    "multicast listener and sender tool",
+    "Kesha Rudenko",
+    "1"
+)]
 
 # -- General configuration ---------------------------------------------------
 

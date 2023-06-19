@@ -42,7 +42,7 @@ class FlowStats final {
         // 20 bytes IP header
         // 8 bytes UDP header
         // ... UDP payload size
-        // 4 bytes FSC
+        // 4 bytes FCS
         return 12u + 20u + 8u + udpBytes + 4u;
     }
 public:

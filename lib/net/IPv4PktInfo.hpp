@@ -1,9 +1,5 @@
 #pragma once
 
-#include <netinet/in.h>
-
-#include "pimc/core/CompilerUtils.hpp"
-
 #ifdef __APPLE__
 #define IF_INDEX(v) (v)
 #endif
