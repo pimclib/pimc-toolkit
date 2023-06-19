@@ -131,6 +131,40 @@ struct PIMSMv2EncSrcAddr final {
 #error  "Please fix pimc/core/Endian.hpp"
 #endif
     uint8_t MaskLen;
+
+    static auto writeIPv4RP(void* m, net::IPv4Address rp) -> size_t {
+        detail::PktWriter pw{m};
+        auto* h = pw.next<PIMSMv2EncSrcAddr>();
+        h->Family = IPv4_FAMILY_NUMBER;
+        h->EncodingType = PIMSMv2_NATIVE_ENCODING;
+        h->R = 1u;
+        h->W = 1u;
+        h->S = 1u;
+        h->Reserved = 0;
+        h->MaskLen = 32;
+        auto* rpa = pw.next<uint32_t>();
+        *rpa = rp.to_nl();
+        return pw.offset();
+    }
+
+    static auto writeIPv4Src(void* m, net::IPv4Address src, bool rpt) {
+        detail::PktWriter pw{m};
+        auto* h = pw.next<PIMSMv2EncSrcAddr>();
+        h->Family = IPv4_FAMILY_NUMBER;
+        h->EncodingType = PIMSMv2_NATIVE_ENCODING;
+        h->R = rpt ? 1u : 0u;
+        h->W = 0u;
+        h->S = 1u;
+        h->Reserved = 0;
+        h->MaskLen = 32;
+        auto* srca = pw.next<uint32_t>();
+        *srca = src.to_nl();
+        return pw.offset();
+    }
 } __attribute__((packed, aligned(1)));
+
+static_assert(sizeof(PIMSMv2EncSrcAddr) == 4u);
+
+constexpr size_t PIMSMv2EncSrcAddrSize{8u};
 
 } // namespace pimc
