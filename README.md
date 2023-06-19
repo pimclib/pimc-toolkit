@@ -12,7 +12,7 @@ is used to build them.
 ### mclst
 
 **mclst** is a multicast listener/sender tool. It's documented in
-[mclst](docs/source/apps-sources/mclst.rst).
+[mclst](docs/man-source/mclst.rst).
 
 Some examples of running **mclst**.
 
