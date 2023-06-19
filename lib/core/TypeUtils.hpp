@@ -51,7 +51,7 @@ template <typename Unsigned>
 struct IsUInt: IsOneOf<Unsigned, uint8_t, uint16_t, uint32_t, uint64_t, unsigned> {};
 
 /*!
- * A metafunction which returns true if the specified type is one of the
+ * A meta-function which returns true if the specified type is one of the
  * unsigned integer types, false otherwise.
  *
  * @tparam Unsigned the type to check
@@ -69,7 +69,7 @@ template <typename Unsigned>
 concept UInt = IsUInt<Unsigned>::value;
 
 /*!
- * A metafunction which returns true if the specified type is one of the
+ * A meta-function which returns true if the specified type is one of the
  * signed integer types.
  *
  * @tparam Integer the type to check
@@ -78,7 +78,7 @@ template <typename Integer>
 struct IsSInt: IsOneOf<Integer, int8_t, int16_t, int32_t, int64_t, int> {};
 
 /*!
- * A metafunction which returns true if the specified type is one of the
+ * A meta-function which returns true if the specified type is one of the
  * signed integer types.
  *
  * @tparam Integer the type to check
@@ -114,8 +114,8 @@ concept AllTriviallyDestructible =
         (std::is_trivially_destructible_v<Ts> and ...);
 
 /*!
- * A concept that indicates that all types are copy constructible but at least
- * one is non-trivially copy constructible.
+ * A concept which indicates that all types are destructible but at least
+ * one is non-trivially destructible.
  *
  * @tparam Ts the types to check
  */
@@ -125,8 +125,7 @@ concept SomeNotTriviallyDestructible =
         ((not std::is_trivially_destructible_v<Ts>) or ...);
 
 /*!
- * A concept which indicates that at least one of the types is not copy
- * constructible.
+ * A concept which indicates that at least one of the types is not destructible.
  *
  * @tparam Ts the types to check
  */

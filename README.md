@@ -12,7 +12,7 @@ is used to build them.
 ### mclst
 
 **mclst** is a multicast listener/sender tool. It's documented in
-[mclst](docs/source/apps-sources/mclst.rst).
+[mclst](docs/man-source/mclst.rst).
 
 Some examples of running **mclst**.
 
@@ -130,13 +130,11 @@ The library and the apps can currently be built in Linux and macOS.
 The following are required to build PIMC toolkit:
 
  * C++20 compliant compiler and C++20 library which supports ranges. (e.g., g++ 11.2)
- * cmake version 3.23 or later
+ * cmake version 3.20 or later
  * For the documentation the following is required:
    * doxygen version 1.9.3 or later
    * Python 3.6 or later and the following packages
      * Sphinx version 5
-     * sphinx-rtd-theme 0.4.3 (but docutils should be downgraded to version 0.16
-       otherwise the bullets will not be shown in the generated html)
      * breathe version 4.34
 
 The other two prerequisites are [Google test]( https://github.com/google/googletest)
@@ -149,7 +147,7 @@ This is probably the most annoying part of the building process. Basically, unle
 documentation prerequisites are satisfied cmake won't succeed. Below is an example of
 how to install python prerequisites in a virtual environment followed by how to build
 **mclst** and the documentation. This assumes that the required C++ compiler is installed,
-that cmake is installed and at least version 3.23 and that doxygen is installed and at
+that cmake is installed and at least version 3.20 and that doxygen is installed and at
 least version 1.9.3. 
 
 The below commands were executed in Centos 8 with the preinstalled version of python.
@@ -170,18 +168,12 @@ $ pip install Sphinx sphinx-rtd-theme breathe
  ...
  <em>[output skipped]</em>
  ...
-$ pip list | grep docutils
-docutils (0.18.1)
-$ pip install --force-reinstall -v "docutils==0.16"
- ...
- <em>[output skipped]</em>
- ...
 </pre>
 
 At this point it should be possible to run cmake. Unless the required C++ compiler is the
 only one installed on the system, it is advisable to create a cmake toolchain file with
 locations of the C++ and C compilers. The example below shows how to run cmake with the
-supplied [G++ 11.2 toolchain file]( cmake/linux-gcc11.2-toolchain.cmake).
+supplied [g++ 11.2 toolchain file]( cmake/linux-gcc11.2-toolchain.cmake).
 
 <pre>
 $ cmake \
@@ -203,14 +195,5 @@ $ make mclst
 
 The binary will be located in the subdirectory `bin`.
 
-To build the documentation `make docs` should be issued. This will produce
-some nasty warnings resulting from doxygen failing to handle some doxygen markup
-in some C++ header files. The resulting documentation will mostly be ok, with some
-minor glitches. The resulting documentation is located in `docs/docs/sphinx`.
-
-<pre>
-$ make docs
- ...
- <em>[lots of output with some nasty warnings]</em>
- ...
-</pre>
+To build the man pages `make man-pages` should be issued. The resulting man pages
+are placed in `docs/man-pages`.
