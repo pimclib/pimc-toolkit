@@ -133,8 +133,8 @@ General Options
 .. option:: -i <interface>, --interface <interface>
 
 	    Set the multicast interface, that is the interface on  which to
-	    subscribe to multicast traffic, or from which to send traffic.
-	    This option is mandatory.
+	    subscribe to multicast traffic, or from which to send multicast
+	    traffic. This option is mandatory.
 
 .. option:: -c <number-of-packets>, --count <number-of-packets>
 
@@ -148,7 +148,7 @@ General Options
 .. option:: --show-config
 
 	    Check the command line parameters, show their interpretation and
-	    a table of the IPv4 interfaces and exist.
+	    a table of the IPv4 interfaces and exit.
 
 .. option:: -h, --help, -v, --version
 
