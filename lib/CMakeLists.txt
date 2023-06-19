@@ -41,6 +41,7 @@ target_sources(
         net/IPv4Prefix.hpp
         net/IPv4Address.hpp
         net/IPv4IntfTable.hpp
+        net/PIMProto.hpp
         formatters/detect_strerror_r.hpp
         formatters/IPv4Formatters.hpp
         formatters/SysErrorFormatter.hpp
