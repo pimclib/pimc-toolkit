@@ -61,7 +61,9 @@ auto parseGroupPort(
         auto portsv = sv.substr(cpos+1);
         auto dport = parseDecimalUInt16(portsv);
         if (not dport)
-            raise<CommandLineError>("invalid destination port '{}'", portsv);
+            raise<CommandLineError>("invalid destination UDP port '{}'", portsv);
+        if (dport == 0u)
+            raise<CommandLineError>("destination UDP port may not be 0");
 
         return std::make_tuple(*grp, *dport, false);
     }

@@ -25,24 +25,24 @@ Subscribing to Multicast
 ------------------------
 
 The mclst utility supports two ways to subscribe to multicast. The normal way
-requires the user to specify the desired group and UDP port. The alternative
-way lets the user to specify only the group, in which case mclst will show
-multicast traffic destined for the group and any UDP ports. The latter is
-referred to as the *portless* mode.
+requires the user to specify the desired multicast group and UDP port. The
+alternative, *portless*, way lets the user to specify only the group, in which
+case mclst will show multicast traffic destined for the group and any UDP ports.
 
 .. note::
-   The *portless* mode exploits the fact that the network routers and switches
-   do not use UDP ports for forwarding multicast traffic to the subscribers.
-   This means that if some sources send traffic to the same group but to
-   different destination UDP ports, all packets destined for this group will
-   be received by any host subscribing to the group, regardless of the
-   destination port. The sockets API on the receiving host will filter the
+   The portless operation exploits the fact that the network routers and switches
+   do not use UDP ports for forwarding multicast traffic to the subscribers. This
+   means that if some sources send traffic to the same group but to different
+   destination UDP ports, all packets destined for this group will be received by
+   any host subscribing to the group, regardless of the destination port in which
+   the host is interested. The sockets API on the receiving host will filter the
    received multicast traffic and it will deliver only the traffic that matches
    the UDP port to which the subscription was made.
 
    To overcome the automatic filtering mclst uses a raw IP UDP socket which
-   allows it to receive all UDP packets that the host receives (not only
-   the multicast packets).
+   allows it to receive all UDP packets that the host receives (not only the
+   multicast packets), and then it filters the traffic based on the multicast
+   group.
 
 .. warning::
    The *portless* mode does not work in macOS.
@@ -96,53 +96,81 @@ Similarly to the receiver mode, the mclst utility in the sender mode sends
 packets indefinitely. The same option can be used to force mclst to terminate
 after sending the requested number of packets.
 
-Command Line Options
-====================
+Command Line Options and Positional Arguments
+=============================================
 
+The mclst utility requires exactly one positional argument -- the multicast
+destination. In the receiver mode, the destination is either the multicast group
+address followed by a ':' followed by the UDP port number, or just the multicast
+group address. The latter results in the portless receiver.
+
+An example of the normal multicast subscription:
+
+.. code-block:: bash
+
+   $ mclst -i eth0 239.1.2.3:12345
+
+An example of the portless multicast subscription:
+
+.. code-block:: bash
+
+   $ mclst -i eth0 239.1.2.3
+
+In the sender mode, which is indicated by the command line flag ``-s``, the
+destination is always the multicast group followed by a ':' followed by the UDP
+port. For example:
+
+.. code-block:: bash
+
+   $ mclst -s -i eth0 239.1.2.3:12345
+
+.. note::
+   The destination UDP port must be in range 1-65535
+   
 General Options
 ---------------
 
 .. option:: -i <interface>, --interface <interface>
 
-	    This option specifies the interface on which to subscribe to multicast
-	    traffic, or from which to send traffic. This option is mandatory.
+	    Set the multicast interface, that is the interface on  which to
+	    subscribe to multicast traffic, or from which to send traffic.
+	    This option is mandatory.
 
 .. option:: -c <number-of-packets>, --count <number-of-packets>
 
-	    This option causes mclst in the receiver mode to exit after receiving
-	    the specified number of packets. Likewise, in the sender mode mclst
-	    will send the specified number of packets and then exit.
+	    Exit after receiving or sending the specified number of packets.
 
 .. option:: --no-colors
 
-	    By default mclst uses ANSI terminal colors to show the received traffic.
-	    This flag allows turning off the colored output. If, however, the standard
-	    output or stanndard error is redirected to a file, mclst will not use colors.
+	    Do not emit colored output. If either stdout or stderr is redirected
+	    to a file, the colored output is suppressed by default.
 
 .. option:: --show-config
 
-	    This flag causes mclst to check the command line parameters, show their
-	    interpretation and exit. It will also show a table of the IPv4 interfaces.
+	    Check the command line parameters, show their interpretation and
+	    a table of the IPv4 interfaces and exist.
+
+.. option:: -h, --help, -v, --version
+
+	    Display usage summary or pimc library version information.
 
 Receiver Mode Options
 ---------------------
 	    
 .. option:: -S <IP-address>, --source <IP-address>
 
-	    With this option mclst will attempt to perform a source specific join
-	    using IGMPv3, where the source is the IP address specified with this
-	    option.
+	    Perform a source specific join using IGMPv3, where the source is
+	    the IP address specified with this option.
 
 .. option:: -t <seconds>, --timeout <seconds>
 
-	    This option allows specifying the timeout which will be reported by
-	    mclst if no traffic is received after the specified number of seconds
-	    elapses.
+	    Set the timeout which will be reported by mclst if no traffic is
+	    received after the specified number of seconds elapses.
 
 .. option:: -X, --hex-ascii
 
-	    This flag causes mclst to show the UDP payload of the received packers
-	    using a split Hex/ASCII view similar to ``tcpdimp -XX``.
+	    Show the UDP payload of the received packers in a split Hex/ASCII
+	    view similar to the output of ``tcpdimp -XX``.
 
 Sender Mode Options
 -------------------
@@ -154,9 +182,8 @@ Sender Mode Options
 
 .. option:: --ttl <TTL>
 
-	    This option allows specifying a desired TTL for the traffic mclst
-	    generates. If omitted the TTL is 255. This option accepts values in
-	    range 1-255.
+	    Set TTL for the generated multicast traffic. If omitted the TTL is 255.
+	    This option accepts values in range 1-255.
                 
 Examples
 ========
