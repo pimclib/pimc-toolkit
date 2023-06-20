@@ -35,13 +35,10 @@ target_sources(
         core/Deferred.hpp
         core/Result.hpp
         core/Endian.hpp
-        net/IPv4HdrView.hpp
-        net/UDPHdrView.hpp
         net/IPv4PktInfo.hpp
         net/IPv4Prefix.hpp
         net/IPv4Address.hpp
         net/IPv4IntfTable.hpp
-        net/PIMProto.hpp
         formatters/detect_strerror_r.hpp
         formatters/IPv4Formatters.hpp
         formatters/SysErrorFormatter.hpp
@@ -49,7 +46,11 @@ target_sources(
         formatters/SysErrorOstream.hpp
         parsers/IPv4Parsers.hpp
         parsers/NumberParsers.hpp
-        dissect/PacketView.hpp
+        packets/PacketView.hpp
+        packets/IPv4HdrView.hpp
+        packets/UDPHdrView.hpp
+        packets/PIMSMv2.hpp
+        packets/PIMSMv2Utils.hpp
         system/Exceptions.hpp
         system/SysError.hpp
         text/MemoryBuffer.hpp

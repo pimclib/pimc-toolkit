@@ -10,8 +10,8 @@
 #include "pimc/core/Result.hpp"
 #include "pimc/system/SysError.hpp"
 
-#include "pimc/net/IPv4HdrView.hpp"
-#include "pimc/net/UDPHdrView.hpp"
+#include "pimc/packets/IPv4HdrView.hpp"
+#include "pimc/packets/UDPHdrView.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
 
 #ifdef WITH_LIBCAP

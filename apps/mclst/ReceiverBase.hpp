@@ -11,7 +11,7 @@
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/net/IPv4PktInfo.hpp"
-#include "pimc/dissect/PacketView.hpp"
+#include "pimc/packets/PacketView.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
 
 #include "MclstBeacon.hpp"
