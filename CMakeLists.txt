@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
 project(PIMC-Toolkit)
 
+if (APPLE)
+    set(DOXY_OS_DEF "__APPLE__")
+elseif(LINUX)
+    set(DOXY_OS_DEF "__linux__")
+else()
+    message(FATAL_ERROR "Unable to build for ${CMAKE_SYSTEM_NAME}")
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})

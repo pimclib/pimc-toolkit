@@ -9,7 +9,7 @@ data.
 Include file ``pimc/packets/PIMSMv2.hpp``
 =========================================
 
-.. doxygencstruct:: pimc::PIMSMv2Hdr
+.. doxygenstruct:: pimc::PIMSMv2Hdr
    :project: PimcLib
    :members:
 
