@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(PIMC-Toolkit)
 
+option(BuildApiDocs "Build API Docs using doxygen and sphinx")
+
 if (APPLE)
     set(DOXY_OS_DEF "__APPLE__")
 elseif(LINUX)
