@@ -22,6 +22,12 @@ constexpr uint8_t PIMSMv2_GRAFT{6u};
 constexpr uint8_t PIMSMv2_GRAFT_ACK{7u};
 constexpr uint8_t PIMSMv2_CANDIDATE_RP_ADVERTISEMENT{8u};
 
+constexpr uint16_t PIMSMv2_OPT_HOLDTIME{1u};
+constexpr uint16_t PIMSMv2_OPT_LAN_PRUNE_DELAY{2u};
+constexpr uint16_t PIMSMv2_OPT_DR_PRIORITY{19u};
+constexpr uint16_t PIMSMv2_OPT_GENERATION_ID{20u};
+constexpr uint16_t PIMSMv2_OPT_ADDRESS_LIST{24u};
+
 /*!
  * The PIM Sparse Mode v2 packet header.
  */

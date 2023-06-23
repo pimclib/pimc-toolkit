@@ -28,3 +28,43 @@ Include file ``pimc/packets/PIMSMv2.hpp``
 .. doxygenstruct:: pimc::PIMSMv2HelloOption
    :project: PimcLib
    :members:
+
+Include file ``pimc/packets/PIMSMv2Utils.hpp``
+==============================================
+
+The following function writes a
+`PIM SM v2 header <https://www.rfc-editor.org/rfc/rfc7761.html#section-4.9>`_
+with the specified type.
+
+
+.. doxygenfunction:: pimc::pimsmv2::writeHdr
+   :project: PimcLib
+
+The following four function encode
+`unicast, group, RP and source addresses <https://www.rfc-editor.org/rfc/rfc7761.html#section-4.9.1>`_
+in the PIM SM v2 specific format.
+	     
+.. doxygenfunction:: pimc::pimsmv2::writeIPv4Addr
+   :project: PimcLib
+
+.. doxygenfunction:: pimc::pimsmv2::writeIPv4Grp
+   :project: PimcLib
+
+.. doxygenfunction:: pimc::pimsmv2::writeIPv4RP
+   :project: PimcLib
+
+.. doxygenfunction:: pimc::pimsmv2::writeIPv4Src
+   :project: PimcLib
+
+The following three functions encode
+`PIM SM v2 Hello packet options <https://www.rfc-editor.org/rfc/rfc7761.html#section-4.9.2>`_.
+	     
+.. doxygenfunction:: pimc::pimsmv2::writeOptHoldtime
+   :project: PimcLib
+
+.. doxygenfunction:: pimc::pimsmv2::writeOptDrPriority
+   :project: PimcLib
+
+.. doxygenfunction:: pimc::pimsmv2::writeOptGenerationId
+   :project: PimcLib
+
