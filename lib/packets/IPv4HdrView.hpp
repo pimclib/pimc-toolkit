@@ -12,7 +12,7 @@ namespace pimc {
 /*!
  * IPv4 Header View.
  *
- * See <a href="https://www.rfc-editor.org/rfc/rfc791#section-3.1">Internet Header Format</a>
+ * See <a href="https://datatracker.ietf.org/doc/html/rfc791#section-3.1">Internet Header Format</a>
  */
 class IPv4HdrView final {
 public:
@@ -202,7 +202,7 @@ private:
 /*!
  * IPv4 Header View.
  *
- * See <a href="https://www.rfc-editor.org/rfc/rfc791#section-3.1">Internet Header Format</a>
+ * See <a href="https://datatracker.ietf.org/doc/html/rfc791#section-3.1">Internet Header Format</a>
  */
 class IPv4HdrView final {
 public:

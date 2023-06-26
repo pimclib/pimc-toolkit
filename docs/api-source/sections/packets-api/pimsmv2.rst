@@ -33,7 +33,7 @@ Include file ``pimc/packets/PIMSMv2Utils.hpp``
 ==============================================
 
 The following function writes a
-`PIM SM v2 header <https://www.rfc-editor.org/rfc/rfc7761.html#section-4.9>`_
+`PIM SM v2 header <https://datatracker.ietf.org/doc/html/rfc7761.html#section-4.9>`_
 with the specified type.
 
 
@@ -41,7 +41,7 @@ with the specified type.
    :project: PimcLib
 
 The following four function encode
-`unicast, group, RP and source addresses <https://www.rfc-editor.org/rfc/rfc7761.html#section-4.9.1>`_
+`unicast, group, RP and source addresses <https://datatracker.ietf.org/doc/html/rfc7761.html#section-4.9.1>`_
 in the PIM SM v2 specific format.
 	     
 .. doxygenfunction:: pimc::pimsmv2::writeIPv4Addr
@@ -57,7 +57,7 @@ in the PIM SM v2 specific format.
    :project: PimcLib
 
 The following three functions encode
-`PIM SM v2 Hello packet options <https://www.rfc-editor.org/rfc/rfc7761.html#section-4.9.2>`_.
+`PIM SM v2 Hello packet options <https://datatracker.ietf.org/doc/html/rfc7761.html#section-4.9.2>`_.
 	     
 .. doxygenfunction:: pimc::pimsmv2::writeOptHoldtime
    :project: PimcLib

@@ -50,7 +50,7 @@ static_assert(sizeof(PIMSMv2Hdr) == 4u);
 /*!
  * The PIM SM v2 "Encoded Unicast Address"
  *
- * Per <a href="https://www.rfc-editor.org/rfc/rfc7761.html#section-4.9.1">
+ * Per <a href="https://datatracker.ietf.org/doc/html/rfc7761.html#section-4.9.1">
  * RFC7761 4.9.1.  Encoded Source and Group Address Formats</a>
  */
 struct PIMSMv2EncUAddr final {

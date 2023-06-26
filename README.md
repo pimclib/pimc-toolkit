@@ -1,7 +1,7 @@
 # PIMC Network Toolkit
 
 PIMC stands for PIM client, which is an app that can send
-[PIM v2](https://www.rfc-editor.org/rfc/rfc7761.html) multicast joins.
+[PIM v2](https://datatracker.ietf.org/doc/html/rfc7761.html) multicast joins.
 The toolkit and the library are named after this app.
 
 PIMC toolkit is a set of network centric utility apps and the C++ library that
