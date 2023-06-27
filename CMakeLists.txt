@@ -29,6 +29,9 @@ set_project_warnings(ProjectSettings)
 
 add_subdirectory(external)
 
+add_library(VersionLib STATIC)
+add_subdirectory(version)
+
 add_library(PimcLib STATIC)
 
 # This needs to be declared before 'add_subdirectory(lib)' because

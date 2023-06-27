@@ -3,15 +3,14 @@
 
 #include <fmt/format.h>
 
-#include "pimc/version.hpp"
-#include "pimc/text/MemoryBuffer.hpp"
+#include "version.hpp"
 
 #include "version_internal.hpp"
 
 namespace pimc {
 
 std::string version() {
-    auto& mb = getMemoryBuffer();
+    fmt::memory_buffer mb;
     auto bi = std::back_inserter(mb);
 
     fmt::format_to(bi, "pimclib v{}\n", taggedVersion);

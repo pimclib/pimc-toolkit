@@ -17,7 +17,7 @@
 #include "pimc/text/NumberLengths.hpp"
 #include "pimc/text/SCLine.hpp"
 #include "pimc/unix/GetOptLong.hpp"
-#include "pimc/version.hpp"
+#include "version.hpp"
 
 #include "Config.hpp"
 

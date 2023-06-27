@@ -40,6 +40,7 @@ target_link_libraries(
             -static-libgcc
             -static-libstdc++
             ProjectSettings
+            VersionLib
             PimcLib
             fmt
             ${MCLST_LIBS}
