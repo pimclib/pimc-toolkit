@@ -10,17 +10,9 @@
 #include <variant>
 
 #include "pimc/core/TypeUtils.hpp"
+#include "pimc/core/OptionalResultHelpers.hpp"
 
 namespace pimc {
-
-template <typename T>
-struct IsReferenceWrapper : std::false_type {};
-
-template <typename U>
-struct IsReferenceWrapper<std::reference_wrapper<U>> : std::true_type {};
-
-template <typename T>
-constexpr bool IsReferenceWrapper_v = IsReferenceWrapper<T>::value;
 
 // Forward declarations:
 
@@ -61,39 +53,7 @@ concept ResultTypeValueDefaultConstructible =
          std::same_as<typename IsResult<R>::ValueType, void>) and
         not std::same_as<typename IsResult<R>::ErrorType, void>;
 
-/*!
- * The tag type to indicate that the error object should be constructed
- * in place.
- */
-struct InPlaceValueType {
-    explicit InPlaceValueType() = default;
-};
-
-/// An instance of the InPlaceErrorType.
-inline constexpr InPlaceValueType InPlaceValue{};
-
-
-/*!
- * The tag type to indicate that the error object should be constructed
- * in place.
- */
-struct InPlaceErrorType {
-    explicit InPlaceErrorType() = default;
-};
-
-/// An instance of the InPlaceErrorType.
-inline constexpr InPlaceErrorType InPlaceError{};
-
-
 namespace detail {
-
-template <typename T>
-using WrappedValueType = std::conditional_t<
-        std::is_lvalue_reference_v<T>,
-        std::reference_wrapper<std::remove_reference_t<T>>,
-        std::remove_const_t<T>
->;
-
 
 template <typename EE, typename E>
 concept FailureIsValueConstructible =
@@ -343,7 +303,7 @@ public:
     }
 
 private:
-    using ErrorType = detail::WrappedValueType<E>;
+    using ErrorType = WrappedValueType<E>;
 
 private:
     ErrorType error_;
@@ -2283,7 +2243,7 @@ public:
     noexcept(std::is_nothrow_constructible_v<E, E2 const&> and
              std::is_nothrow_assignable_v<E&, E2 const&>) -> Result&
     requires std::constructible_from<E, E2 const&> and
-             std::assignable_from<detail::WrappedValueType<E>&, E2 const&> {
+             std::assignable_from<WrappedValueType<E>&, E2 const&> {
         value_.assignFromResult(rhs.value_);
         return *this;
     }
@@ -2311,7 +2271,7 @@ public:
     noexcept(std::is_nothrow_constructible_v<E, E2&&> and
              std::is_nothrow_assignable_v<E&, E2&&>) -> Result&
     requires std::constructible_from<E, E2&&> and
-             std::assignable_from<detail::WrappedValueType<E>&, E&&> {
+             std::assignable_from<WrappedValueType<E>&, E&&> {
         value_.assignFromResult(std::move(rhs).value_);
         return *this;
     }

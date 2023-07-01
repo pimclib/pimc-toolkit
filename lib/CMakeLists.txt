@@ -11,6 +11,8 @@ target_sources(
         core/CompilerUtils.hpp
         core/TypeUtils.hpp
         core/Deferred.hpp
+        core/OptionalResultHelpers.hpp
+        core/Optional.hpp
         core/Result.hpp
         core/Endian.hpp
         net/IPv4PktInfo.hpp
