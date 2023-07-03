@@ -298,7 +298,7 @@ concept ExplicitlyMoveConvertibleOptional =
         (not std::convertible_to<T2&&, T1>);
 
 template <typename TT, typename T>
-concept ValueConvertibleTo =
+concept OptionalValueConvertibleTo =
         std::constructible_from<T, TT&&> and
         not std::same_as<std::decay_t<TT>, std::in_place_t> and
         not std::same_as<std::decay_t<TT>, InPlaceValueType> and
@@ -306,13 +306,13 @@ concept ValueConvertibleTo =
         not IsOptional<std::decay_t<TT>>::value;
 
 template <typename TT, typename T>
-concept ImplicitlyValueConvertibleTo =
-        ValueConvertibleTo<TT, T> and
+concept ImplicitlyOptionalValueConvertibleTo =
+        OptionalValueConvertibleTo<TT, T> and
         std::convertible_to<TT&&, T>;
 
 template <typename TT, typename T>
-concept ExplicitlyValueConvertibleTo =
-        ValueConvertibleTo<TT, T> and
+concept ExplicitlyOptionalValueConvertibleTo =
+        OptionalValueConvertibleTo<TT, T> and
         not std::convertible_to<TT&&, T>;
 
 template <typename T1, typename T2>
@@ -336,7 +336,7 @@ not ConvertAssignableOptional<T1, T2> and
         std::assignable_from<T1&, T2&&>;
 
 template <typename TT, typename T>
-concept ValueAssignableTo =
+concept OptionalValueAssignableTo =
 not IsOptional<std::decay_t<TT>>::value and
         std::constructible_from<T, TT> and
         std::assignable_from<WrappedValueType<T>&, TT> and (
@@ -585,7 +585,7 @@ public:
      * @tparam U the type of the argument to this constructor
      * @param value the value convertible to the value contained in the result.
      */
-    template <detail::ImplicitlyValueConvertibleTo<T> U>
+    template <detail::ImplicitlyOptionalValueConvertibleTo<T> U>
     constexpr /* implicit */ Optional(U&& value)
     noexcept(std::is_nothrow_constructible_v<T, U>)
             : value_{InPlaceValue, std::forward<U>(value)} {}
@@ -609,7 +609,7 @@ public:
      * @tparam U the type of the argument to this constructor
      * @param value the value convertible to the value contained in the result.
      */
-    template <detail::ExplicitlyValueConvertibleTo<T> U>
+    template <detail::ExplicitlyOptionalValueConvertibleTo<T> U>
     constexpr explicit Optional(U&& value)
     noexcept(std::is_nothrow_constructible_v<T, U>)
             : value_{InPlaceValue, std::forward<U>(value)} {}
@@ -672,7 +672,7 @@ public:
      * @param value the value to perfect forward to the value of this Optional
      * @return a reference to this Optional
      */
-    template <detail::ValueAssignableTo<T> U>
+    template <detail::OptionalValueAssignableTo<T> U>
     auto operator= (U&& value)
     noexcept(std::is_nothrow_constructible_v<T, U> and
              std::is_nothrow_assignable_v<T&, U>) -> Optional& {

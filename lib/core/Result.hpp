@@ -835,7 +835,7 @@ concept ExplicitlyMoveConvertibleResult =
         );
 
 template <typename TT, typename T>
-concept ValueConvertibleTo =
+concept ResultValueConvertibleTo =
         std::constructible_from<T, TT&&> and
         not std::same_as<std::decay_t<TT>, std::in_place_t> and
         not std::same_as<std::decay_t<TT>, InPlaceValueType> and
@@ -843,13 +843,13 @@ concept ValueConvertibleTo =
         not IsResult<std::decay_t<TT>>::value;
 
 template <typename TT, typename T>
-concept ImplicitlyValueConvertibleTo =
-        ValueConvertibleTo<TT, T> and
+concept ImplicitlyResultValueConvertibleTo =
+        ResultValueConvertibleTo<TT, T> and
         std::convertible_to<TT&&, T>;
 
 template <typename TT, typename T>
-concept ExplicitlyValueConvertibleTo =
-        ValueConvertibleTo<TT, T> and
+concept ExplicitlyResultValueConvertibleTo =
+        ResultValueConvertibleTo<TT, T> and
         not std::convertible_to<TT&&, T>;
 
 template <typename T1, typename E1, typename T2, typename E2>
@@ -881,7 +881,7 @@ concept MoveConvertAssignableResult =
         std::assignable_from<E1&, E2&&>;
 
 template <typename TT, typename T>
-concept ValueAssignableTo =
+concept ResultValueAssignableTo =
         not IsResult<std::decay_t<TT>>::value and
         not IsFailure<std::decay_t<TT>>::value and
         std::constructible_from<T, TT> and
@@ -1276,7 +1276,7 @@ public:
      * @tparam U the type of the argument to this constructor
      * @param value the value convertible to the value contained in the result.
      */
-    template <detail::ImplicitlyValueConvertibleTo<T> U>
+    template <detail::ImplicitlyResultValueConvertibleTo<T> U>
     constexpr /* implicit */ Result(U&& value)
     noexcept(std::is_nothrow_constructible_v<T, U>)
             : value_{InPlaceValue, std::forward<U>(value)} {}
@@ -1300,7 +1300,7 @@ public:
      * @tparam U the type of the argument to this constructor
      * @param value the value convertible to the value contained in the result.
      */
-    template <detail::ExplicitlyValueConvertibleTo<T> U>
+    template <detail::ExplicitlyResultValueConvertibleTo<T> U>
     constexpr explicit Result(U&& value)
     noexcept(std::is_nothrow_constructible_v<T, U>)
     : value_{InPlaceValue, std::forward<U>(value)} {}
@@ -1369,7 +1369,7 @@ public:
      * @param value the value to perfect forward to the value of this Result
      * @return a reference to this Result
      */
-    template <detail::ValueAssignableTo<T> U>
+    template <detail::ResultValueAssignableTo<T> U>
     auto operator= (U&& value)
     noexcept(std::is_nothrow_constructible_v<T, U> and
              std::is_nothrow_assignable_v<T&, U>) -> Result& {
