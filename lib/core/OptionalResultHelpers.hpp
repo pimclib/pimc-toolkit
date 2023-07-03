@@ -14,19 +14,29 @@ template <typename T>
 constexpr bool IsReferenceWrapper_v = IsReferenceWrapper<T>::value;
 
 /*!
- * The tag type to indicate that the error object should be constructed
+ * The tag type to indicate that a value object should be constructed
  * in place.
  */
 struct InPlaceValueType {
     explicit InPlaceValueType() = default;
 };
 
-/// An instance of the InPlaceErrorType.
+/// An instance of the InPlaceValueType.
 inline constexpr InPlaceValueType InPlaceValue{};
 
+/*!
+ * The tag type to indicate that an empty object should be constructed
+ * in place.
+ */
+struct InPlaceEmptyType {
+    explicit InPlaceEmptyType() = default;
+};
+
+/// An instance of the InPlaceEmptyType.
+inline constexpr InPlaceEmptyType InPlaceEmpty{};
 
 /*!
- * The tag type to indicate that the error object should be constructed
+ * The tag type to indicate that an error object should be constructed
  * in place.
  */
 struct InPlaceErrorType {

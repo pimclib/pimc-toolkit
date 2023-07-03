@@ -26,6 +26,7 @@ if (${BuildApiDocs})
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/unix.rst
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/core.rst
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/core-api/Deferred.rst
+            ${PROJECT_SOURCE_DIR}/docs/api-source/sections/core-api/Optional.rst
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/core-api/Result.rst
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/core-api/TypeUtils.rst
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/core-api/CompilerUtils.rst

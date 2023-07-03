@@ -55,6 +55,9 @@ struct OptionalAlt {
     noexcept(std::is_nothrow_constructible_v<V, Ts...>)
     : value_{std::forward<Ts>(args)...}, hasValue_{true} {}
 
+    constexpr OptionalAlt(InPlaceEmptyType)
+    : empty_{}, hasValue_{false} {}
+
     OptionalAlt(OptionalAlt const&) = default;
     OptionalAlt(OptionalAlt&&) = default;
 
@@ -83,6 +86,9 @@ struct OptionalAlt<V, false> {
     noexcept(std::is_nothrow_constructible_v<V, Ts...>)
             : value_{std::forward<Ts>(args)...}, hasValue_{true} {}
 
+    constexpr OptionalAlt(InPlaceEmptyType)
+            : empty_{}, hasValue_{false} {}
+
     OptionalAlt(OptionalAlt const&) = default;
     OptionalAlt(OptionalAlt&&) = default;
 
@@ -109,13 +115,16 @@ struct OptionalStorage {
     using StorageType = OptionalAlt<T>;
     StorageType storage_;
 
-    explicit OptionalStorage(std::monostate) noexcept
-            : storage_{std::monostate{}} {}
+    explicit constexpr OptionalStorage(std::monostate) noexcept
+    : storage_{std::monostate{}} {}
 
     template <typename ... Ts>
     constexpr OptionalStorage(InPlaceValueType, Ts&& ... args)
     noexcept(std::is_nothrow_constructible_v<T, Ts...>)
-            : storage_{InPlaceValue, std::forward<Ts>(args)...} {}
+    : storage_{InPlaceValue, std::forward<Ts>(args)...} {}
+
+    constexpr OptionalStorage(InPlaceEmptyType) noexcept
+    : storage_{InPlaceEmpty} {}
 
     /*
      * Internal use function. It assumes there is no contained value and error
@@ -141,7 +150,7 @@ struct OptionalStorage {
                 std::construct_at(vp, std::forward<R>(r).storage_.value_.get());
             else std::construct_at(vp, std::forward<R>(r).storage_.value_);
             storage_.hasValue_ = true;
-        } storage_.hasValue_ = false;
+        } else storage_.hasValue_ = false;
     }
 
     template <typename V>
@@ -389,16 +398,12 @@ public:
      * Usage:
      *
      * ```cpp
-     * auto r = pimc::Optional<int, std::string>{};
+     * auto r = pimc::Optional<int>{};
      * ```
      *
      * @tparam U the value type
      */
-    template <typename U=T>
-    constexpr Optional()
-    noexcept(std::is_nothrow_constructible_v<U>)
-    requires std::constructible_from<U>
-            : value_{InPlaceValue} {}
+    constexpr Optional() noexcept: value_{InPlaceEmpty} {}
 
     /*!
      * \brief Copy constructs a Optional from \p rhs.
@@ -1029,5 +1034,475 @@ public:
 private:
     detail::OptionalStorage<T> value_;
 };
+
+/*!
+ * The equality relation between two optionals containing comparable value objects.
+ * The following rules apply:
+ *   - If one optional contains a value but the other one doesn't, these
+ *     optionals are not equal
+ *   - If both optionals contain a value, they are equal if and only if the
+ *     contained values are equal
+ *   - Otherwise, two empty optionals are equal
+ *
+ * @tparam T1 the type of the value contained in the first optional
+ * @tparam T2 the type of the value contained in the second optional
+ * @param lhs the left optional
+ * @param rhs the right optional
+ * @return `true` if the two optionals are equal, `false` otherwise
+ */
+template <typename T1, typename T2>
+inline constexpr auto operator== (Optional<T1> const& lhs, Optional<T2> const& rhs)
+noexcept -> bool
+requires std::equality_comparable_with<T1, T2> {
+    if (lhs.hasValue() == rhs.hasValue()) {
+        if (lhs.hasValue())
+            return lhs.value() == rhs.value();
+
+        return true;
+    }
+
+    return false;
+}
+
+/*!
+ * The inequality relation between two optionals containing comparable value objects.
+ * The following rules apply:
+ *   - If one optional contains a value but the other one doesn't, these
+ *     optionals are not equal
+ *   - If both optionals contain a value, they are equal if and only if the
+ *     contained values are equal
+ *   - Otherwise (both optionals are empty), the two optionals are equal
+ *
+ * @tparam T1 the type of the value contained in the first optional
+ * @tparam T2 the type of the value contained in the second optional
+ * @param lhs the left optional
+ * @param rhs the right optional
+ * @return `true` if the two optionals are equal, `false` otherwise
+ */
+template <typename T1, typename T2>
+inline constexpr auto operator!= (Optional<T1> const& lhs, Optional<T2> const& rhs)
+noexcept -> bool
+requires std::equality_comparable_with<T1, T2> {
+    if (lhs.hasValue() == rhs.hasValue()) {
+        if (lhs.hasValue())
+            return lhs.value() != rhs.value();
+
+        return false;
+    }
+
+    return true;
+}
+
+/*!
+ * The less than relation between two optionals. The following rules apply:
+ *   - If the left optional is empty and the right optional has a value
+ *     this operator returns `true`
+ *   - If the left optional has a value and the right optional is empty
+ *     this operator returns `false`
+ *   - If both optionals contain a value, the result of this operator is
+ *     the result of the less than relation between the contained values
+ *   - Otherwise (both optionals are empty) this operator returns `false`
+ *
+ * @tparam T1 the type of the value contained in the first optional
+ * @tparam T2 the type of the value contained in the second optional
+ * @param lhs the left optional
+ * @param rhs the right optional
+ * @return `true` if the left optional is less than the right optional,
+ *  `false` otherwise
+ */
+template <typename T1, typename T2>
+inline constexpr auto operator< (Optional<T1> const& lhs, Optional<T2> const& rhs)
+noexcept -> bool
+requires std::totally_ordered_with<T1, T2> {
+    if (lhs.hasValue() == rhs.hasValue()) {
+        if (lhs.hasValue())
+            return lhs.value() < rhs.value();
+
+        return false;
+    }
+
+    return static_cast<int>(lhs.hasValue()) < static_cast<int>(rhs.hasValue());
+}
+
+/*!
+ * The less than or equal relation between two optionals. The following rules
+ * apply:
+ *   - If the left optional is empty and the right optional has a value
+ *     this operator returns `true`
+ *   - If the left optional has a value and the right optional is empty
+ *     this operator returns `false`
+ *   - If both optionals contain a value, the result of this operator is
+ *     the result of the less than relation between the contained values
+ *   - Otherwise (both optionals are empty) this operator returns `true`
+ *
+ * @tparam T1 the type of the value contained in the first optional
+ * @tparam T2 the type of the value contained in the second optional
+ * @param lhs the left optional
+ * @param rhs the right optional
+ * @return `true` if the left optional is less than the right optional,
+ *  `false` otherwise
+ */
+template <typename T1, typename T2>
+inline constexpr auto operator<= (Optional<T1> const& lhs, Optional<T2> const& rhs)
+noexcept -> bool
+requires std::totally_ordered_with<T1, T2> {
+    if (lhs.hasValue() == rhs.hasValue()) {
+        if (lhs.hasValue())
+            return lhs.value() <= rhs.value();
+
+        return true;
+    }
+
+    return static_cast<int>(lhs.hasValue()) <= static_cast<int>(rhs.hasValue());
+}
+
+/*!
+ * The greater than relation between two optionals. The following rules apply:
+ *   - If the left optional is empty and the right optional has a value
+ *     this operator returns `false`
+ *   - If the left optional has a value and the right optional is empty
+ *     this operator returns `true`
+ *   - If both optionals contain a value, the result of this operator is
+ *     the result of the less than relation between the contained values
+ *   - Otherwise (both optionals are empty) this operator returns `false`
+ *
+ * @tparam T1 the type of the value contained in the first optional
+ * @tparam T2 the type of the value contained in the second optional
+ * @param lhs the left optional
+ * @param rhs the right optional
+ * @return `true` if the left optional is less than the right optional,
+ *  `false` otherwise
+ */
+template <typename T1, typename T2>
+inline constexpr auto operator> (Optional<T1> const& lhs, Optional<T2> const& rhs)
+noexcept -> bool
+requires std::totally_ordered_with<T1, T2> {
+    if (lhs.hasValue() == rhs.hasValue()) {
+        if (lhs.hasValue())
+            return lhs.value() > rhs.value();
+
+        return false;
+    }
+
+    return static_cast<int>(lhs.hasValue()) > static_cast<int>(rhs.hasValue());
+}
+
+/*!
+ * The greater than or equal relation between two optionals. The following
+ * rules apply:
+ *   - If the left optional is empty and the right optional has a value
+ *     this operator returns `false`
+ *   - If the left optional has a value and the right optional is empty
+ *     this operator returns `true`
+ *   - If both optionals contain a value, the result of this operator is
+ *     the result of the less than relation between the contained values
+ *   - Otherwise (both optionals are empty) this operator returns `true`
+ *
+ * @tparam T1 the type of the value contained in the first optional
+ * @tparam T2 the type of the value contained in the second optional
+ * @param lhs the left optional
+ * @param rhs the right optional
+ * @return `true` if the left optional is less than the right optional,
+ *  `false` otherwise
+ */
+template <typename T1, typename T2>
+inline constexpr auto operator>= (Optional<T1> const& lhs, Optional<T2> const& rhs)
+noexcept -> bool
+requires std::totally_ordered_with<T1, T2> {
+    if (lhs.hasValue() == rhs.hasValue()) {
+        if (lhs.hasValue())
+            return lhs.value() >= rhs.value();
+
+        return true;
+    }
+
+    return static_cast<int>(lhs.hasValue()) >= static_cast<int>(rhs.hasValue());
+}
+
+//
+// Comparison of Optional<T> with a va
+//
+
+/*!
+ * the equality relation between an optional and a value comparable to the
+ * value of the optional. The following rules apply:
+ *   - If the result is empty, this operator returns `false`
+ *   - If the result is not empty, this operator returns the result of
+ *     comparing the value of the optional with \p rhs
+ * @tparam T the type of the value of the optional
+ * @tparam V the type of the value to compare
+ * @param lhs the optional
+ * @param rhs the value
+ * @return `true` if the optional contains a value and that value is equal to
+ * \p rhs, `false` otherwise
+ */
+template <typename T, typename V>
+inline constexpr auto operator== (Optional<T> const& lhs, V const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::equality_comparable_with<T, V>) {
+    return lhs.hasValue() and lhs.value() == rhs;
+}
+
+/*!
+ * the equality relation between an optional and a value comparable to the
+ * value of the optional. The following rules apply:
+ *   - If the result is empty, this operator returns `false`
+ *   - If the result is not empty, this operator returns the result of
+ *     comparing the value of the optional with \p lhs
+ * @tparam V the type of the value to compare
+ * @tparam T the type of the value of the optional
+ * @param lhs the value
+ * @param rhs the optional
+ * @return `true` if the optional contains a value and that value is equal to
+ * \p lhs, `false` otherwise
+ */
+template <typename V, typename T>
+inline constexpr auto operator== (V const& lhs, Optional<T> const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::equality_comparable_with<V, T>) {
+    return rhs.hasValue() and lhs == rhs.value();
+}
+
+/*!
+ * the inequality relation between an optional and a value comparable to the
+ * value of the optional. The following rules apply:
+ *   - If the result is empty, this operator returns `true`
+ *   - If the result is not empty, this operator returns the result of
+ *     comparing the value of the optional with \p rhs
+ * @tparam T the type of the value of the optional
+ * @tparam V the type of the value to compare
+ * @param lhs the optional
+ * @param rhs the value
+ * @return `true` if the optional does not contain a value or the contained
+ * value is not equal to \p rhs, `false` otherwise
+ */
+template <typename T, typename V>
+inline constexpr auto operator!= (Optional<T> const& lhs, V const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::equality_comparable_with<T, V>) {
+    return (not lhs.hasValue()) or lhs.value() != rhs;
+}
+
+/*!
+ * the inequality relation between an optional and a value comparable to the
+ * value of the optional. The following rules apply:
+ *   - If the result is empty, this operator returns `true`
+ *   - If the result is not empty, this operator returns the result of
+ *     comparing the value of the optional with \p lhs
+ * @tparam V the type of the value to compare
+ * @tparam T the type of the value of the optional
+ * @param lhs the value
+ * @param rhs the optional
+ * @return `true` if the optional does not contain a value or the contained
+ * value is not equal to \p lhs, `false` otherwise
+ */
+template <typename V, typename T>
+inline constexpr auto operator!= (V const& lhs, Optional<T> const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::equality_comparable_with<V, T>) {
+    return (not rhs.hasValue()) or lhs != rhs.value();
+}
+
+/*!
+ * The less than relation between an optional and a value comparable to the
+ * value of the optional. The following rules apply:
+ *   - If the optional is empty this operator returns true
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the less than operator applied to the value contained
+ *     in the optional and \p rhs
+ *
+ * @tparam T the type of the value of the optional
+ * @tparam V the type of the value to compare
+ * @param lhs the optional
+ * @param rhs the value
+ * @return `true` if the optional is empty or its value is less than \p rhs,
+ * `false` otherwise
+ */
+template <typename T, typename V>
+inline constexpr auto operator< (Optional<T> const& lhs, V const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<T, V>) {
+    return (not lhs.hasValue()) or lhs.value() < rhs;
+}
+
+/*!
+ * The less than relation between a value and an optional whose value is comparable
+ * to the value. The following rules apply:
+ *   - If the optional is empty this operator returns false
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the less than operator applied to \p lhs and the value
+ *     contained in the optional
+ *
+ * @tparam V the type of the value to compare
+ * @tparam T the type of the value of the optional
+ * @param lhs the value
+ * @param rhs the optional
+ * @return `true` if the optional is not empty and \p rhs is less than the value
+ * contained in the optional, `false` otherwise
+ */
+template <typename V, typename T>
+inline constexpr auto operator< (V const& lhs, Optional<T> const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<V, T>) {
+    return rhs.hasValue() and lhs < rhs.value();
+}
+
+/*!
+ * The less than or equal relation between an optional and a value comparable
+ * to the value of the optional. The following rules apply:
+ *   - If the optional is empty this operator returns true
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the less than or equal operator applied to the value
+ *     contained in the optional and \p rhs
+ *
+ * @tparam T the type of the value of the optional
+ * @tparam V the type of the value to compare
+ * @param lhs the optional
+ * @param rhs the value
+ * @return `true` if the optional is empty or its value is less than or equal
+ * to \p rhs, `false` otherwise
+ */
+template <typename T, typename V>
+inline constexpr auto operator<= (Optional<T> const& lhs, V const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<T, V>) {
+    return (not lhs.hasValue()) or lhs.value() <= rhs;
+}
+
+/*!
+ * The less than or equal relation between a value and an optional whose value
+ * is comparable to the value. The following rules apply:
+ *   - If the optional is empty this operator returns false
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the less than operator applied to \p lhs and the value
+ *     contained in the optional
+ *
+ * @tparam V the type of the value to compare
+ * @tparam T the type of the value of the optional
+ * @param lhs the value
+ * @param rhs the optional
+ * @return `true` if the optional is not empty and \p rhs is less than or
+ * equal to the value contained in the optional, `false` otherwise
+ */
+template <typename V, typename T>
+inline constexpr auto operator<= (V const& lhs, Optional<T> const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<V, T>) {
+    return rhs.hasValue() and lhs <= rhs.value();
+}
+
+/*!
+ * The greater than relation between an optional and a value comparable to the
+ * value of the optional. The following rules apply:
+ *   - If the optional is empty this operator returns false
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the greater than operator applied to the value contained
+ *     in the optional and \p rhs
+ *
+ * @tparam T the type of the value of the optional
+ * @tparam V the type of the value to compare
+ * @param lhs the optional
+ * @param rhs the value
+ * @return `true` if the optional is not empty and its value is greater than
+ * \p rhs, `false` otherwise
+ */
+template <typename T, typename V>
+inline constexpr auto operator> (Optional<T> const& lhs, V const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<T, V>) {
+    return lhs.hasValue() and lhs.value() > rhs;
+}
+
+/*!
+ * The greater than relation between a value and an optional whose value is
+ * comparable to the value. The following rules apply:
+ *   - If the optional is empty this operator returns true
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the greater than operator applied to \p lhs and the value
+ *     contained in the optional
+ *
+ * @tparam V the type of the value to compare
+ * @tparam T the type of the value of the optional
+ * @param lhs the value
+ * @param rhs the optional
+ * @return `true` if the optional is empty or \p lhs is greater than the
+ * value contained in the optional, `false` otherwise
+ */
+template <typename V, typename T>
+inline constexpr auto operator> (V const& lhs, Optional<T> const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<V, T>) {
+    return (not rhs.hasValue()) or lhs > rhs.value();
+}
+
+/*!
+ * The greater than or equal relation between an optional and a value
+ * comparable to the value of the optional. The following rules apply:
+ *   - If the optional is empty this operator returns false
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the greater than or equal operator applied to the value
+ *     contained in the optional and \p rhs
+ *
+ * @tparam T the type of the value of the optional
+ * @tparam V the type of the value to compare
+ * @param lhs the optional
+ * @param rhs the value
+ * @return `true` if the optional is not empty and its value is greater than
+ * or equal to \p rhs, `false` otherwise
+ */
+template <typename T, typename V>
+inline constexpr auto operator>= (Optional<T> const& lhs, V const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<T, V>) {
+    return lhs.hasValue() and lhs.value() >= rhs;
+}
+
+/*!
+ * The greater than or equal relation between a value and an optional whose
+ * value is comparable to the value. The following rules apply:
+ *   - If the optional is empty this operator returns true
+ *   - If the optional has a value, then the result of this operator is
+ *     the result of the greater than or equal operator applied to \p lhs
+ *     and the value contained in the optional
+ *
+ * @tparam V the type of the value to compare
+ * @tparam T the type of the value of the optional
+ * @param lhs the value
+ * @param rhs the optional
+ * @return `true` if the optional is empty or \p lhs is greater than or equal
+ * to the value contained in the optional, `false` otherwise
+ */
+template <typename V, typename T>
+inline constexpr auto operator>= (V const& lhs, Optional<T> const& rhs)
+noexcept -> bool
+requires (not OptionalType<V> and std::totally_ordered_with<V, T>) {
+    return (not rhs.hasValue()) or lhs >= rhs.value();
+}
+
+//
+// swap
+//
+
+/*!
+ * Swaps the two optionals.
+ * @tparam T the value type of the optionals
+ * @param lhs the left optional
+ * @param rhs the right optional
+ */
+template <typename T>
+inline auto swap(Optional<T>& lhs, Optional<T>& rhs)
+noexcept(std::is_nothrow_move_constructible_v<Optional<T>> and
+         std::is_nothrow_move_assignable_v<Optional<T>> and
+         std::is_nothrow_swappable_v<T>) -> void {
+    using std::swap;
+
+    if (lhs.hasValue() == rhs.hasValue()) {
+        if (lhs.hasValue()) swap(lhs.value(), rhs.value());
+    } else {
+        auto tmp = std::move(lhs);
+        lhs = std::move(rhs);
+        rhs = std::move(tmp);
+    }
+}
 
 } // namespace pimc

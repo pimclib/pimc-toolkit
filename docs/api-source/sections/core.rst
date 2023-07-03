@@ -8,6 +8,7 @@ PIMC Core API
 
    core-api/CompilerUtils
    core-api/TypeUtils
+   core-api/Optional
    core-api/Result
    core-api/Deferred
 

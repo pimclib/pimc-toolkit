@@ -25,7 +25,6 @@ is ``T`` and with the Failure object whose value type is comparable to the error
 type of the Result object.
 
 Example
--------
 
 .. code-block:: c++
 
@@ -56,7 +55,7 @@ Example
    
 
 Reference
----------
+=========
 
 .. doxygenclass:: pimc::Result
    :project: PimcLib

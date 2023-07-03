@@ -60,6 +60,8 @@ target_sources(
         Tests
         PRIVATE
             core/tests/TypeUtils-Tests.cpp
+            core/tests/Optional-Result-TestUtils.hpp
+            core/tests/Optional-Tests.cpp
             core/tests/Failure-Tests.cpp
             core/tests/ResultConstexpr-Tests.cpp
             core/tests/Result-Tests.cpp
