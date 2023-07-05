@@ -46,6 +46,7 @@ target_sources(
         unix/GetOptLong.cpp
         unix/TerminalColors.hpp
         yaml/StructuredYaml.hpp
+        yaml/StructuredYaml.cpp
         yaml/YamlLoadAll.hpp
         yaml/YamlLoadAll.cpp
 )
