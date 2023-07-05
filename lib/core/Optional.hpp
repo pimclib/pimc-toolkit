@@ -1506,3 +1506,5 @@ noexcept(std::is_nothrow_move_constructible_v<Optional<T>> and
 }
 
 } // namespace pimc
+
+#pragma GCC diagnostic pop

@@ -45,6 +45,9 @@ target_sources(
         unix/GetOptLong.hpp
         unix/GetOptLong.cpp
         unix/TerminalColors.hpp
+        yaml/StructuredYaml.hpp
+        yaml/YamlLoadAll.hpp
+        yaml/YamlLoadAll.cpp
 )
 
 export_headers(PimcLib ${CMAKE_CURRENT_LIST_DIR} pimc)
@@ -54,6 +57,7 @@ target_link_libraries(
         PUBLIC
             ProjectSettings
             fmt::fmt
+            yaml-cpp
 )
 
 target_sources(
