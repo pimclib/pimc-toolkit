@@ -26,11 +26,6 @@ const -> Result<ScalarRef, ErrorContext> {
     raise<std::runtime_error>("unhandled yaml-cpp type {}", static_cast<int>(t));
 }
 
-auto ValueContext::getScalar()
-const -> Result<ScalarRef, ErrorContext> {
-    return getScalar(""s);
-}
-
 auto ValueContext::getMapping(std::string name)
 const -> Result<MappingContext, ErrorContext> {
     auto err = [this, &name] (char const* typ) {
@@ -53,11 +48,6 @@ const -> Result<MappingContext, ErrorContext> {
     }
 
     raise<std::runtime_error>("unhandled yaml-cpp type {}", static_cast<int>(t));
-}
-
-auto ValueContext::getMapping()
-const -> Result<MappingContext, ErrorContext> {
-    return getMapping(""s);
 }
 
 auto ValueContext::getSequence(std::string name)
@@ -84,10 +74,6 @@ const -> Result<SequenceContext, ErrorContext> {
     raise<std::runtime_error>("unhandled yaml-cpp type {}", static_cast<int>(t));
 }
 
-auto ValueContext::getSequence() const
--> Result<SequenceContext, ErrorContext> {
-    return getSequence(""s);
-}
 
 auto MappingContext::required(std::string const& field)
 -> Result<ValueContext, ErrorContext> {
@@ -129,13 +115,6 @@ auto MappingContext::unrecognized() const -> Result<void, ErrorContext> {
             name_, fmt::join(uflds, ", ")));
 }
 
-std::string MappingContext::describe(std::string const& field) const {
-    if (name_.empty())
-        return fmt::format("field {}", field);
-
-    return fmt::format("field {} of {}", field, name_);
-}
-
 auto SequenceContext::operator[] (size_t i)
 const -> Result<ValueContext, ErrorContext>{
     if (i < node_.size())
@@ -147,11 +126,5 @@ const -> Result<ValueContext, ErrorContext>{
 }
 
 
-std::string SequenceContext::describe(size_t i) const {
-    if (name_.empty())
-        return fmt::format("element #{}", i);
-
-    return fmt::format("element #{} of {}", i, name_);
-}
 
 } // namespace pimc

@@ -32,5 +32,6 @@ if (${BuildApiDocs})
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/core-api/CompilerUtils.rst
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/text.rst
             ${PROJECT_SOURCE_DIR}/docs/api-source/sections/parsers.rst
+            ${PROJECT_SOURCE_DIR}/docs/api-source/sections/yaml.rst
     )
 endif()

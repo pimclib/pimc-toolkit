@@ -388,7 +388,13 @@ private:
             : NodeContext{node, std::move(parentCtx_)}
             , name_{std::move(name)} {}
 
-    std::string describe(std::string const& field) const;
+    std::string describe(std::string const& field) const {
+        if (name_.empty())
+            return fmt::format("field {}", field);
+
+        return fmt::format("field {} of {}", field, name_);
+    }
+
 private:
     std::string name_;
     mutable std::unordered_set<std::string> knownFields_;
@@ -428,37 +434,203 @@ private:
             : NodeContext{node, std::move(parentCtx_)}
             , name_{std::move(name)} {}
 
-    std::string describe(size_t i) const;
+    std::string describe(size_t i) const {
+        if (name_.empty())
+            return fmt::format("element #{}", i);
+
+        return fmt::format("element #{} of {}", i, name_);
+    }
 private:
     std::string name_;
     using NodeContext::NodeContext;
 };
 
+auto ValueContext::getScalar()
+const -> Result<ScalarRef, ErrorContext> {
+    return getScalar(""s);
+}
 
+auto ValueContext::getMapping()
+const -> Result<MappingContext, ErrorContext> {
+    return getMapping(""s);
+}
+
+auto ValueContext::getSequence() const
+-> Result<SequenceContext, ErrorContext> {
+    return getSequence(""s);
+}
+
+/*!
+ * \brief Returns a mapping function which can be used to convert the
+ * returned ValueContext into a ScalarContext.
+ *
+ * If the result object does not contain a ValueContext, the call to
+ * Result::flatMap() will propagate the original error.
+ *
+ * If the ValueContext is not a scalar, the result of the call to
+ * Result::flatMap() will contain the error describing the issue.
+ *
+ * Example:
+ *
+ * ```cpp
+ * pimc::Result<ScalarContext, ErrorContext> scalarField(
+ *         MappingContext const& mapCtx, std::string const& field) {
+ *     return mapCtx.required(field).flatMap(scalar());
+ * }
+ * ```
+ *
+ * @return a function which applies ValueContext::getScalar() to
+ * the ValueContext passed to it as a result of a call to
+ * Result::flatMap()
+ */
 auto scalar() {
     return [] (ValueContext const& vctx) { return vctx.getScalar(); };
 }
 
+/*!
+ * \brief Returns a mapping function which can be used to convert the
+ * returned ValueContext into a ScalarContext using Result::flatMap().
+ *
+ * The \p name parameter is the human readable description of the
+ * scalar.
+ *
+ * If the result object does not contain a ValueContext, the call to
+ * Result::flatMap() will propagate the original error.
+ *
+ * If the ValueContext is not a scalar, the result of the call to
+ * Result::flatMap() will contain the error describing the issue.
+ *
+ * Example:
+ *
+ * ```cpp
+ * pimc::Result<ScalarContext, ErrorContext> scalarField(
+ *         MappingContext const& mapCtx, std::string const& field) {
+ *     return mapCtx.required(field).flatMap(scalar("IP v4 address"));
+ * }
+ * ```
+ *
+ * @return a function which applies ValueContext::getScalar() to
+ * the ValueContext passed to it as a result of a call to
+ * Result::flatMap()
+ */
 auto scalar(std::string const& name) {
     return [&name] (ValueContext const& vctx) {
         return vctx.getScalar(name);
     };
 }
 
+/*!
+ * \brief Returns a mapping function which can be used to convert the
+ * returned ValueContext into a MappingContext using Result::flatMap().
+ *
+ * If the result object does not contain a ValueContext, the call to
+ * Result::flatMap() will propagate the original error.
+ *
+ * If the ValueContext is not a mapping, the result of the call to
+ * Result::flatMap() will contain the error describing the issue.
+ *
+ * Example:
+ *
+ * ```cpp
+ * pimc::Result<MappingContext, ErrorContext> scalarField(
+ *         MappingContext const& mapCtx, std::string const& field) {
+ *     return mapCtx.required(field).flatMap(mapping());
+ * }
+ * ```
+ *
+ * @return a function which applies ValueContext::getMapping() to
+ * the ValueContext passed to it as a result of a call to
+ * Result::flatMap()
+ */
 auto mapping() {
     return [] (ValueContext const& vctx) { return vctx.getMapping(); };
 }
 
+/*!
+ * \brief Returns a mapping function which can be used to convert the
+ * returned ValueContext into a MappingContext using Result::flatMap().
+ *
+ * The \p name parameter is the human readable description of the
+ * mapping.
+ *
+ * If the result object does not contain a ValueContext, the call to
+ * Result::flatMap() will propagate the original error.
+ *
+ * If the ValueContext is not a mapping, the result of the call to
+ * Result::flatMap() will contain the error describing the issue.
+ *
+ * Example:
+ *
+ * ```cpp
+ * pimc::Result<MappingContext, ErrorContext> scalarField(
+ *         MappingContext const& mapCtx, std::string const& field) {
+ *     return mapCtx.required(field).flatMap(mapping("host config"));
+ * }
+ * ```
+ *
+ * @return a function which applies ValueContext::getMapping() to
+ * the ValueContext passed to it as a result of a call to
+ * Result::flatMap()
+ */
 auto mapping(std::string name) {
     return [name = std::move(name)] (ValueContext const& vctx) mutable {
         return vctx.getMapping(std::move(name));
     };
 }
 
+/*!
+ * \brief Returns a mapping function which can be used to convert the
+ * returned ValueContext into a SequenceContext using Result::flatMap().
+ *
+ * If the result object does not contain a ValueContext, the call to
+ * Result::flatMap() will propagate the original error.
+ *
+ * If the ValueContext is not a sequence, the result of the call to
+ * Result::flatMap() will contain the error describing the issue.
+ *
+ * Example:
+ *
+ * ```cpp
+ * pimc::Result<MappingContext, ErrorContext> scalarField(
+ *         MappingContext const& mapCtx, std::string const& field) {
+ *     return mapCtx.required(field).flatMap(sequence());
+ * }
+ * ```
+ *
+ * @return a function which applies ValueContext::getSequence() to
+ * the ValueContext passed to it as a result of a call to
+ * Result::flatMap()
+ */
 auto sequence() {
     return [] (ValueContext const& vctx) { return vctx.getSequence(); };
 }
 
+/*!
+ * \brief Returns a mapping function which can be used to convert the
+ * returned ValueContext into a SequenceContext using Result::flatMap().
+ *
+ * The \p name parameter is the human readable description of the
+ * sequence.
+ *
+ * If the result object does not contain a ValueContext, the call to
+ * Result::flatMap() will propagate the original error.
+ *
+ * If the ValueContext is not a sequence, the result of the call to
+ * Result::flatMap() will contain the error describing the issue.
+ *
+ * Example:
+ *
+ * ```cpp
+ * pimc::Result<MappingContext, ErrorContext> scalarField(
+ *         MappingContext const& mapCtx, std::string const& field) {
+ *     return mapCtx.required(field).flatMap(sequence("host addresses"));
+ * }
+ * ```
+ *
+ * @return a function which applies ValueContext::getSequence() to
+ * the ValueContext passed to it as a result of a call to
+ * Result::flatMap()
+ */
 auto sequence(std::string name) {
     return [name = std::move(name)] (ValueContext const& vctx) mutable {
         return vctx.getSequence(std::move(name));
