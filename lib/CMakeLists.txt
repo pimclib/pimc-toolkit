@@ -47,6 +47,7 @@ target_sources(
         unix/TerminalColors.hpp
         yaml/StructuredYaml.hpp
         yaml/StructuredYaml.cpp
+        yaml/StructuredYamlErrorHandler.hpp
         yaml/YamlLoadAll.hpp
         yaml/YamlLoadAll.cpp
 )

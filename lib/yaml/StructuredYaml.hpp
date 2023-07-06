@@ -1,11 +1,16 @@
 #pragma once
 
 #include <utility>
+#include <vector>
 #include <unordered_set>
 #include <string>
 
 #include <fmt/format.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <yaml-cpp/yaml.h>
+#pragma GCC diagnostic pop
 
 #include "pimc/core/CompilerUtils.hpp"
 #include "pimc/core/Optional.hpp"
@@ -15,7 +20,7 @@
 
 using namespace std::string_literals;
 
-namespace pimc {
+namespace pimc::yaml {
 
 /*!
  * \brief An object that describes an error which occurs when the
@@ -83,9 +88,8 @@ public:
      *
      * @return the line in the YAML source file
      */
-    PIMC_ALWAYS_INLINE
-    int line() const {
-        return PIMC_LIKELY(node_.Mark().line != -1) ? node_.Mark().line + 1 : -1;
+    inline int line() const {
+        return nodeLine(node_);
     }
 
     /*!
@@ -101,19 +105,7 @@ public:
     ErrorContext error(
             fmt::format_string<Ts...> const& fs,
             Ts&& ... args) const {
-        int lineNo = line();
-        std::string context;
-
-        auto &mbctx = getMemoryBuffer();
-        auto bictx = std::back_inserter(mbctx);
-        for (auto const& name: ctx_)
-            fmt::format_to(bictx, "{}: ", name);
-        context = fmt::to_string(mbctx);
-
-        auto& mb = getMemoryBuffer();
-        auto bi = std::back_inserter(mb);
-        fmt::format_to(bi, fs, std::forward<Ts>(args)...);
-        return {lineNo, std::move(context), fmt::to_string(mb)};
+        return errorAt(line(), fs, std::forward<Ts>(args)...);
     }
 
 protected:
@@ -132,6 +124,30 @@ protected:
             : node_{node}
             , ctx_{std::move(parentCtx_)} {}
 
+    PIMC_ALWAYS_INLINE
+    static int nodeLine(YAML::Node const& n) {
+        return PIMC_LIKELY(n.Mark().line != -1) ? n.Mark().line + 1 : -1;
+    }
+
+    template <typename ... Ts>
+    ErrorContext errorAt(
+            int lineNo,
+            fmt::format_string<Ts...> const& fs,
+            Ts&& ... args) const {
+        std::string context;
+
+        auto &mbctx = getMemoryBuffer();
+        auto bictx = std::back_inserter(mbctx);
+        for (auto const& name: ctx_)
+            fmt::format_to(bictx, "{}: ", name);
+        context = fmt::to_string(mbctx);
+
+        auto& mb = getMemoryBuffer();
+        auto bi = std::back_inserter(mb);
+        fmt::format_to(bi, fs, std::forward<Ts>(args)...);
+        return {lineNo, std::move(context), fmt::to_string(mb)};
+    }
+
 protected:
     YAML::Node node_;
     std::vector<std::string> ctx_;
@@ -139,11 +155,11 @@ protected:
 
 /*!
  * An object which contains the string value of a YAML scalar and
- * the line in the YAML source code where the scalar was parsed.
+ * the line in the YAML source code where the scalar appears.
  */
-class ScalarRef final {
+class Scalar final {
 public:
-    ScalarRef(std::string value, int line)
+    Scalar(std::string value, int line)
             : value_{std::move(value)}, line_{line} {}
 
     /*!
@@ -164,12 +180,12 @@ public:
 
     /*!
      * \brief Returns the line in the YAML source where the scalar
-     * was parsed.
+     * appears.
      *
-     * If the YAML scalar was added programmatically, the returnved
+     * If the YAML scalar was added programmatically, the returned
      * value is -1.
      *
-     * @return the line in the YAML source
+     * @return the line in the YAML source where the scalar appears
      */
     [[nodiscard]]
     int line() const { return line_; }
@@ -260,7 +276,7 @@ public:
      * @return a result containing the scalar, or an error if this node
      * is not a scalar
      */
-    auto getScalar(std::string const& name) const -> Result<ScalarRef, ErrorContext>;
+    auto getScalar(std::string const& name) const -> Result<Scalar, ErrorContext>;
 
     /*!
      * \brief If the YAML node represented by this context is scalar,
@@ -272,7 +288,7 @@ public:
      * @return a result containing the scalar, or an error if this node
      * is not a scalar
      */
-    auto getScalar() const -> Result<ScalarRef, ErrorContext>;
+    auto getScalar() const -> Result<Scalar, ErrorContext>;
 
     /*!
      * \brief If the YAML node represented by this context is a mapping,
@@ -369,17 +385,20 @@ public:
 
     /*!
      * \brief If the YAML mapping contains unrecognized fields, returns a
-     * result whose error describes the unrecognized fields.
+     * vector containing an ErrorContext for each of the unrecognized
+     * fields.
+     *
+     * If the mapping has no unrecognized fields, the returned vector is
+     * empty.
      *
      * This function **must** be called after all of the calls to required()
      * and optional() have been made. This function considers any fields that
      * did not appear in the calls to required() and optional() as unrecognized.
      *
-     * @return an empty result if no unrecognized fields have been detected
-     * in the mapping, or a result containing an error describing the
-     * unrecognized fields
+     * @return a vector of ErrorContext objects describing the unrecognized
+     * fields
      */
-    auto unrecognized() const -> Result<void, ErrorContext>;
+    auto unrecognized() const -> std::vector<ErrorContext>;
 private:
     MappingContext(
             std::string name,
@@ -390,9 +409,9 @@ private:
 
     std::string describe(std::string const& field) const {
         if (name_.empty())
-            return fmt::format("field {}", field);
+            return fmt::format("field '{}'", field);
 
-        return fmt::format("field {} of {}", field, name_);
+        return fmt::format("field '{}' of {}", field, name_);
     }
 
 private:
@@ -426,6 +445,15 @@ public:
      */
     auto operator[] (size_t i) const -> Result<ValueContext, ErrorContext>;
 
+    /*!
+     * \brief Returns a vector of ValueContext objects for each of the
+     * element of the sequence in the same order.
+     *
+     * @return a vector of ValueContext object for the elements of the sequence
+     */
+    [[nodiscard]]
+    std::vector<ValueContext> list() const;
+
 private:
     SequenceContext(
             std::string name,
@@ -445,17 +473,17 @@ private:
     using NodeContext::NodeContext;
 };
 
-auto ValueContext::getScalar()
-const -> Result<ScalarRef, ErrorContext> {
+inline auto ValueContext::getScalar()
+const -> Result<Scalar, ErrorContext> {
     return getScalar(""s);
 }
 
-auto ValueContext::getMapping()
+inline auto ValueContext::getMapping()
 const -> Result<MappingContext, ErrorContext> {
     return getMapping(""s);
 }
 
-auto ValueContext::getSequence() const
+inline auto ValueContext::getSequence() const
 -> Result<SequenceContext, ErrorContext> {
     return getSequence(""s);
 }
@@ -483,7 +511,7 @@ auto ValueContext::getSequence() const
  * the ValueContext passed to it as a result of a call to
  * Result::flatMap()
  */
-auto scalar() {
+inline auto scalar() {
     return [] (ValueContext const& vctx) { return vctx.getScalar(); };
 }
 
@@ -513,7 +541,7 @@ auto scalar() {
  * the ValueContext passed to it as a result of a call to
  * Result::flatMap()
  */
-auto scalar(std::string const& name) {
+inline auto scalar(std::string const& name) {
     return [&name] (ValueContext const& vctx) {
         return vctx.getScalar(name);
     };
@@ -542,7 +570,7 @@ auto scalar(std::string const& name) {
  * the ValueContext passed to it as a result of a call to
  * Result::flatMap()
  */
-auto mapping() {
+inline auto mapping() {
     return [] (ValueContext const& vctx) { return vctx.getMapping(); };
 }
 
@@ -572,7 +600,7 @@ auto mapping() {
  * the ValueContext passed to it as a result of a call to
  * Result::flatMap()
  */
-auto mapping(std::string name) {
+inline auto mapping(std::string name) {
     return [name = std::move(name)] (ValueContext const& vctx) mutable {
         return vctx.getMapping(std::move(name));
     };
@@ -601,7 +629,7 @@ auto mapping(std::string name) {
  * the ValueContext passed to it as a result of a call to
  * Result::flatMap()
  */
-auto sequence() {
+inline auto sequence() {
     return [] (ValueContext const& vctx) { return vctx.getSequence(); };
 }
 
@@ -631,10 +659,10 @@ auto sequence() {
  * the ValueContext passed to it as a result of a call to
  * Result::flatMap()
  */
-auto sequence(std::string name) {
+inline auto sequence(std::string name) {
     return [name = std::move(name)] (ValueContext const& vctx) mutable {
         return vctx.getSequence(std::move(name));
     };
 }
 
-} // namespace pimc
+} // namespace pimc::yaml

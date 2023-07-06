@@ -1,9 +1,9 @@
 #include "StructuredYaml.hpp"
 
-namespace pimc {
+namespace pimc::yaml {
 
 auto ValueContext::getScalar(std::string const& name)
-const -> Result<ScalarRef, ErrorContext> {
+const -> Result<Scalar, ErrorContext> {
     auto err = [this, &name] (char const* typ) {
         if (name.empty())
             return fail(error("expecting a scalar, not {}", typ));
@@ -12,15 +12,15 @@ const -> Result<ScalarRef, ErrorContext> {
     auto t = node_.Type();
     switch (t) {
     case YAML::NodeType::Map:
-        return err("mapping");
+        return err("a mapping");
     case YAML::NodeType::Undefined:
         return err("undefined");
     case YAML::NodeType::Null:
         return err("null");
     case YAML::NodeType::Scalar:
-        return ScalarRef{node_.Scalar(), line()};
+        return Scalar{node_.Scalar(), line()};
     case YAML::NodeType::Sequence:
-        return err("sequence");
+        return err("a sequence");
     }
 
     raise<std::runtime_error>("unhandled yaml-cpp type {}", static_cast<int>(t));
@@ -42,9 +42,9 @@ const -> Result<MappingContext, ErrorContext> {
     case YAML::NodeType::Null:
         return err("null");
     case YAML::NodeType::Scalar:
-        return err("scalar");
+        return err("a scalar");
     case YAML::NodeType::Sequence:
-        return err("sequence");
+        return err("a sequence");
     }
 
     raise<std::runtime_error>("unhandled yaml-cpp type {}", static_cast<int>(t));
@@ -60,13 +60,13 @@ const -> Result<SequenceContext, ErrorContext> {
     auto t = node_.Type();
     switch (t) {
     case YAML::NodeType::Map:
-        return err("mapping");
+        return err("a mapping");
     case YAML::NodeType::Undefined:
         return err("undefined");
     case YAML::NodeType::Null:
         return err("null");
     case YAML::NodeType::Scalar:
-        return err("scalar");
+        return err("a scalar");
     case YAML::NodeType::Sequence:
         return SequenceContext{std::move(name), node_, ctx_};
     }
@@ -95,24 +95,21 @@ const -> Optional<ValueContext> {
     return ValueContext{node, ctx_, describe(field)};
 }
 
-auto MappingContext::unrecognized() const -> Result<void, ErrorContext> {
-    std::set<std::string> uflds;
+auto MappingContext::unrecognized() const -> std::vector<ErrorContext> {
+    std::vector<ErrorContext> uflds;
     for (auto ii = node_.begin(); ii != node_.end(); ++ii) {
-        auto fn = ii->first.as<std::string>();
-        if (not knownFields_.contains(fn))
-            uflds.emplace(std::move(fn));
+        YAML::Node const& n = ii->first;
+        auto fn = n.as<std::string>();
+        if (not knownFields_.contains(fn)) {
+            if (name_.empty())
+                uflds.emplace_back(
+                        errorAt(nodeLine(n), "unrecognized field '{}'", fn));
+            else uflds.emplace_back(
+                    errorAt(nodeLine(n), "unrecognized field '{}' in {}", fn, name_));
+        }
     }
 
-    if (uflds.empty()) return {};
-
-    if (name_.empty())
-        return fail(error(
-                "unrecognized fields: {}",
-                fmt::join(uflds, ", ")));
-
-    return fail(error(
-            "unrecognized fields in {}: {}",
-            name_, fmt::join(uflds, ", ")));
+    return uflds;
 }
 
 auto SequenceContext::operator[] (size_t i)
@@ -125,6 +122,12 @@ const -> Result<ValueContext, ErrorContext>{
             describe(i), node_.size()));
 }
 
+std::vector<ValueContext> SequenceContext::list() const {
+    std::vector<ValueContext> elems;
+    elems.reserve(node_.size());
+    for (size_t i{0}; i < node_.size(); ++i)
+        elems.emplace_back(ValueContext{node_[i], ctx_, describe(i)});
+    return elems;
+}
 
-
-} // namespace pimc
+} // namespace pimc::yaml

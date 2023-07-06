@@ -14,4 +14,5 @@ PIMC API
    sections/unix
    sections/time
    sections/text
+   sections/yaml
    

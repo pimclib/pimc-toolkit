@@ -9,9 +9,9 @@
 
 namespace fs = std::filesystem;
 
-namespace pimc {
+namespace pimc::yaml {
 
-auto yamlLoadAll(char const* ymlfn) -> Result<std::vector<YAML::Node>, std::string> {
+auto loadAll(char const* ymlfn) -> Result<std::vector<YAML::Node>, std::string> {
     fs::path yml{ymlfn};
 
     if (not fs::exists(yml))
@@ -52,6 +52,5 @@ auto yamlLoadAll(char const* ymlfn) -> Result<std::vector<YAML::Node>, std::stri
                 expt.msg));
     }
 }
-
 
 } // namespace pimc
