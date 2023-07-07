@@ -19,7 +19,6 @@ public:
     std::vector<net::IPv4Address> const& prunes() const {
         return prunes_;
     }
-private:
 
 private:
     net::IPv4Address rp_;

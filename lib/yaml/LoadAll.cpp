@@ -5,7 +5,7 @@
 #include "pimc/core/Deferred.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
-#include "YamlLoadAll.hpp"
+#include "LoadAll.hpp"
 
 namespace fs = std::filesystem;
 

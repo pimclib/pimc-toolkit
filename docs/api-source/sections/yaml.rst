@@ -9,9 +9,11 @@ Example:
 
 .. code-block:: cpp
 
-   #include "pimc/yaml/YamlLoadAll.hpp"
-   #include "pimc/yaml/StructuredYaml.hpp"
-   #include "pimc/yaml/StructuredYamlErrorHandler.hpp"
+   #include <fmt/format.h>
+   
+   #include "pimc/yaml/LoadAll.hpp"
+   #include "pimc/yaml/Structured.hpp"
+   #include "pimc/yaml/ErrorHandler.hpp"
    
    namespace pimc {
    
@@ -138,12 +140,11 @@ Example:
        return 0;
    }
    
-   
 
 Reference
 =========
 
-Include file ``pimc/yaml/YamlLoadAll.hpp``
+Include file ``pimc/yaml/LoadAll.hpp``
 ------------------------------------------
 
 This include file contains one function :cpp:func:`pimc::yaml::loadAll`, which
@@ -154,7 +155,7 @@ loads all documents from a YAML file.
 
 .. _yaml-structured-yaml-hpp:
 	     
-Include file ``pimc/yaml/StructuredYaml.hpp``
+Include file ``pimc/yaml/Structured.hpp``
 ---------------------------------------------
 
 This include file contains the utility classes and functions which allow processing
@@ -202,15 +203,12 @@ the parsed YAML data in a structured manner.
 .. doxygenfunction:: pimc::yaml::sequence(std::string name)
    :project: PimcLib
 
-Include file ``pimc/yaml/StructuredYamlErrorHandler.hpp``
+Include file ``pimc/yaml/ErrorHandler.hpp``
 ---------------------------------------------------------
 
 This include file contains utility classes which help keep track of errors while
 interpreting the parsed YAML data using the functionality in the include file
 :ref:`"pimc/yaml/StructuredYaml.hpp" <yaml-structured-yaml-hpp>`.
-
-.. doxygenconcept:: pimc::yaml::ErrorReporter
-   :project: PimcLib
 
 .. doxygenenum:: pimc::yaml::ErrorContextShow
    :project: PimcLib
@@ -220,5 +218,18 @@ interpreting the parsed YAML data using the functionality in the include file
    :members:
 
 .. doxygenstruct:: pimc::yaml::StderrErrorHandler
+   :project: PimcLib
+   :members:
+
+Include file ``pimc/yaml/BuilderBase.hpp``
+------------------------------------------
+
+This include file contains a utilities which help create builder style YAML
+processors.
+
+.. doxygenconcept:: pimc::yaml::ErrorConsumer
+   :project: PimcLib
+
+.. doxygenclass:: pimc::yaml::BuilderBase
    :project: PimcLib
    :members:

@@ -45,11 +45,12 @@ target_sources(
         unix/GetOptLong.hpp
         unix/GetOptLong.cpp
         unix/TerminalColors.hpp
-        yaml/StructuredYaml.hpp
-        yaml/StructuredYaml.cpp
-        yaml/StructuredYamlErrorHandler.hpp
-        yaml/YamlLoadAll.hpp
-        yaml/YamlLoadAll.cpp
+        yaml/Structured.hpp
+        yaml/Structured.cpp
+        yaml/BuilderBase.hpp
+        yaml/ErrorHandler.hpp
+        yaml/LoadAll.hpp
+        yaml/LoadAll.cpp
 )
 
 export_headers(PimcLib ${CMAKE_CURRENT_LIST_DIR} pimc)

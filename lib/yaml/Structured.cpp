@@ -1,4 +1,4 @@
-#include "StructuredYaml.hpp"
+#include "Structured.hpp"
 
 namespace pimc::yaml {
 

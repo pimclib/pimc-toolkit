@@ -1,38 +1,8 @@
 #pragma once
 
-#include "StructuredYaml.hpp"
+#include "Structured.hpp"
 
 namespace pimc::yaml {
-
-/*!
- * A concept which requires that a class which extends ErrorHandler
- * must have a function showError(ErrorContext const& ectx)
- *
- * @tparam T the class extending ErrorHandler
- */
-template <typename T>
-concept ErrorReporter = requires(T t, ErrorContext const& ectx) {
-    t.showError(ectx);
-};
-
-/*!
- * An enumeration which is used to convey to the ErrorReporter if
- * the context of the error should be always shown or only if the
- * line numbers in the source YAML file are not available.
- */
-enum class ErrorContextShow: int {
-    /*!
-     * Indicates that the context of the error messages should only
-     * be shown if the line numbers in the source YAML file are not
-     * available.
-     */
-    Optionally = 0,
-    /*!
-     * Indicates that the context of the error messages should always
-     * be shown.
-     */
-    Always = 1
-};
 
 /*!
  * \brief A structured YAML error handler base class.
@@ -41,28 +11,26 @@ enum class ErrorContextShow: int {
  * addition it also keeps track if any errors occurred during
  * structured YAML processing.
  *
- * It relies on the class that extends it to perform the output of
- * the error messages.
- *
- * @tparam ER a class that satisfies the ErrorReporter concept
+ * It's an abstract class which requires the concrete class to provide
+ * the function showError() which is responsible for presenting the
+ * error to the user.
  */
-template <typename ER>
 class ErrorHandler {
 public:
     constexpr explicit ErrorHandler(const char* yamlfn)
     : yamlfn_{yamlfn}, cnt_{0} {}
 
+    virtual ~ErrorHandler() = default;
+
     /*!
      * \brief Reports an error if \p r contains error, otherwise does
      * nothing, and always returns \p unchanged.
      *
-     * @tparam T  a type which must be Scalar, ValueContext, MappingContext
-     * or SequenceContext
+     * @tparam T  the value type
      * @param r the result of structured YAML operation
      * @return the same result \p r
      */
     template <typename T>
-    requires OneOf<T, Scalar, ValueContext, MappingContext, SequenceContext>
     auto chk(Result<T, ErrorContext> r) -> Result<T, ErrorContext> {
         if (r.hasError()) error(r.error());
 
@@ -88,7 +56,7 @@ public:
      */
     void error(ErrorContext const& ectx) {
         ++cnt_;
-        impl().showError(ectx);
+        showError(ectx);
     }
 
     /*!
@@ -99,14 +67,39 @@ public:
     [[nodiscard]]
     int errors() const { return cnt_; }
 
-private:
-    template <typename Self = ER>
-    Self& impl() noexcept requires ErrorReporter<Self> {
-        return static_cast<Self&>(*this);
-    }
+    /*!
+     * \brief Returns the name of the YAML source file.
+     *
+     * @return the name of the YAML source file
+     */
+    [[nodiscard]]
+    char const* filename() const { return yamlfn_; }
+
 protected:
+    virtual void showError(ErrorContext const&) = 0;
+
+private:
     char const* yamlfn_;
     int cnt_;
+};
+
+/*!
+ * An enumeration which is used to convey to the ErrorReporter if
+ * the context of the error should be always shown or only if the
+ * line numbers in the source YAML file are not available.
+ */
+enum class ErrorContextShow: int {
+    /*!
+     * Indicates that the context of the error messages should only
+     * be shown if the line numbers in the source YAML file are not
+     * available.
+     */
+    Optionally = 0,
+    /*!
+     * Indicates that the context of the error messages should always
+     * be shown.
+     */
+    Always = 1
 };
 
 /*!
@@ -117,15 +110,15 @@ protected:
  * number in the source YAML file is not available.
  */
 template <ErrorContextShow ECS = ErrorContextShow::Optionally>
-struct StderrErrorHandler: public ErrorHandler<StderrErrorHandler<ECS>> {
-    using ErrorHandler<StderrErrorHandler<ECS>>::ErrorHandler;
+struct StderrErrorHandler: public ErrorHandler {
+    using ErrorHandler::ErrorHandler;
 
-    void showError(ErrorContext const& ectx) {
+    void showError(ErrorContext const& ectx) final {
         auto& mb = getMemoryBuffer();
         auto bi = std::back_inserter(mb);
         fmt::format_to(bi, "error: ");
         if (ectx.line() != -1)
-            fmt::format_to(bi, "{}, {}: ", this->yamlfn_, ectx.line());
+            fmt::format_to(bi, "{}, {}: ", filename(), ectx.line());
         if constexpr (ECS == ErrorContextShow::Always) {
             fmt::format_to(bi, "{}", ectx.context());
         } else {
