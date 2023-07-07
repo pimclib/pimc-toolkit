@@ -107,4 +107,6 @@ struct PIMSMv2HelloOption final {
 
 static_assert(sizeof(PIMSMv2HelloOption) == 4u);
 
+constexpr size_t PIMSMv2IPv4MaxPruneSGrptLen{180u};
+
 } // namespace pimc

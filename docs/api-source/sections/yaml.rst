@@ -87,10 +87,10 @@ Example:
                    }
                }
    
-               ec.chk(rType->unrecognized());
+               ec.chk(rType->extraneous());
            }
    
-           ec.chk(cfg->unrecognized());
+           ec.chk(cfg->extraneous());
        }
    
        if (ec.errors() == 0) {

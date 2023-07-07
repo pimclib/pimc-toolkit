@@ -1,9 +1,10 @@
+#include <unordered_map>
 #include "Structured.hpp"
 
 namespace pimc::yaml {
 
 auto ValueContext::getScalar(std::string const& name)
-const -> Result<Scalar, ErrorContext> {
+const -> Result<ScalarContext, ErrorContext> {
     auto err = [this, &name] (char const* typ) {
         if (name.empty())
             return fail(error("expecting a scalar, not {}", typ));
@@ -18,7 +19,7 @@ const -> Result<Scalar, ErrorContext> {
     case YAML::NodeType::Null:
         return err("null");
     case YAML::NodeType::Scalar:
-        return Scalar{node_.Scalar(), line()};
+        return ScalarContext{node_, ctx_};
     case YAML::NodeType::Sequence:
         return err("a sequence");
     }
@@ -95,21 +96,37 @@ const -> Optional<ValueContext> {
     return ValueContext{node, ctx_, describe(field)};
 }
 
-auto MappingContext::unrecognized() const -> std::vector<ErrorContext> {
-    std::vector<ErrorContext> uflds;
+auto MappingContext::extraneous() const -> std::vector<ErrorContext> {
+    std::vector<ErrorContext> errors;
+    std::unordered_map<std::string, int> observed;
+
     for (auto ii = node_.begin(); ii != node_.end(); ++ii) {
         YAML::Node const& n = ii->first;
         auto fn = n.as<std::string>();
+        auto line = nodeLine(n);
         if (not knownFields_.contains(fn)) {
             if (name_.empty())
-                uflds.emplace_back(
-                        errorAt(nodeLine(n), "unrecognized field '{}'", fn));
-            else uflds.emplace_back(
-                    errorAt(nodeLine(n), "unrecognized field '{}' in {}", fn, name_));
+                errors.emplace_back(
+                        errorAt(line, "unrecognized field '{}'", fn));
+            else errors.emplace_back(
+                    errorAt(line, "unrecognized field '{}' in {}", fn, name_));
+        }
+
+        auto nfi = observed.try_emplace(std::move(fn), line);
+        if (not nfi.second) {
+            if (name_.empty())
+                errors.emplace_back(
+                        errorAt(line,
+                                "duplicate field '{}', previously seen at line {}",
+                                nfi.first->first, nfi.first->second));
+            else errors.emplace_back(
+                        errorAt(line,
+                                "duplicate field '{}' in {}, previously seen at line {}",
+                                nfi.first->first, name_, nfi.first->second));
         }
     }
 
-    return uflds;
+    return errors;
 }
 
 auto SequenceContext::operator[] (size_t i)

@@ -41,6 +41,7 @@ target_sources(
         text/IndentBlock.hpp
         text/CString.hpp
         text/SCLine.hpp
+        text/Location.hpp
         unix/SignalHandler.hpp
         unix/GetOptLong.hpp
         unix/GetOptLong.cpp

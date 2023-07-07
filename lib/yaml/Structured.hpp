@@ -108,6 +108,30 @@ public:
         return errorAt(line(), fs, std::forward<Ts>(args)...);
     }
 
+    /*!
+     * \brief Creates an error context for the YAML node represented by
+     * this context with the specified error message.
+     *
+     * This function is useful to convert textual error messages
+     * returned by general purpose functions in the form of
+     * Result<T, std::string> (e.g. an IP address parser, etc.) for
+     * the node represented by this context.
+     *
+     * @tparam T a type from which std::string can be constructed
+     * @param msg the message
+     * @return an error context
+     */
+    template <typename T>
+    requires requires(T&& v) { std::string(std::forward<T>(v)); }
+    ErrorContext error(T&& msg) const {
+        auto &mbctx = getMemoryBuffer();
+        auto bictx = std::back_inserter(mbctx);
+        for (auto const& name: ctx_)
+            fmt::format_to(bictx, "{}: ", name);
+        std::string context = fmt::to_string(mbctx);
+        return {line(), std::move(context), std::forward<T>(msg)};
+    }
+
 protected:
     NodeContext(
             YAML::Node const& node,
@@ -134,13 +158,11 @@ protected:
             int lineNo,
             fmt::format_string<Ts...> const& fs,
             Ts&& ... args) const {
-        std::string context;
-
         auto &mbctx = getMemoryBuffer();
         auto bictx = std::back_inserter(mbctx);
         for (auto const& name: ctx_)
             fmt::format_to(bictx, "{}: ", name);
-        context = fmt::to_string(mbctx);
+        std::string context = fmt::to_string(mbctx);
 
         auto& mb = getMemoryBuffer();
         auto bi = std::back_inserter(mb);
@@ -153,47 +175,9 @@ protected:
     std::vector<std::string> ctx_;
 };
 
-/*!
- * An object which contains the string value of a YAML scalar and
- * the line in the YAML source code where the scalar appears.
- */
-class Scalar final {
-public:
-    Scalar(std::string value, int line)
-            : value_{std::move(value)}, line_{line} {}
 
-    /*!
-     * \brief Returns the const reference to the value of the scalar.
-     *
-     * @return the const reference to the value of the scalar
-     */
-    [[nodiscard]]
-    std::string const& value() const& { return value_; }
 
-    /*!
-     * \brief Returns an rvalue reference to the value of the scalar.
-     *
-     * @return an rvalue reference to the value of the scalar
-     */
-    [[nodiscard]]
-    std::string value() && { return std::move(value_); }
-
-    /*!
-     * \brief Returns the line in the YAML source where the scalar
-     * appears.
-     *
-     * If the YAML scalar was added programmatically, the returned
-     * value is -1.
-     *
-     * @return the line in the YAML source where the scalar appears
-     */
-    [[nodiscard]]
-    int line() const { return line_; }
-private:
-    std::string value_;
-    int line_;
-};
-
+class ScalarContext;
 class MappingContext;
 class SequenceContext;
 
@@ -276,7 +260,7 @@ public:
      * @return a result containing the scalar, or an error if this node
      * is not a scalar
      */
-    auto getScalar(std::string const& name) const -> Result<Scalar, ErrorContext>;
+    auto getScalar(std::string const& name) const -> Result<ScalarContext, ErrorContext>;
 
     /*!
      * \brief If the YAML node represented by this context is scalar,
@@ -288,7 +272,7 @@ public:
      * @return a result containing the scalar, or an error if this node
      * is not a scalar
      */
-    auto getScalar() const -> Result<Scalar, ErrorContext>;
+    auto getScalar() const -> Result<ScalarContext, ErrorContext>;
 
     /*!
      * \brief If the YAML node represented by this context is a mapping,
@@ -352,6 +336,29 @@ private:
 };
 
 /*!
+ * A context representing a YAML scalar.
+ */
+class ScalarContext final: public NodeContext {
+    friend class ValueContext;
+public:
+
+    /*!
+     * \brief Returns the const reference to the value of the scalar.
+     *
+     * @return the const reference to the value of the scalar
+     */
+    [[nodiscard]]
+    std::string const& value() const& { return node_.Scalar(); }
+
+private:
+    ScalarContext(
+            YAML::Node const& node,
+            std::vector<std::string> parentCtx)
+            : NodeContext{node, std::move(parentCtx)} {}
+
+};
+
+/*!
  * A context representing a YAML mapping.
  */
 class MappingContext final: public NodeContext {
@@ -384,11 +391,10 @@ public:
     auto optional(std::string const& field) const -> Optional<ValueContext>;
 
     /*!
-     * \brief If the YAML mapping contains unrecognized fields, returns a
-     * vector containing an ErrorContext for each of the unrecognized
-     * fields.
+     * \brief If the YAML mapping contains unrecognized or duplicate fields,
+     * returns a vector containing an ErrorContext for each of those fields.
      *
-     * If the mapping has no unrecognized fields, the returned vector is
+     * If the mapping has no extraneous fields, the returned vector is
      * empty.
      *
      * This function **must** be called after all of the calls to required()
@@ -398,7 +404,7 @@ public:
      * @return a vector of ErrorContext objects describing the unrecognized
      * fields
      */
-    auto unrecognized() const -> std::vector<ErrorContext>;
+    auto extraneous() const -> std::vector<ErrorContext>;
 private:
     MappingContext(
             std::string name,
@@ -474,7 +480,7 @@ private:
 };
 
 inline auto ValueContext::getScalar()
-const -> Result<Scalar, ErrorContext> {
+const -> Result<ScalarContext, ErrorContext> {
     return getScalar(""s);
 }
 
