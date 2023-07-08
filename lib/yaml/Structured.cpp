@@ -76,7 +76,7 @@ const -> Result<SequenceContext, ErrorContext> {
 }
 
 
-auto MappingContext::required(std::string const& field)
+auto MappingContext::required(std::string const& field) const
 -> Result<ValueContext, ErrorContext> {
     knownFields_.emplace(field);
     auto node = node_[field];
@@ -96,33 +96,77 @@ const -> Optional<ValueContext> {
     return ValueContext{node, ctx_, describe(field)};
 }
 
+auto MappingContext::items() const
+-> std::vector<std::pair<ValueContext, ValueContext>> {
+    if (node_.size() == 0) return {};
+
+    std::vector<std::pair<ValueContext, ValueContext>> ks;
+    ks.reserve(node_.size());
+    for (auto ii = node_.begin(); ii != node_.end(); ++ii)
+        ks.emplace_back(ValueContext{ii->first, ctx_}, ValueContext{ii->second, ctx_});
+    return ks;
+}
+
 auto MappingContext::extraneous() const -> std::vector<ErrorContext> {
     std::vector<ErrorContext> errors;
     std::unordered_map<std::string, int> observed;
 
     for (auto ii = node_.begin(); ii != node_.end(); ++ii) {
         YAML::Node const& n = ii->first;
-        auto fn = n.as<std::string>();
         auto line = nodeLine(n);
-        if (not knownFields_.contains(fn)) {
-            if (name_.empty())
-                errors.emplace_back(
-                        errorAt(line, "unrecognized field '{}'", fn));
-            else errors.emplace_back(
-                    errorAt(line, "unrecognized field '{}' in {}", fn, name_));
+        Optional<std::string> key;
+
+        switch(n.Type()) {
+        case YAML::NodeType::Undefined:
+            errors.emplace_back(
+                    errorAt(line, "mapping key may not be undefined"));
+            break;
+        case YAML::NodeType::Null:
+            errors.emplace_back(
+                    errorAt(line, "mapping key may not be null"));
+            break;
+        case YAML::NodeType::Scalar:
+            key = n.as<std::string>();
+            break;
+        case YAML::NodeType::Sequence:
+            errors.emplace_back(
+                    errorAt(line, "mapping key may not be a sequence"));
+            break;
+        case YAML::NodeType::Map:
+            errors.emplace_back(
+                    errorAt(line, "mapping key may not be another mapping"));
+            break;
+        default:
+            errors.emplace_back(
+                    errorAt(line, "unrecognized mapping key type"));
         }
 
-        auto nfi = observed.try_emplace(std::move(fn), line);
-        if (not nfi.second) {
-            if (name_.empty())
-                errors.emplace_back(
-                        errorAt(line,
-                                "duplicate field '{}', previously seen at line {}",
-                                nfi.first->first, nfi.first->second));
-            else errors.emplace_back(
-                        errorAt(line,
-                                "duplicate field '{}' in {}, previously seen at line {}",
-                                nfi.first->first, name_, nfi.first->second));
+        if (key) {
+            auto const& fn = key.value();
+            if (not knownFields_.contains(fn)) {
+                if (name_.empty())
+                    errors.emplace_back(
+                            errorAt(line, "unrecognized field '{}'", fn));
+                else
+                    errors.emplace_back(
+                            errorAt(line, "unrecognized field '{}' in {}", fn, name_));
+            }
+
+            auto nfi = observed.try_emplace(std::move(key).value(), line);
+            if (not nfi.second) {
+                if (name_.empty())
+                    errors.emplace_back(
+                            errorAt(line,
+                                    "duplicate field '{}', "
+                                    "previously seen at line {}",
+                                    nfi.first->first, nfi.first->second));
+                else
+                    errors.emplace_back(
+                            errorAt(line,
+                                    "duplicate field '{}' in {}, "
+                                    "previously seen at line {}",
+                                    nfi.first->first, name_, nfi.first->second));
+            }
         }
     }
 

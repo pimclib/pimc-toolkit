@@ -7,9 +7,9 @@
 
 namespace pimc {
 
-class SharedTree final {
+class RPTConfig final {
 public:
-    SharedTree(net::IPv4Address rp, std::vector<net::IPv4Address> prunes)
+    RPTConfig(net::IPv4Address rp, std::vector<net::IPv4Address> prunes)
     : rp_{rp}, prunes_{std::move(prunes)} {}
 
     [[nodiscard]]
@@ -25,11 +25,11 @@ private:
     std::vector<net::IPv4Address> prunes_;
 };
 
-class GroupEntry {
+class GroupConfig {
 public:
-    GroupEntry(
+    GroupConfig(
             net::IPv4Address group,
-            std::optional<SharedTree> spt,
+            std::optional<RPTConfig> spt,
             std::vector<net::IPv4Address> joins)
             : group_{group}
             , spt_{std::move(spt)}
@@ -39,25 +39,25 @@ public:
     net::IPv4Address group() const { return group_; }
 
     [[nodiscard]]
-    std::optional<SharedTree> const& spt() const { return spt_; }
+    std::optional<RPTConfig> const& rpt() const { return spt_; }
 
     [[nodiscard]]
-    std::vector<net::IPv4Address> const& joins() const { return joins_; }
+    std::vector<net::IPv4Address> const& spt() const { return joins_; }
 private:
     net::IPv4Address group_;
-    std::optional<SharedTree> spt_;
+    std::optional<RPTConfig> spt_;
     std::vector<net::IPv4Address> joins_;
 };
 
 class JPConfig final {
 public:
-    explicit JPConfig(std::vector<GroupEntry> groups)
+    explicit JPConfig(std::vector<GroupConfig> groups)
     : groups_{std::move(groups)} {}
 
     [[nodiscard]]
-    std::vector<GroupEntry> const& groups() const { return groups_; }
+    std::vector<GroupConfig> const& groups() const { return groups_; }
 private:
-    std::vector<GroupEntry> groups_;
+    std::vector<GroupConfig> groups_;
 };
 
 } // namespace pimc

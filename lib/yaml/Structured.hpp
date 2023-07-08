@@ -375,7 +375,8 @@ public:
      * @return a result containing a ValueContext representing the field,
      * or an error if there is no such field
      */
-    auto required(std::string const& field) -> Result<ValueContext, ErrorContext>;
+    [[nodiscard]]
+    auto required(std::string const& field) const -> Result<ValueContext, ErrorContext>;
 
     /*!
      * \brief Returns an optional containing a ValueContext for the specified
@@ -388,7 +389,16 @@ public:
      * @return an optional containing a ValueContext representing the field,
      * or an empty optional if there is no such field
      */
+    [[nodiscard]]
     auto optional(std::string const& field) const -> Optional<ValueContext>;
+
+    /*!
+     * \brief Returns a vector consisting of key/value pairs of the mapping.
+     *
+     * @return a vector consisting of key/value pairs of the mapping
+     */
+    [[nodiscard]]
+    auto items() const -> std::vector<std::pair<ValueContext, ValueContext>>;
 
     /*!
      * \brief If the YAML mapping contains unrecognized or duplicate fields,
