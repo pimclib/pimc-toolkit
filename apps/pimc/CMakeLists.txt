@@ -1,3 +1,9 @@
+set(PIMSMConfig
+        config/PIMSMConfig.hpp
+        config/PIMSMConfigLoader.hpp
+        config/PIMSMConfigLoader.cpp
+)
+
 set(JPConfig
         config/JPConfigLoader.hpp
         config/JPConfig.hpp
@@ -7,6 +13,8 @@ set(JPConfig
 add_executable(
         pimc
         Main.cpp
+        config/ConfigUtils.hpp
+        ${PIMSMConfig}
         ${JPConfig}
 )
 

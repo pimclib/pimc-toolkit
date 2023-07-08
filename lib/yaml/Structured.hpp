@@ -393,6 +393,13 @@ public:
     auto optional(std::string const& field) const -> Optional<ValueContext>;
 
     /*!
+     * \brief Returns the size of the mapping.
+     *
+     * @return the size of the mapping
+     */
+    size_t size() const { return node_.size(); }
+
+    /*!
      * \brief Returns a vector consisting of key/value pairs of the mapping.
      *
      * @return a vector consisting of key/value pairs of the mapping

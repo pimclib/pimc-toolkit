@@ -1,6 +1,7 @@
 #include <set>
 #include <map>
 #include <unordered_map>
+#include <algorithm>
 
 #include <fmt/format.h>
 
@@ -61,25 +62,6 @@ std::vector<net::IPv4Address> set2vec(std::set<net::IPv4Address> const& s) {
     return vs;
 }
 
-Result<net::IPv4Address, std::string> srcAddr(std::string const& s) {
-    auto osa = parseIPv4Address(s);
-    if (not osa)
-        return fail(fmt::format("invalid source IPv4 address '{}'", s));
-
-    net::IPv4Address sa = osa.value();
-    if (sa.isDefault() or sa.isLocalBroadcast())
-        return fail(fmt::format("invalid source IPv4 address {}", sa));
-
-    if (sa.isLoopback())
-        return fail(fmt::format(
-                "invalid source IPv4 address {}: address may not be loopback", sa));
-
-    if (sa.isMcast())
-        return fail(fmt::format(
-                "invalid source IPv4 address {}: address may not be multicast", sa));
-
-    return sa;
-}
 
 Result<net::IPv4Address, std::string> grpAddr(std::string const& g) {
     auto oga = parseIPv4Address(g);
@@ -94,10 +76,32 @@ Result<net::IPv4Address, std::string> grpAddr(std::string const& g) {
     return ga;
 }
 
-struct IPv4JPGroupConfigBuilder final: yaml::BuilderBase<IPv4JPGroupConfigBuilder> {
+struct BuilderBase: yaml::BuilderBase<BuilderBase> {
+    constexpr explicit BuilderBase(std::vector<yaml::ErrorContext>& errors)
+    : errors_{errors} {}
+
+    void chkExtraneous(yaml::MappingContext const& mCtx) {
+        auto extraneous = mCtx.extraneous();
+        if (not extraneous.empty()) {
+            errors_.reserve(errors_.size() + extraneous.size());
+            for (auto& e: extraneous)
+                errors_.emplace_back(std::move(e));
+        }
+    }
+
+    void consume(yaml::ErrorContext ectx) {
+        errors_.emplace_back(std::move(ectx));
+    }
+
+    std::vector<yaml::ErrorContext>& errors_;
+};
+
+struct IPv4JPGroupConfigBuilder final: BuilderBase {
     IPv4JPGroupConfigBuilder(
-            net::IPv4Address group, std::vector<yaml::ErrorContext>& errors)
-    : group_{group}, errors_{errors} {}
+            std::vector<yaml::ErrorContext>& errors,
+            net::IPv4Address group,
+            int line)
+    : BuilderBase{errors}, group_{group}, line_{line} {}
 
     // The handler for the "Join*" entry:
     void loadRPTConfig(yaml::ValueContext const& rptCtx) {
@@ -241,7 +245,7 @@ struct IPv4JPGroupConfigBuilder final: yaml::BuilderBase<IPv4JPGroupConfigBuilde
 
             errors_.emplace_back(
                     nctx.error(
-                            "duplicate {} {}: declared as {} in line {}",
+                            "duplicate {} {}: declared as {} on line {}",
                             src, jpst, eJpsi.type_, eJpsi.type_));
             return false;
         }
@@ -249,50 +253,85 @@ struct IPv4JPGroupConfigBuilder final: yaml::BuilderBase<IPv4JPGroupConfigBuilde
         return true;
     }
 
-    void chkExtraneous(yaml::MappingContext const& mCtx) {
-        auto extraneous = mCtx.extraneous();
-        if (not extraneous.empty()) {
-            errors_.reserve(errors_.size() + extraneous.size());
-            for (auto& e: extraneous)
-                errors_.emplace_back(std::move(e));
-        }
-    }
-
-    void consume(yaml::ErrorContext ectx) {
-        errors_.emplace_back(std::move(ectx));
-    }
-
     net::IPv4Address group_;
+    int line_;
+
     // If this IP address is not default, we have Join(*,G)
     net::IPv4Address rp_;
     std::set<net::IPv4Address> pruneSGrptList_;
     std::set<net::IPv4Address> joinSGList_;
 
     std::unordered_map<net::IPv4Address, JPSourceInfo> sources_;
-    std::vector<yaml::ErrorContext>& errors_;
 };
 
-struct JPConfigBuilder final: yaml::BuilderBase<JPConfigBuilder> {
+struct IPv4JPConfigBuilder final: BuilderBase {
+    explicit IPv4JPConfigBuilder(std::vector<yaml::ErrorContext>& errors)
+    : BuilderBase{errors} {}
 
     void loadJPConfig(yaml::ValueContext const& jpCfgCtx) {
+        auto rJPCfg = chk(jpCfgCtx.getMapping("IPv4 J/P config"));
 
+        if (rJPCfg) {
+            size_t sz = rJPCfg->size();
+
+            if (sz > 0) {
+                for (auto const& ii: rJPCfg->items()) {
+                    auto rGrp = chk(ii.first.getScalar());
+
+                    if (rGrp) {
+                        auto rGrpA = chk(grpAddr(
+                                rGrp->value()).mapError(
+                                        [&rGrp] (auto msg) {
+                                            return rGrp->error(msg);
+                                        }));
+
+                        if (rGrpA) {
+                            net::IPv4Address ga = rGrpA.value();
+
+                            auto bldi = groups_.try_emplace(
+                                    ga, errors_, ga, rGrp->line());
+                            if (bldi.second) {
+                                bldi.first->second.loadGroupConfig(ii.second);
+                            } else {
+                                auto const& eBld = bldi.first->second;
+                                errors_.emplace_back(
+                                        rGrp->error(
+                                                "duplicate group {}, "
+                                                "previously declared on line {}",
+                                                ga, eBld.line_));
+                            }
+                        }
+                    }
+                }
+            } else
+                errors_.emplace_back(
+                        jpCfgCtx.error("IPv4 J/P config contains no groups"));
+        }
     }
 
-    void consume(yaml::ErrorContext ectx) {
-        errors_.emplace_back(std::move(ectx));
+    JPConfig build() {
+        std::vector<GroupConfig> groups;
+        groups.reserve(groups_.size());
+        std::transform(groups_.begin(), groups_.end(),
+                       std::back_inserter(groups),
+                       [] (auto const& ii) {
+                            return ii.second.build();
+                        });
+        return JPConfig{std::move(groups)};
     }
 
-    std::unordered_map<net::IPv4Address, int> groups_;
-    std::vector<yaml::ErrorContext> errors_;
+    std::map<net::IPv4Address, IPv4JPGroupConfigBuilder> groups_;
 };
 
 } // anon.namespace
 
-
 auto loadJPConfig(yaml::ValueContext const& jpCfgCtx)
 -> Result<JPConfig, std::vector<yaml::ErrorContext>> {
-    JPConfigBuilder jpCfgB{};
-
+    std::vector<yaml::ErrorContext> errors;
+    IPv4JPConfigBuilder jpCfgBuilder{errors};
+    jpCfgBuilder.loadJPConfig(jpCfgCtx);
+    if (not errors.empty()) return fail(std::move(errors));
+    return jpCfgBuilder.build();
 }
 
 } // namespace pimc
