@@ -7,10 +7,10 @@
 
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/parsers/IPv4Parsers.hpp"
-#include "pimc/formatters/IPv4Formatters.hpp"
 #include "pimc/packets/PIMSMv2.hpp"
 #include "JPConfigLoader.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
+#include "ConfigUtils.hpp"
 
 namespace pimc {
 namespace {
@@ -76,25 +76,6 @@ Result<net::IPv4Address, std::string> grpAddr(std::string const& g) {
     return ga;
 }
 
-struct BuilderBase: yaml::BuilderBase<BuilderBase> {
-    constexpr explicit BuilderBase(std::vector<yaml::ErrorContext>& errors)
-    : errors_{errors} {}
-
-    void chkExtraneous(yaml::MappingContext const& mCtx) {
-        auto extraneous = mCtx.extraneous();
-        if (not extraneous.empty()) {
-            errors_.reserve(errors_.size() + extraneous.size());
-            for (auto& e: extraneous)
-                errors_.emplace_back(std::move(e));
-        }
-    }
-
-    void consume(yaml::ErrorContext ectx) {
-        errors_.emplace_back(std::move(ectx));
-    }
-
-    std::vector<yaml::ErrorContext>& errors_;
-};
 
 struct IPv4JPGroupConfigBuilder final: BuilderBase {
     IPv4JPGroupConfigBuilder(
@@ -114,7 +95,7 @@ struct IPv4JPGroupConfigBuilder final: BuilderBase {
 
             if (rRP) {
                 auto rRPA = chk(
-                        srcAddr(rRP->value()).mapError(
+                        ucAddr(rRP->value(), UCAddrType::RP).mapError(
                                 [&rRP] (auto msg) { return rRP->error(msg); }));
 
                 if (rRPA) {
@@ -135,7 +116,8 @@ struct IPv4JPGroupConfigBuilder final: BuilderBase {
 
                         if (rSrc) {
                             auto rSrcA = chk(
-                                    srcAddr(rSrc->value()).mapError(
+                                    ucAddr(rSrc->value(), UCAddrType::Source)
+                                    .mapError(
                                             [&rSrc] (auto msg) {
                                                 return rSrc->error(msg);
                                             }));
@@ -178,7 +160,8 @@ struct IPv4JPGroupConfigBuilder final: BuilderBase {
 
                 if (rSrc) {
                     auto rSrcA = chk(
-                            srcAddr(rSrc->value()).mapError(
+                            ucAddr(rSrc->value(), UCAddrType::Source)
+                            .mapError(
                                     [&rSrc](auto msg) {
                                         return rSrc->error(msg);
                                     }));

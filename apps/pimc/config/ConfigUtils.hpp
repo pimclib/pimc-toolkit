@@ -6,6 +6,8 @@
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/parsers/IPv4Parsers.hpp"
 #include "pimc/formatters/IPv4Formatters.hpp"
+#include "pimc/yaml/Structured.hpp"
+#include "pimc/yaml/BuilderBase.hpp"
 
 namespace pimc {
 enum class UCAddrType: unsigned {
@@ -61,5 +63,25 @@ inline auto ucAddr(
 
     return sa;
 }
+
+struct BuilderBase: yaml::BuilderBase<BuilderBase> {
+    constexpr explicit BuilderBase(std::vector<yaml::ErrorContext>& errors)
+    : errors_{errors} {}
+
+    void chkExtraneous(yaml::MappingContext const& mCtx) {
+        auto extraneous = mCtx.extraneous();
+        if (not extraneous.empty()) {
+            errors_.reserve(errors_.size() + extraneous.size());
+            for (auto& e: extraneous)
+                errors_.emplace_back(std::move(e));
+        }
+    }
+
+    void consume(yaml::ErrorContext ectx) {
+        errors_.emplace_back(std::move(ectx));
+    }
+
+    std::vector<yaml::ErrorContext>& errors_;
+};
 
 } // namespace pimc
