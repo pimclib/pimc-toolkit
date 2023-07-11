@@ -3,11 +3,9 @@
 #include <cstring>
 #include <type_traits>
 
-#include <fmt/format.h>
-
+#include "pimc/formatters/Fmt.hpp"
 #include "pimc/core/TypeUtils.hpp"
 #include "pimc/system/SysError.hpp"
-
 #include "detect_strerror_r.hpp"
 
 namespace fmt {

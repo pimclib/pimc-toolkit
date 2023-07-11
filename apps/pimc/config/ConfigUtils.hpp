@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/core/Result.hpp"
 #include "pimc/net/IPv4Address.hpp"
@@ -67,6 +67,18 @@ inline auto ucAddr(
 struct BuilderBase: yaml::BuilderBase<BuilderBase> {
     constexpr explicit BuilderBase(std::vector<yaml::ErrorContext>& errors)
     : errors_{errors} {}
+
+    template <typename T>
+    auto chkErrors(Result<T, std::vector<yaml::ErrorContext>> r)
+    -> Result<T, std::vector<yaml::ErrorContext>> {
+        if (not r) {
+            errors_.reserve(errors_.size() + r.error().size());
+            for (auto& e: r.error())
+                errors_.emplace_back(std::move(e));
+        }
+
+        return r;
+    }
 
     void chkExtraneous(yaml::MappingContext const& mCtx) {
         auto extraneous = mCtx.extraneous();

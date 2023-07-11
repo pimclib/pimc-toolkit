@@ -1,6 +1,6 @@
 #include <filesystem>
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/core/Deferred.hpp"
 #include "pimc/system/SysError.hpp"
@@ -15,7 +15,7 @@ auto loadAll(char const* ymlfn) -> Result<std::vector<YAML::Node>, std::string> 
     fs::path yml{ymlfn};
 
     if (not fs::exists(yml))
-        return fail(fmt::format("file '{}' does not exist\n", ymlfn));
+        return fail(fmt::format("file '{}' does not exist", ymlfn));
 
     if (fs::is_directory(yml))
         return fail(fmt::format("'{}' is a directory", yml.native()));

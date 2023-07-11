@@ -9,8 +9,7 @@ Example:
 
 .. code-block:: cpp
 
-   #include <fmt/format.h>
-   
+   #include "pimc/formatters/Fmt.hpp"
    #include "pimc/yaml/LoadAll.hpp"
    #include "pimc/yaml/Structured.hpp"
    #include "pimc/yaml/ErrorHandler.hpp"
@@ -150,7 +149,10 @@ Include file ``pimc/yaml/LoadAll.hpp``
 This include file contains one function :cpp:func:`pimc::yaml::loadAll`, which
 loads all documents from a YAML file.
 
-.. doxygenfunction:: pimc::yaml::loadAll
+.. doxygenfunction:: pimc::yaml::loadAll(char const*)
+   :project: PimcLib
+
+.. doxygenfunction:: pimc::yaml::loadAll(std::string const&)
    :project: PimcLib
 
 .. _yaml-structured-yaml-hpp:
@@ -177,7 +179,7 @@ the parsed YAML data in a structured manner.
    :project: PimcLib
    :members:
 
-.. doxygenclass:: pimc::yaml::Scalar
+.. doxygenclass:: pimc::yaml::ScalarContext
    :project: PimcLib
    :members:
 

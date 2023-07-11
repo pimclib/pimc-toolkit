@@ -5,8 +5,8 @@
 #include <string>
 #include <string_view>
 
-#include <fmt/format.h>
-#include <fmt/chrono.h>
+#include "pimc/formatters/Fmt.hpp"
+#include "pimc/formatters/FmtChrono.hpp"
 
 #include "pimc/text/MemoryBuffer.hpp"
 #include "pimc/text/NumberLengths.hpp"

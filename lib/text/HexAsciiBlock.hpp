@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <iterator>
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 namespace pimc {
 

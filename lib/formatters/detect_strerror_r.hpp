@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/core/TypeUtils.hpp"
 

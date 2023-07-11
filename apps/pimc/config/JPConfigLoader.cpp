@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <algorithm>
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/parsers/IPv4Parsers.hpp"
@@ -129,12 +129,12 @@ struct IPv4JPGroupConfigBuilder final: BuilderBase {
                                         src,
                                         JPSourceType::RptPruned)) continue;
 
-                                if (pruneSGrptList_.size() > PIMSMv2IPv4MaxPruneSGrptLen) {
+                                if (pruneSGrptList_.size() >= PIMSMv2IPv4MaxPruneSGrptLen) {
                                     errors_.emplace_back(
                                             rSrc->error(
-                                                    "unable to add source  {} "
+                                                    "unable to add source {} "
                                                     "to the RPT-prune list for group {} "
-                                                    "as it exceeds maximum number of "
+                                                    "as it exceeds the maximum number of "
                                                     "entries {}",
                                                     src, group_, pruneSGrptList_.size()));
                                     continue;
@@ -229,7 +229,7 @@ struct IPv4JPGroupConfigBuilder final: BuilderBase {
             errors_.emplace_back(
                     nctx.error(
                             "duplicate {} {}: declared as {} on line {}",
-                            src, jpst, eJpsi.type_, eJpsi.type_));
+                            src, jpst, eJpsi.type_, eJpsi.line_));
             return false;
         }
 

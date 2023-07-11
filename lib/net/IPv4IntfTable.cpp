@@ -2,7 +2,7 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/core/Deferred.hpp"
 #include "pimc/system/SysError.hpp"

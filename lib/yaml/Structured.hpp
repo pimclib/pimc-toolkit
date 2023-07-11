@@ -5,7 +5,7 @@
 #include <unordered_set>
 #include <string>
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"

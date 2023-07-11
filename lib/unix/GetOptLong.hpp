@@ -7,7 +7,7 @@
 #include <map>
 #include <stdexcept>
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 namespace pimc {
 

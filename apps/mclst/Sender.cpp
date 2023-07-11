@@ -5,11 +5,6 @@
 #include <thread>
 #include <chrono>
 
-#if __GNUC__ >= 13
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdangling-reference"
-#endif
-
 #include "pimc/core/Endian.hpp"
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/system/SysError.hpp"
@@ -82,7 +77,3 @@ void Sender::sendLoop() {
 }
 
 } // namespace pimc
-
-#if __GNUC__ >= 13
-#pragma GCC diagnostic pop
-#endif

@@ -22,4 +22,12 @@ namespace pimc::yaml {
  */
 auto loadAll(char const* ymlfn) -> Result<std::vector<YAML::Node>, std::string>;
 
+/*!
+ * \copydoc loadAll(char const*)
+ */
+inline auto loadAll(std::string const& yamlfn)
+-> Result<std::vector<YAML::Node>, std::string> {
+    return loadAll(yamlfn.c_str());
+}
+
 } // namespace pimc

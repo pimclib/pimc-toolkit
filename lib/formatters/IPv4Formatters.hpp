@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/net/IPv4Prefix.hpp"

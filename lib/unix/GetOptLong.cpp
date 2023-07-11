@@ -5,7 +5,7 @@
 
 #include <getopt.h>
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/text/IndentBlock.hpp"
 

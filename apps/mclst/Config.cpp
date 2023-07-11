@@ -4,11 +4,6 @@
 #include <string_view>
 #include <algorithm>
 
-#if __GNUC__ >= 13
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdangling-reference"
-#endif
-
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/parsers/NumberParsers.hpp"
@@ -41,7 +36,7 @@ enum class Options: uint32_t {
     ShowVersion = 10,
 };
 
-char const* legend =
+char const* header =
     "[Options] group[:port]\n\n"
     "where group[:port] may be specified either as 'group:port', e.g. 239.1.2.3:12345\n"
     "or just as a group, e.g. 239.1.2.3, which implies receiving multicast traffic\n"
@@ -185,7 +180,7 @@ void showIPv4IntfTable(OI oi, IPv4IntfTable const& intfTable, unsigned indent) {
 } // anon.namespace
 
 Config Config::fromArgs(int argc, char** argv) {
-    auto args = GetOptLong::with(legend)
+    auto args = GetOptLong::with(header)
             .optional(
                     OID(Interface), 'i', "interface", "Interface",
                     "The host interface on which to receive/send multicast. The "
@@ -335,7 +330,3 @@ void Config::show() const {
 }
 
 } // namespace pimc
-
-#if __GNUC__ >= 13
-#pragma GCC diagnostic pop
-#endif

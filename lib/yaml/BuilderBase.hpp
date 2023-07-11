@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Structured.hpp"
 
 namespace pimc::yaml {

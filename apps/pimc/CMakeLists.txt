@@ -14,8 +14,14 @@ add_executable(
         pimc
         Main.cpp
         config/ConfigUtils.hpp
+        config/Config.hpp
+        config/Config.cpp
+        config/PIMCConfig.hpp
+        config/PIMCConfigLoader.hpp
+        config/PIMCConfigLoader.cpp
         ${PIMSMConfig}
         ${JPConfig}
+        config/Formatters.hpp
 )
 
 find_file(CAPABILITY_H sys/capability.h)

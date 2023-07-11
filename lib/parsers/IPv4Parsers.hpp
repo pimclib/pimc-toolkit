@@ -126,7 +126,7 @@ auto parseIPv4Address(R&& r) -> std::optional<net::IPv4Address> {
  * @return an optional value containing an IPv4 address if parsing is successful, or
  * an empty optional value otherwise
  */
-auto parseIPv4Address(char const* s) -> std::optional<net::IPv4Address> {
+inline auto parseIPv4Address(char const* s) -> std::optional<net::IPv4Address> {
     return parseIPv4Address(s, pimc::cssentinel{});
 }
 
@@ -180,7 +180,7 @@ auto parseIPv4Prefix(R&& r) -> std::optional<net::IPv4Prefix> {
  * @return an optional value containing an IPv4 prefix if parsing is successful, or
  * an empty optional value otherwise
  */
-auto parseIPv4Prefix(char const* s) -> std::optional<net::IPv4Prefix> {
+inline auto parseIPv4Prefix(char const* s) -> std::optional<net::IPv4Prefix> {
     return parseIPv4Prefix(s, cssentinel{});
 }
 

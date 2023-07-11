@@ -1,4 +1,4 @@
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/net/IPv4Address.hpp"
 #include "PIMSMConfig.hpp"

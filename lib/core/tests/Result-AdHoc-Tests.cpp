@@ -1,7 +1,7 @@
 #include <cstdint>
 
 #include <gtest/gtest.h>
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/core/Result.hpp"
 
