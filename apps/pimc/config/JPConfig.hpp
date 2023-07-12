@@ -8,9 +8,9 @@
 namespace pimc {
 
 template <net::IPAddress A>
-class RPTConfig final {
+class RPT final {
 public:
-    RPTConfig(A rp, std::vector<A> prunes)
+    RPT(A rp, std::vector<A> prunes)
     : rp_{rp}, prunes_{std::move(prunes)} {}
 
     /*!
@@ -45,7 +45,7 @@ class GroupConfig {
 public:
     GroupConfig(
             net::IPv4Address group,
-            std::optional<RPTConfig<A>> spt,
+            std::optional<RPT<A>> spt,
             std::vector<A> joins)
             : group_{group}
             , spt_{std::move(spt)}
@@ -66,7 +66,7 @@ public:
      * @return the RP-tree join/prun configuration for the group
      */
     [[nodiscard]]
-    std::optional<RPTConfig<A>> const& rpt() const { return spt_; }
+    std::optional<RPT<A>> const& rpt() const { return spt_; }
 
     /*!
      * \brief Returns a list of SPT-joined sources.
@@ -79,7 +79,7 @@ public:
     std::vector<A> const& spt() const { return joins_; }
 private:
     A group_;
-    std::optional<RPTConfig<A>> spt_;
+    std::optional<RPT<A>> spt_;
     std::vector<A> joins_;
 };
 

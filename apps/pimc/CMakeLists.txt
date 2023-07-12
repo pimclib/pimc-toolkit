@@ -12,7 +12,6 @@ set(JPConfig
 
 set(PIMUpdate
         pimsm/Update.hpp
-        pimsm/UpdateBuilder.hpp
         pimsm/Pack.hpp
 )
 

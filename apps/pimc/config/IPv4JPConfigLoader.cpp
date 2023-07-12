@@ -210,9 +210,9 @@ struct IPv4JPGroupConfigBuilder final: BuilderBase {
 
     [[nodiscard]]
     GroupConfig<net::IPv4Address> build() const {
-        std::optional<RPTConfig<net::IPv4Address>> rptCfg;
+        std::optional<RPT<net::IPv4Address>> rptCfg;
         if (not rp_.isDefault())
-            rptCfg = RPTConfig<net::IPv4Address>{rp_, set2vec(pruneSGrptList_)};
+            rptCfg = RPT<net::IPv4Address>{rp_, set2vec(pruneSGrptList_)};
 
         auto sptJoins = set2vec(joinSGList_);
         return GroupConfig<net::IPv4Address>{

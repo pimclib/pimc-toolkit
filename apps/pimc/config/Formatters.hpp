@@ -10,9 +10,9 @@
 namespace fmt {
 
 template <pimc::net::IPAddress A>
-struct formatter<pimc::RPTConfig<A>>: formatter<string_view> {
+struct formatter<pimc::RPT<A>>: formatter<string_view> {
     template <typename FormatContext>
-    auto format(pimc::RPTConfig<A> const& rptConfig, FormatContext& ctx) {
+    auto format(pimc::RPT<A> const& rptConfig, FormatContext& ctx) {
         auto out = fmt::format_to(ctx.out(), "    Join(*,G): RP {}\n", rptConfig.rp());
         auto const& rptPrunes = rptConfig.prunes();
         if (not rptPrunes.empty()) {

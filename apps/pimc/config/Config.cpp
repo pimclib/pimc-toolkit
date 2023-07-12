@@ -1,6 +1,5 @@
 #include "pimc/formatters/Fmt.hpp"
 #include "pimc/system/Exceptions.hpp"
-#include "pimc/text/MemoryBuffer.hpp"
 #include "pimc/yaml/LoadAll.hpp"
 #include "pimc/yaml/Structured.hpp"
 #include "pimc/yaml/ErrorHandler.hpp"
@@ -21,8 +20,7 @@ enum class Options: uint32_t {
     ShowVersion = 2,
 };
 
-char const* header =
-        "[Options] pimc-config.yml";
+char const* header = "[Options] pimc-config.yml";
 
 } // anon.namespace
 
