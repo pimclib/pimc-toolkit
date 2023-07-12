@@ -9,7 +9,7 @@
 
 namespace pimc {
 
-auto loadPIMSMConfig(yaml::ValueContext const& pimsmCfgCtx)
--> Result<PIMSMConfig, std::vector<yaml::ErrorContext>>;
+auto loadIPv4PIMSMConfig(yaml::ValueContext const& pimsmCfgCtx)
+-> Result<PIMSMConfig<net::IPv4Address>, std::vector<yaml::ErrorContext>>;
 
 } // namespace pimc

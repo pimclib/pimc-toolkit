@@ -15,9 +15,10 @@ target_sources(
         core/Optional.hpp
         core/Result.hpp
         core/Endian.hpp
-        net/IPv4PktInfo.hpp
-        net/IPv4Prefix.hpp
+        net/IPAddress.hpp
         net/IPv4Address.hpp
+        net/IPv4Prefix.hpp
+        net/IPv4PktInfo.hpp
         net/IPv4IntfTable.hpp
         formatters/Fmt.hpp
         formatters/FmtChrono.hpp

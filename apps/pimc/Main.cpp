@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv) {
     try {
-        auto cfg = pimc::loadConfig(argc, argv);
+        auto cfg = pimc::loadIPv4Config(argc, argv);
     } catch (pimc::CommandLineError const& cliErr){
         fmt::print(stderr, "error: {}\n", cliErr.what());
         return 2;

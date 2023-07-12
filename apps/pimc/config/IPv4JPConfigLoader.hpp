@@ -9,7 +9,7 @@
 
 namespace pimc {
 
-auto loadJPConfig(yaml::ValueContext const& jpCfgCtx)
--> Result<JPConfig, std::vector<yaml::ErrorContext>>;
+auto loadIPv4JPConfig(yaml::ValueContext const& jpCfgCtx)
+-> Result<JPConfig<net::IPv4Address>, std::vector<yaml::ErrorContext>>;
 
 } // namespace pimc

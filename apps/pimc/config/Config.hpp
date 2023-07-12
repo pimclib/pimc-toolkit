@@ -4,6 +4,6 @@
 
 namespace pimc {
 
-PIMCConfig loadConfig(int argc, char** argv);
+PIMCConfig<net::IPv4Address> loadIPv4Config(int argc, char** argv);
 
 } // namespace pimc

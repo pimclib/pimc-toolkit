@@ -8,7 +8,7 @@
 #include "version.hpp"
 
 #include "Config.hpp"
-#include "PIMCConfigLoader.hpp"
+#include "IPv4PIMCConfigLoader.hpp"
 #include "Formatters.hpp"
 
 #define OID(id) static_cast<uint32_t>(Options::id)
@@ -26,7 +26,7 @@ char const* header =
 
 } // anon.namespace
 
-PIMCConfig loadConfig(int argc, char** argv) {
+PIMCConfig<net::IPv4Address> loadIPv4Config(int argc, char** argv) {
     auto args = GetOptLong::with(header)
             .flag(OID(ShowConfig), GetOptLong::LongOnly, "show-config",
                   "Show config and exit")
@@ -60,7 +60,7 @@ PIMCConfig loadConfig(int argc, char** argv) {
                 yamlDocs.size());
     }
 
-    auto rCfg = loadPIMCConfig(yaml::ValueContext::root(yamlDocs[0]));
+    auto rCfg = loadIPv4PIMCConfig(yaml::ValueContext::root(yamlDocs[0]));
     if (not rCfg) {
         yaml::StderrErrorHandler ec{yamlfn.c_str()};
         for (auto const& eCtx: rCfg.error())

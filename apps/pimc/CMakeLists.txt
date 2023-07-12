@@ -1,13 +1,19 @@
 set(PIMSMConfig
         config/PIMSMConfig.hpp
-        config/PIMSMConfigLoader.hpp
-        config/PIMSMConfigLoader.cpp
+        config/IPv4PIMSMConfigLoader.hpp
+        config/IPv4PIMSMConfigLoader.cpp
 )
 
 set(JPConfig
-        config/JPConfigLoader.hpp
         config/JPConfig.hpp
-        config/JPConfigLoader.cpp
+        config/IPv4JPConfigLoader.hpp
+        config/IPv4JPConfigLoader.cpp
+)
+
+set(PIMUpdate
+        pimsm/Update.hpp
+        pimsm/UpdateBuilder.hpp
+        pimsm/Pack.hpp
 )
 
 add_executable(
@@ -17,11 +23,12 @@ add_executable(
         config/Config.hpp
         config/Config.cpp
         config/PIMCConfig.hpp
-        config/PIMCConfigLoader.hpp
-        config/PIMCConfigLoader.cpp
+        config/IPv4PIMCConfigLoader.hpp
+        config/IPv4PIMCConfigLoader.cpp
         ${PIMSMConfig}
         ${JPConfig}
         config/Formatters.hpp
+        ${PIMUpdate}
 )
 
 find_file(CAPABILITY_H sys/capability.h)
@@ -40,6 +47,12 @@ else()
             WITH_LIBCAP)
     set(PIMC_LIBS ${LIBCAP})
 endif()
+
+target_include_directories(
+        pimc
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 target_link_libraries(
         pimc

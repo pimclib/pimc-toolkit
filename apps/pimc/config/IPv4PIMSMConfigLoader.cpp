@@ -2,7 +2,7 @@
 
 #include "pimc/net/IPv4Address.hpp"
 #include "PIMSMConfig.hpp"
-#include "PIMSMConfigLoader.hpp"
+#include "IPv4PIMSMConfigLoader.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
 #include "ConfigUtils.hpp"
 
@@ -10,8 +10,8 @@ namespace pimc {
 
 namespace {
 
-struct PIMSMConfigLoader final: BuilderBase {
-    explicit PIMSMConfigLoader(std::vector<yaml::ErrorContext>& errors)
+struct IPv4PIMSMConfigLoader final: BuilderBase {
+    explicit IPv4PIMSMConfigLoader(std::vector<yaml::ErrorContext>& errors)
     : BuilderBase{errors} {}
 
     void loadPIMSMConfig(yaml::ValueContext const& vCtx) {
@@ -35,8 +35,8 @@ struct PIMSMConfigLoader final: BuilderBase {
     }
 
     [[nodiscard]]
-    PIMSMConfig build() const {
-        return PIMSMConfig{neighbor_};
+    PIMSMConfig<net::IPv4Address> build() const {
+        return PIMSMConfig<net::IPv4Address>{neighbor_};
     }
 
     net::IPv4Address neighbor_;
@@ -44,10 +44,10 @@ struct PIMSMConfigLoader final: BuilderBase {
 
 } // anon.namespace
 
-auto loadPIMSMConfig(yaml::ValueContext const& pimsmCfgCtx)
--> Result<PIMSMConfig, std::vector<yaml::ErrorContext>> {
+auto loadIPv4PIMSMConfig(yaml::ValueContext const& pimsmCfgCtx)
+-> Result<PIMSMConfig<net::IPv4Address>, std::vector<yaml::ErrorContext>> {
     std::vector<yaml::ErrorContext> errors;
-    PIMSMConfigLoader pimsmCfgLdr{errors};
+    IPv4PIMSMConfigLoader pimsmCfgLdr{errors};
     pimsmCfgLdr.loadPIMSMConfig(pimsmCfgCtx);
     if (not errors.empty()) return fail(errors);
     return pimsmCfgLdr.build();

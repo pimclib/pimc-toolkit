@@ -3,61 +3,104 @@
 #include <optional>
 #include <vector>
 
-#include "pimc/net/IPv4Address.hpp"
+#include "pimc/net/IPAddress.hpp"
 
 namespace pimc {
 
+template <net::IPAddress A>
 class RPTConfig final {
 public:
-    RPTConfig(net::IPv4Address rp, std::vector<net::IPv4Address> prunes)
+    RPTConfig(A rp, std::vector<A> prunes)
     : rp_{rp}, prunes_{std::move(prunes)} {}
 
+    /*!
+     * \brief Returns the RP address for the group.
+     *
+     * @return the RP address
+     */
     [[nodiscard]]
-    net::IPv4Address rp() const { return rp_; }
+    A rp() const { return rp_; }
 
+    /*!
+     * \brief Returns a list of RPT-pruned sources.
+     *
+     * These are the entries Prune(S,G,rpt). The returned list is guaranteed
+     * to be sorted in the ascending order and not to have more than the
+     * maximum number of entries (which, for IPv4, is 180).
+     *
+     * @return a list of RPT-pruned sources
+     */
     [[nodiscard]]
-    std::vector<net::IPv4Address> const& prunes() const {
+    std::vector<A> const& prunes() const {
         return prunes_;
     }
 
 private:
-    net::IPv4Address rp_;
-    std::vector<net::IPv4Address> prunes_;
+    A rp_;
+    std::vector<A> prunes_;
 };
 
+template <net::IPAddress A>
 class GroupConfig {
 public:
     GroupConfig(
             net::IPv4Address group,
-            std::optional<RPTConfig> spt,
-            std::vector<net::IPv4Address> joins)
+            std::optional<RPTConfig<A>> spt,
+            std::vector<A> joins)
             : group_{group}
             , spt_{std::move(spt)}
             , joins_{std::move(joins)} {}
 
+    /*!
+     * \brief Returns the multicast group.
+     *
+     * @return the multicast group
+     */
     [[nodiscard]]
-    net::IPv4Address group() const { return group_; }
+    A group() const { return group_; }
 
+    /*!
+     * \brief Returns the RP-tree join/prun configuration for the
+     * group
+     *
+     * @return the RP-tree join/prun configuration for the group
+     */
     [[nodiscard]]
-    std::optional<RPTConfig> const& rpt() const { return spt_; }
+    std::optional<RPTConfig<A>> const& rpt() const { return spt_; }
 
+    /*!
+     * \brief Returns a list of SPT-joined sources.
+     *
+     * The sources are guaranteed to be sorted in the ascending order.
+     *
+     * @return a list of SPT-joined source sources
+     */
     [[nodiscard]]
-    std::vector<net::IPv4Address> const& spt() const { return joins_; }
+    std::vector<A> const& spt() const { return joins_; }
 private:
-    net::IPv4Address group_;
-    std::optional<RPTConfig> spt_;
-    std::vector<net::IPv4Address> joins_;
+    A group_;
+    std::optional<RPTConfig<A>> spt_;
+    std::vector<A> joins_;
 };
 
+template <net::IPAddress A>
 class JPConfig final {
 public:
-    explicit JPConfig(std::vector<GroupConfig> groups)
+    explicit JPConfig(std::vector<GroupConfig<A>> groups)
     : groups_{std::move(groups)} {}
 
+    /*!
+     * \brief Returns a list multicast group configurations.
+     *
+     * The list is guaranteed to be sorted by multicast group in the
+     * ascending order.
+     *
+     * @return a list of multicast group configurations
+     */
     [[nodiscard]]
-    std::vector<GroupConfig> const& groups() const { return groups_; }
+    std::vector<GroupConfig<A>> const& groups() const { return groups_; }
 private:
-    std::vector<GroupConfig> groups_;
+    std::vector<GroupConfig<A>> groups_;
 };
 
 } // namespace pimc

@@ -1,19 +1,20 @@
 #pragma once
 
-#include "pimc/net/IPv4Address.hpp"
+#include "pimc/net/IPAddress.hpp"
 
 namespace pimc {
 
+template <net::IPAddress A>
 class PIMSMConfig final {
 public:
-    constexpr explicit PIMSMConfig(net::IPv4Address neighbor)
+    constexpr explicit PIMSMConfig(A neighbor)
     : neighbor_{neighbor} {}
 
     [[nodiscard]]
-    net::IPv4Address neighbor() const { return neighbor_; }
+    A neighbor() const { return neighbor_; }
 
 private:
-    net::IPv4Address neighbor_;
+    A neighbor_;
 };
 
 } // namespace pimc

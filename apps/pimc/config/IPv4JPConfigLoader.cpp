@@ -8,7 +8,7 @@
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/parsers/IPv4Parsers.hpp"
 #include "pimc/packets/PIMSMv2.hpp"
-#include "JPConfigLoader.hpp"
+#include "IPv4JPConfigLoader.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
 #include "ConfigUtils.hpp"
 
@@ -209,13 +209,14 @@ struct IPv4JPGroupConfigBuilder final: BuilderBase {
     }
 
     [[nodiscard]]
-    GroupConfig build() const {
-        std::optional<RPTConfig> rptCfg;
+    GroupConfig<net::IPv4Address> build() const {
+        std::optional<RPTConfig<net::IPv4Address>> rptCfg;
         if (not rp_.isDefault())
-            rptCfg = RPTConfig{rp_, set2vec(pruneSGrptList_)};
+            rptCfg = RPTConfig<net::IPv4Address>{rp_, set2vec(pruneSGrptList_)};
 
         auto sptJoins = set2vec(joinSGList_);
-        return GroupConfig{group_, std::move(rptCfg), std::move(sptJoins)};
+        return GroupConfig<net::IPv4Address>{
+            group_, std::move(rptCfg), std::move(sptJoins)};
     }
 
     bool chkSrc(
@@ -292,15 +293,15 @@ struct IPv4JPConfigBuilder final: BuilderBase {
         }
     }
 
-    JPConfig build() {
-        std::vector<GroupConfig> groups;
+    JPConfig<net::IPv4Address> build() {
+        std::vector<GroupConfig<net::IPv4Address>> groups;
         groups.reserve(groups_.size());
         std::transform(groups_.begin(), groups_.end(),
                        std::back_inserter(groups),
                        [] (auto const& ii) {
                             return ii.second.build();
                         });
-        return JPConfig{std::move(groups)};
+        return JPConfig<net::IPv4Address>{std::move(groups)};
     }
 
     std::map<net::IPv4Address, IPv4JPGroupConfigBuilder> groups_;
@@ -308,8 +309,8 @@ struct IPv4JPConfigBuilder final: BuilderBase {
 
 } // anon.namespace
 
-auto loadJPConfig(yaml::ValueContext const& jpCfgCtx)
--> Result<JPConfig, std::vector<yaml::ErrorContext>> {
+auto loadIPv4JPConfig(yaml::ValueContext const& jpCfgCtx)
+-> Result<JPConfig<net::IPv4Address>, std::vector<yaml::ErrorContext>> {
     std::vector<yaml::ErrorContext> errors;
     IPv4JPConfigBuilder jpCfgBuilder{errors};
     jpCfgBuilder.loadJPConfig(jpCfgCtx);
