@@ -20,8 +20,8 @@ struct Source final {
 template <net::IPAddress A>
 class GroupEntry final {
 public:
-    GroupEntry(std::vector<Source<A>> joins, std::vector<Source<A>> prunes)
-    : joins_{std::move(joins)}, prunes_{std::move(prunes)} {}
+    GroupEntry(A group, std::vector<Source<A>> joins, std::vector<Source<A>> prunes)
+    : group_{group}, joins_{std::move(joins)}, prunes_{std::move(prunes)} {}
 
     [[nodiscard]]
     std::vector<Source<A>> const& joins() const { return joins_; }
@@ -30,6 +30,7 @@ public:
     std::vector<Source<A>> const& prunes() const { return prunes_; }
 
 private:
+    A group_;
     std::vector<Source<A>> joins_;
     std::vector<Source<A>> prunes_;
 };

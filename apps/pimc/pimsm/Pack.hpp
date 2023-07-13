@@ -57,20 +57,51 @@ struct params<net::IPv4Address> {
     static constexpr size_t MinEntrySize{GrpHdrSize + SrcASize};
 };
 
-template <net::IPAddress A>
-class UpdateBuilder final {
-public:
-    UpdateBuilder(): sz_{0ul} {}
+template<net::IPAddress> class UpdatePacker;
 
-    void join(GroupEntry<A> group, size_t sz) {
-        chkSz(sz);
-        joins_.emplace_back(std::move(group));
-        sz_ += sz;
+template <net::IPAddress A>
+class GroupEntryBuilder final {
+    template<net::IPAddress> friend class UpdatePacker;
+private:
+    GroupEntryBuilder(A group, size_t jcnt, size_t pcnt)
+    : group_{group} {
+        joins_.reserve(jcnt);
+        prunes_.reserve(pcnt);
     }
 
-    void prune(GroupEntry<A> group, size_t sz) {
+    void join(A src, bool wildcard, bool rpt) {
+        joins_.emplace_back(src, wildcard, rpt);
+    }
+
+    void prune(A src, bool wildcard, bool rpt) {
+        prunes_.emplace_back(src, wildcard, rpt);
+    }
+
+    [[nodiscard]]
+    size_t size() const {
+        return params<A>::GrpHdrSize +
+                (joins_.size() + prunes_.size()) * params<A>::SrcASize;
+    }
+
+    GroupEntry<A> build() {
+        return {group_, std::move(joins_), std::move(prunes_)};
+    }
+
+private:
+    A group_;
+    std::vector<Source<A>> joins_;
+    std::vector<Source<A>> prunes_;
+};
+
+template <net::IPAddress A>
+class UpdateBuilder final {
+    template<net::IPAddress> friend class UpdatePacker;
+private:
+    UpdateBuilder(): sz_{0ul} {}
+
+    void add(GroupEntry<A> group, size_t sz) {
         chkSz(sz);
-        prunes_.emplace_back(std::move(group));
+        groups_.emplace_back(std::move(group));
         sz_ += sz;
     }
 
@@ -80,25 +111,20 @@ public:
     }
 
     Update<A> build() {
-        std::vector<GroupEntry<A>> joins;
-        std::vector<GroupEntry<A>> prunes;
-
-        joins.reserve(joins_.size());
-        std::ranges::copy(joins_, std::back_inserter(joins));
-        prunes.reserve(prunes_.size());
-        std::ranges::copy(joins_, std::back_inserter(joins));
-        return {std::move(joins), std::move(prunes)};
+        return {std::move(groups_)};
     }
-private:
+
     void chkSz(size_t sz) {
         if (sz_ + sz > params<A>::capacity)
             raise<std::logic_error>(
                     "pim-update capacity {}, current size {}, update size {}",
                     params<A>::capacity, sz_, sz);
     }
+
+    [[nodiscard]]
+    bool empty() const { return groups_.empty(); }
 private:
-    std::deque<GroupEntry<A>> joins_;
-    std::deque<GroupEntry<A>> prunes_;
+    std::vector<GroupEntry<A>> groups_;
     size_t sz_;
 };
 
@@ -108,36 +134,137 @@ class UpdatePacker final {
     template <net::IPAddress Addr>
     friend std::vector<Update<Addr>> pimc::pack(JPConfig<A> const&);
 
+    class UBCursor final {
+        template <net::IPAddress>
+        friend class UpdatePacker;
+
+        constexpr UBCursor(std::deque<UpdateBuilder<A>>* ubq, size_t& start)
+        : ubq_{ubq}, start_{start}, i_{start} {}
+
+        auto operator++ () -> UBCursor& {
+            if (++i_ > ubq_->size())
+                ubq_->emplace_back();
+            return *this;
+        }
+
+        auto operator* () -> UpdateBuilder<A>& {
+            return (*ubq_)[i_];
+        }
+
+        auto operator-> () -> UpdateBuilder<A>* {
+            return addr();
+        }
+
+        auto addr() -> UpdateBuilder<A>* {
+            return &((*ubq_)[i_]);
+        }
+
+        void add(GroupEntryBuilder<A> geb) {
+            auto geSz = geb.size();
+            (*ubq_)[i_].add(geb.build(), geSz);
+            updateStart();
+        }
+
+        void updateStart() {
+            for (size_t j = start_; j <= i_; ++j) {
+                if ((*ubq_)[j].remaining() < params<A>::MinEntrySize)
+                    start_ = j;
+                else return;
+            }
+
+            if (start_ == ubq_->size())
+                ubq_->emplace_back();
+        }
+
+        std::deque<UpdateBuilder<A>>* ubq_;
+        size_t& start_;
+        size_t i_;
+    };
 private:
     UpdatePacker(): start_{0} {
         ubq_.emplace_back();
-    }
-
-    static size_t rptSize(GroupEntry<A> const& ge) {
-        if (not ge.rpt()) return 0;
-        return params<A>::GrpHdrSize + params<A>::SrcASize * (ge.rpt().prunes() + 1);
     }
 
     void pack(JPConfig<A> const& jpCfg) {
         for (auto const& ge: jpCfg.groups()) fitGroupEntry(ge);
     }
 
-    void fitGroupEntry(GroupEntry<A> const& ge) {
-        auto rptSz = rptSize(ge);
+    UpdateBuilder<A>* findRptUb(GroupEntry<A> const& ge) {
+        if (not ge.rpt()) return nullptr;
+        size_t rptSz{
+            params<A>::GrpHdrSize +
+            params<A>::SrcASize * (ge.rpt().prunes() + 1)};
+        UBCursor c{&ubq_, start_};
+        while (c->remaining() < rptSz) ++c;
+        return c.addr();
+    }
 
-        // Find an entry for RPT, e.g. entry j
-        // Starting at the first builder and checking all builders until all
-        // RPT and SPT entries can be placed, do the following
-        // Assuming the current entry is i
-        // if i != j: insert as many SPT entries as possible to builder i
-        // if i == j: subtract the rpt size from the remaining bytes in builder
-        //            and check how many SPT entries can be inserted, and then
-        //            insert RPT and SPT entries
-        // if i never reaches j, insert the RPT entries by themselves
+    static size_t maxSources(size_t rem) {
+        return (rem - params<A>::GrpHdrSize) / params<A>::SrcASize;
+    }
+
+    void fitGroupEntry(GroupEntry<A> const& ge) {
+        auto* rptUb = findRptUb(ge);
+
+        UBCursor c{&ubq_, start_};
+        auto const& spt = ge.spt();
+        size_t srci{0};
+
+        while (srci < spt.size()) {
+            if (c.addr() != rptUb) {
+                auto cnt = std::max(
+                        maxSources(c->remaining()),
+                        spt.size() - srci);
+                GroupEntryBuilder<A> geb{ge.group(), cnt, 0};
+                for (size_t i{srci}; i < cnt; ++i)
+                    geb.join(spt[i], false, false);
+                c.add(geb);
+                srci += cnt;
+            } else {
+                auto cnt = std::max(
+                        maxSources(
+                                c->remaining() -
+                                (params<A>::GrpHdrSize +
+                                 params<A>::SrcASize * (ge.rpt().prunes() + 1))),
+                        spt.size() - srci);
+                GroupEntryBuilder<A> geb{ge.group(), cnt + 1, ge.rpt().prunes()};
+                for (size_t i{srci}; i < cnt; ++i)
+                    geb.join(spt[i], false, false);
+                geb.join(ge.rpt().rp(), true, true);
+                auto const& rptPrunes = ge.rpt().prunes();
+                for (auto const& rptPruneSrc: rptPrunes)
+                    geb.prune(rptPruneSrc, false, true);
+                c.add(geb);
+                srci += cnt;
+                rptUb = nullptr;
+            }
+            ++c;
+        }
+
+        if (rptUb != nullptr) {
+            GroupEntryBuilder<A> geb{ge.group(), 1, ge.rpt().prunes()};
+            geb.join(ge.rpt().rp(), true, true);
+            auto const& rptPrunes = ge.rpt().prunes();
+            for (auto const& rptPruneSrc: rptPrunes)
+                geb.prune(rptPruneSrc, false, true);
+            auto geSz = geb.size();
+            rptUb->add(geb.build(), geSz);
+        }
     }
 
     std::vector<Update<A>> build() {
-
+        // TODO is it possible there there are multiple empty builders at
+        //      the end? Unlikely, but need to make sure
+        size_t resSz = ubq_.size();
+        if (ubq_[ubq_.size() - 1].empty())
+            --resSz;
+        std::vector<Update<A>> updates;
+        updates.reserve(resSz);
+        std::transform(
+                ubq_.begin(), ubq_.end(),
+                std::back_inserter(updates),
+                [] (auto& ub) { return ub.build(); });
+        return updates;
     }
 
 private:
