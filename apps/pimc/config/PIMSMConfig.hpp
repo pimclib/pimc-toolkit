@@ -1,20 +1,22 @@
 #pragma once
 
-#include "pimc/net/IPAddress.hpp"
+#include "pimc/net/IP.hpp"
 
 namespace pimc {
 
-template <net::IPAddress A>
+template <IPVersion V>
 class PIMSMConfig final {
 public:
-    constexpr explicit PIMSMConfig(A neighbor)
+    using IPAddress = typename IP<V>::Address;
+
+    constexpr explicit PIMSMConfig(IPAddress neighbor)
     : neighbor_{neighbor} {}
 
     [[nodiscard]]
-    A neighbor() const { return neighbor_; }
+    IPAddress neighbor() const { return neighbor_; }
 
 private:
-    A neighbor_;
+    IPAddress neighbor_;
 };
 
 } // namespace pimc

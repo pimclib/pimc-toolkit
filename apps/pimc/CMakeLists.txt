@@ -1,13 +1,13 @@
 set(PIMSMConfig
         config/PIMSMConfig.hpp
-        config/IPv4PIMSMConfigLoader.hpp
-        config/IPv4PIMSMConfigLoader.cpp
+        config/PIMSMConfigLoader.hpp
 )
 
 set(JPConfig
         config/JPConfig.hpp
-        config/IPv4JPConfigLoader.hpp
-        config/IPv4JPConfigLoader.cpp
+        config/PIMSMParams.hpp
+        config/MulticastConfigLoader.hpp
+        config/JPConfigLoader.hpp
 )
 
 set(PIMUpdate
@@ -22,8 +22,7 @@ add_executable(
         config/Config.hpp
         config/Config.cpp
         config/PIMCConfig.hpp
-        config/IPv4PIMCConfigLoader.hpp
-        config/IPv4PIMCConfigLoader.cpp
+        config/PIMCConfigLoader.hpp
         ${PIMSMConfig}
         ${JPConfig}
         config/Formatters.hpp
@@ -63,4 +62,28 @@ target_link_libraries(
             PimcLib
             fmt
             ${PIMC_LIBS}
+)
+
+add_executable(
+        pimc-tests
+        tests/IPv4PackingVerifierConfigLoader.hpp
+        tests/IPv4PackingVerifierConfigLoader.cpp
+)
+
+target_include_directories(
+        pimc-tests
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(
+        pimc-tests
+        PRIVATE
+            -static-libgcc
+            -static-libstdc++
+            ProjectSettings
+            VersionLib
+            PimcLib
+            fmt
+            gtest_main
 )

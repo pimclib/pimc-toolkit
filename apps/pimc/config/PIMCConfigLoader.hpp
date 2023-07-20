@@ -1,18 +1,23 @@
+#pragma once
+
 #include "pimc/core/Optional.hpp"
 #include "pimc/core/Result.hpp"
+#include "pimc/net/IP.hpp"
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/yaml/Structured.hpp"
 
 #include "ConfigUtils.hpp"
 #include "PIMCConfig.hpp"
-#include "IPv4PIMCConfigLoader.hpp"
-#include "IPv4PIMSMConfigLoader.hpp"
-#include "IPv4JPConfigLoader.hpp"
+#include "PIMSMConfigLoader.hpp"
+#include "JPConfigLoader.hpp"
 
-namespace pimc {
-namespace {
+namespace pimc::pimsm_config {
 
-struct PIMCConfigLoader final: BuilderBase {
+template <IPVersion V>
+class PIMCConfigLoader final: BuilderBase {
+public:
+    using IPAddress = typename IP<V>::Address;
+
     explicit PIMCConfigLoader(std::vector<yaml::ErrorContext>& errors)
             : BuilderBase{errors} {}
 
@@ -23,7 +28,7 @@ struct PIMCConfigLoader final: BuilderBase {
             auto rPIMSMCfgCtx = chk(rCfg->required("pim"));
 
             if (rPIMSMCfgCtx) {
-                auto rPIMSMCfg = chkErrors(loadIPv4PIMSMConfig(rPIMSMCfgCtx.value()));
+                auto rPIMSMCfg = chkErrors(loadPIMSMConfig<V>(rPIMSMCfgCtx.value()));
 
                 if (rPIMSMCfg)
                     pimsmConfig_ = std::move(rPIMSMCfg).value();
@@ -32,7 +37,7 @@ struct PIMCConfigLoader final: BuilderBase {
             auto rJPCfgCtx = chk(rCfg->required("multicast"));
 
             if (rJPCfgCtx) {
-                auto rJPCfg = chkErrors(loadIPv4JPConfig(rJPCfgCtx.value()));
+                auto rJPCfg = chkErrors(loadJPConfig<V>(rJPCfgCtx.value()));
 
                 if (rJPCfg)
                     jpConfig_ = std::move(rJPCfg).value();
@@ -43,7 +48,7 @@ struct PIMCConfigLoader final: BuilderBase {
     }
 
     [[nodiscard]]
-    PIMCConfig<net::IPv4Address> build() {
+    PIMCConfig<V> build() {
         if (not pimsmConfig_ or not jpConfig_)
             raise<std::logic_error>("PIM SM config or J/P config is not loaded");
 
@@ -53,19 +58,18 @@ struct PIMCConfigLoader final: BuilderBase {
         };
     }
 
-    Optional<PIMSMConfig<net::IPv4Address>> pimsmConfig_;
-    Optional<JPConfig<net::IPv4Address>> jpConfig_;
+    Optional<PIMSMConfig<V>> pimsmConfig_;
+    Optional<JPConfig<V>> jpConfig_;
 };
 
-} // anon.namespace
-
-auto loadIPv4PIMCConfig(yaml::ValueContext const& cfgfgCtx)
--> Result<PIMCConfig<net::IPv4Address>, std::vector<yaml::ErrorContext>> {
+template <IPVersion V>
+auto loadPIMCConfig(yaml::ValueContext const& cfgfgCtx)
+-> Result<PIMCConfig<V>, std::vector<yaml::ErrorContext>> {
     std::vector<yaml::ErrorContext> errors;
-    PIMCConfigLoader pimcConfigLoader{errors};
+    PIMCConfigLoader<V> pimcConfigLoader{errors};
     pimcConfigLoader.loadPIMCConfig(cfgfgCtx);
     if (not errors.empty()) return fail(std::move(errors));
     return pimcConfigLoader.build();
 }
 
-} // namespace pimc
+} // namespace pimc::pimsm_config

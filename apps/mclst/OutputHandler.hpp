@@ -44,7 +44,7 @@ struct Duration {
 };
 
 struct SourceAndPort {
-    net::IPv4Address source;
+    IPv4Address source;
     uint16_t sport;
 };
 
@@ -366,7 +366,7 @@ private:
     class FlowStatsView final {
     public:
         FlowStatsView(
-                net::IPv4Address source, uint16_t sport, uint16_t dport,
+                IPv4Address source, uint16_t sport, uint16_t dport,
                 FlowStats const& fs, uint64_t duration)
                 : source_{source}
                 , sport_{sport}
@@ -423,7 +423,7 @@ private:
         std::string const& rate() const { return rate_; }
 
     private:
-        net::IPv4Address source_;
+        IPv4Address source_;
         uint16_t sport_;
         uint16_t dport_;
         uint64_t packets_;

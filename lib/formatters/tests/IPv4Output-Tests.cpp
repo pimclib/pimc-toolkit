@@ -16,7 +16,7 @@ protected:
 };
 
 TEST_F(IPv4OStreamTests, Basic) {
-    net::IPv4Address a{224,1,2,3};
+    IPv4Address a{224,1,2,3};
     std::ostringstream ossA;
     ossA << a;
     auto as = std::move(ossA).str();

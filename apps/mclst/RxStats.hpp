@@ -14,15 +14,15 @@ namespace pimc {
 
 PIMC_ALWAYS_INLINE
 static constexpr uint64_t flowId(
-        net::IPv4Address src, uint16_t sport, uint16_t dport) {
+        IPv4Address src, uint16_t sport, uint16_t dport) {
     return (static_cast<uint64_t>(dport) << 48u) +
            (static_cast<uint64_t>(src.value()) << 16u) +
            static_cast<uint64_t>(sport);
 }
 
 PIMC_ALWAYS_INLINE
-static constexpr net::IPv4Address flowSource(uint64_t flowId) {
-return net::IPv4Address{
+static constexpr IPv4Address flowSource(uint64_t flowId) {
+return IPv4Address{
 static_cast<uint32_t>((flowId >> 16u) & 0xFFFFFFFFul)};
 }
 
@@ -92,7 +92,7 @@ public:
 
     friend class RxStats::Timer;
 
-    void update(net::IPv4Address source,
+    void update(IPv4Address source,
                 uint16_t sport, uint16_t dport, uint64_t udpBytes) {
         auto fid = flowId(source, sport, dport);
 
@@ -104,7 +104,7 @@ public:
 
     template <typename F>
     requires std::regular_invocable<
-            F, net::IPv4Address, uint16_t, uint16_t, FlowStats const&>
+            F, IPv4Address, uint16_t, uint16_t, FlowStats const&>
     void forEach(F&& f) const {
         for (const auto& fid: fids_) {
             std::invoke(

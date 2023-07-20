@@ -15,18 +15,20 @@ target_sources(
         core/Optional.hpp
         core/Result.hpp
         core/Endian.hpp
-        net/IPAddress.hpp
+        net/IP.hpp
         net/IPv4Address.hpp
         net/IPv4Prefix.hpp
         net/IPv4PktInfo.hpp
         net/IPv4IntfTable.hpp
         formatters/Fmt.hpp
         formatters/FmtChrono.hpp
+        formatters/IPFormatters.hpp
         formatters/detect_strerror_r.hpp
         formatters/IPv4Formatters.hpp
         formatters/SysErrorFormatter.hpp
         formatters/IPv4Ostream.hpp
         formatters/SysErrorOstream.hpp
+        parsers/IPParsers.hpp
         parsers/IPv4Parsers.hpp
         parsers/NumberParsers.hpp
         packets/PacketView.hpp

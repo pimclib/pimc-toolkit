@@ -14,9 +14,9 @@ protected:
 TEST_F(IPv4ParsingTests, IPv4Address_BasicParse) {
   auto pa = parseIPv4Address("000.000.000.000");
   ASSERT_TRUE(pa);
-  EXPECT_EQ(*pa, net::IPv4Address{});
+  EXPECT_EQ(*pa, IPv4Address{});
 
-  net::IPv4Address bc{255,255,255,255};
+  IPv4Address bc{255,255,255,255};
   auto bcP = parseIPv4Address("0255.00255.000255.0000255");
   ASSERT_TRUE(bcP);
   EXPECT_EQ(*bcP, bc);
@@ -34,7 +34,7 @@ TEST_F(IPv4ParsingTests, IPv4Address_InvalidInput) {
 }
 
 TEST_F(IPv4ParsingTests, IPv4Prefix_BasicParse) {
-  auto ep = net::IPv4Prefix::make(net::IPv4Address{235,254,0,0}, 17);
+  auto ep = IPv4Prefix::make(IPv4Address{235,254,0,0}, 17);
   auto pp = parseIPv4Prefix("235.254.43.13/17");
   ASSERT_TRUE(pp);
   EXPECT_EQ(*pp, ep);

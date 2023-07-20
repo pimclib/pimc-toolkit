@@ -1,17 +1,20 @@
-#include "pimc/formatters/Fmt.hpp"
+#pragma once
 
-#include "pimc/net/IPv4Address.hpp"
-#include "PIMSMConfig.hpp"
-#include "IPv4PIMSMConfigLoader.hpp"
+#include "pimc/formatters/Fmt.hpp"
+#include "pimc/net/IP.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
+
+#include "PIMSMConfig.hpp"
 #include "ConfigUtils.hpp"
 
-namespace pimc {
+namespace pimc::pimsm_config {
 
-namespace {
+template <IPVersion V>
+class PIMSMConfigLoader final: BuilderBase {
+public:
+    using IPAddress = typename IP<V>::Address;
 
-struct IPv4PIMSMConfigLoader final: BuilderBase {
-    explicit IPv4PIMSMConfigLoader(std::vector<yaml::ErrorContext>& errors)
+    explicit PIMSMConfigLoader(std::vector<yaml::ErrorContext>& errors)
     : BuilderBase{errors} {}
 
     void loadPIMSMConfig(yaml::ValueContext const& vCtx) {
@@ -19,11 +22,11 @@ struct IPv4PIMSMConfigLoader final: BuilderBase {
 
         if (rPIMSMCfg) {
             auto rNei = chk(rPIMSMCfg->required("neighbor")
-                    .flatMap(yaml::scalar("neighbor IPv4 address")));
+                    .flatMap(yaml::scalar(fmt::format("neighbor {} address", V{}))));
 
             if (rNei) {
                 auto rNeiA = chk(
-                        ucAddr(rNei->value(), UCAddrType::Neighbor)
+                        ucAddr<V>(rNei->value(), UCAddrType::Neighbor)
                         .mapError([&rNei] (auto msg) {
                             return rNei->error(std::move(msg)); }));
 
@@ -35,22 +38,22 @@ struct IPv4PIMSMConfigLoader final: BuilderBase {
     }
 
     [[nodiscard]]
-    PIMSMConfig<net::IPv4Address> build() const {
-        return PIMSMConfig<net::IPv4Address>{neighbor_};
+    PIMSMConfig<V> build() const {
+        return PIMSMConfig<V>{neighbor_};
     }
 
-    net::IPv4Address neighbor_;
+private:
+    IPAddress neighbor_;
 };
 
-} // anon.namespace
-
-auto loadIPv4PIMSMConfig(yaml::ValueContext const& pimsmCfgCtx)
--> Result<PIMSMConfig<net::IPv4Address>, std::vector<yaml::ErrorContext>> {
+template <IPVersion V>
+auto loadPIMSMConfig(yaml::ValueContext const& pimsmCfgCtx)
+-> Result<PIMSMConfig<V>, std::vector<yaml::ErrorContext>> {
     std::vector<yaml::ErrorContext> errors;
-    IPv4PIMSMConfigLoader pimsmCfgLdr{errors};
+    PIMSMConfigLoader<V> pimsmCfgLdr{errors};
     pimsmCfgLdr.loadPIMSMConfig(pimsmCfgCtx);
     if (not errors.empty()) return fail(errors);
     return pimsmCfgLdr.build();
 }
 
-} // namespace pimc
+} // namespace pimc::pimsm_config

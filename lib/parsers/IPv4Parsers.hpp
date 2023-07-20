@@ -97,12 +97,12 @@ auto parseIPv4PrefixLengthImpl(I first, S last)  -> std::tuple<uint32_t, I> {
  */
 template <std::input_iterator I, std::sentinel_for<I> S>
 requires std::same_as<std::iter_value_t<I>, char>
-auto parseIPv4Address(I first, S last) -> std::optional<net::IPv4Address> {
+auto parseIPv4Address(I first, S last) -> std::optional<IPv4Address> {
     I is;
     uint32_t addr;
     std::tie(addr, is) = detail::parseIPv4AddressImpl(first, last);
     if (is != last) return {};
-    return net::IPv4Address{addr};
+    return IPv4Address{addr};
 }
 
 /*!
@@ -115,7 +115,7 @@ auto parseIPv4Address(I first, S last) -> std::optional<net::IPv4Address> {
  */
 template <std::ranges::input_range R>
 requires std::same_as<std::ranges::range_value_t<R>, char>
-auto parseIPv4Address(R&& r) -> std::optional<net::IPv4Address> {
+auto parseIPv4Address(R&& r) -> std::optional<IPv4Address> {
     return parseIPv4Address(r.begin(), r.end());
 }
 
@@ -126,7 +126,7 @@ auto parseIPv4Address(R&& r) -> std::optional<net::IPv4Address> {
  * @return an optional value containing an IPv4 address if parsing is successful, or
  * an empty optional value otherwise
  */
-inline auto parseIPv4Address(char const* s) -> std::optional<net::IPv4Address> {
+inline auto parseIPv4Address(char const* s) -> std::optional<IPv4Address> {
     return parseIPv4Address(s, pimc::cssentinel{});
 }
 
@@ -143,7 +143,7 @@ inline auto parseIPv4Address(char const* s) -> std::optional<net::IPv4Address> {
  */
 template <std::input_iterator I, std::sentinel_for<I> S>
 requires std::same_as<std::iter_value_t<I>, char>
-auto parseIPv4Prefix(I first, S last) -> std::optional<net::IPv4Prefix> {
+auto parseIPv4Prefix(I first, S last) -> std::optional<IPv4Prefix> {
     I ii{first}, is;
     uint32_t addr;
     std::tie(addr, is) = detail::parseIPv4AddressImpl(ii, last);
@@ -154,7 +154,7 @@ auto parseIPv4Prefix(I first, S last) -> std::optional<net::IPv4Prefix> {
     std::tie(plen, is) = detail::parseIPv4PrefixLengthImpl(ii, last);
     if (is == ii or is != last) return {};
 
-    return net::IPv4Prefix::make(net::IPv4Address{addr}, plen);
+    return IPv4Prefix::make(IPv4Address{addr}, plen);
 }
 
 /*!
@@ -168,7 +168,7 @@ auto parseIPv4Prefix(I first, S last) -> std::optional<net::IPv4Prefix> {
  */
 template <std::ranges::input_range R>
 requires std::same_as<std::ranges::range_value_t<R>, char>
-auto parseIPv4Prefix(R&& r) -> std::optional<net::IPv4Prefix> {
+auto parseIPv4Prefix(R&& r) -> std::optional<IPv4Prefix> {
     return parseIPv4Prefix(r.begin(), r.end());
 }
 
@@ -180,7 +180,7 @@ auto parseIPv4Prefix(R&& r) -> std::optional<net::IPv4Prefix> {
  * @return an optional value containing an IPv4 prefix if parsing is successful, or
  * an empty optional value otherwise
  */
-inline auto parseIPv4Prefix(char const* s) -> std::optional<net::IPv4Prefix> {
+inline auto parseIPv4Prefix(char const* s) -> std::optional<IPv4Prefix> {
     return parseIPv4Prefix(s, cssentinel{});
 }
 

@@ -2,49 +2,59 @@
 
 #include <vector>
 
-#include "pimc/core/TypeUtils.hpp"
-#include "pimc/net/IPAddress.hpp"
+#include "pimc/net/IP.hpp"
 
 namespace pimc {
 
-template <net::IPAddress A>
+template <IPVersion V>
 struct Source final {
-    constexpr Source(A saddr, bool wildcard, bool rpt)
+    using IPAddress = typename IP<V>::Address;
+
+    constexpr Source(IPAddress saddr, bool wildcard, bool rpt)
     : saddr_{saddr}, wildcard_{wildcard}, rpt_{rpt} {}
 
-    A saddr_;
+    IPAddress saddr_;
     bool wildcard_;
     bool rpt_;
 };
 
-template <net::IPAddress A>
+template <IPVersion V>
 class GroupEntry final {
 public:
-    GroupEntry(A group, std::vector<Source<A>> joins, std::vector<Source<A>> prunes)
-    : group_{group}, joins_{std::move(joins)}, prunes_{std::move(prunes)} {}
+    using IPAddress = typename IP<V>::Address;
+
+    GroupEntry(
+            IPAddress group,
+            std::vector<Source<IPAddress>> joins,
+            std::vector<Source<IPAddress>> prunes)
+            : group_{group}
+            , joins_{std::move(joins)}
+            , prunes_{std::move(prunes)} {}
 
     [[nodiscard]]
-    std::vector<Source<A>> const& joins() const { return joins_; }
+    std::vector<Source<IPAddress>> const& joins() const { return joins_; }
 
     [[nodiscard]]
-    std::vector<Source<A>> const& prunes() const { return prunes_; }
+    std::vector<Source<IPAddress>> const& prunes() const { return prunes_; }
 
 private:
-    A group_;
-    std::vector<Source<A>> joins_;
-    std::vector<Source<A>> prunes_;
+    IPAddress group_;
+    std::vector<Source<IPAddress>> joins_;
+    std::vector<Source<IPAddress>> prunes_;
 };
 
-template <net::IPAddress A>
+template <IPVersion V>
 class Update final {
 public:
-    explicit Update(std::vector<GroupEntry<A>> groups)
+    using IPAddress = typename IP<V>::Address;
+
+    explicit Update(std::vector<GroupEntry<V>> groups)
     : groups_{std::move(groups)} {}
 
     [[nodiscard]]
-    std::vector<GroupEntry<A>> const& groups() const { return groups_; }
+    std::vector<GroupEntry<V>> const& groups() const { return groups_; }
 private:
-    std::vector<GroupEntry<A>> groups_;
+    std::vector<GroupEntry<V>> groups_;
 };
 
 } // namespace pimc

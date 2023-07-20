@@ -9,10 +9,10 @@
 
 namespace fmt {
 
-template <pimc::net::IPAddress A>
-struct formatter<pimc::RPT<A>>: formatter<string_view> {
+template <pimc::IPVersion V>
+struct formatter<pimc::RPT<V>>: formatter<string_view> {
     template <typename FormatContext>
-    auto format(pimc::RPT<A> const& rptConfig, FormatContext& ctx) {
+    auto format(pimc::RPT<V> const& rptConfig, FormatContext& ctx) {
         auto out = fmt::format_to(ctx.out(), "    Join(*,G): RP {}\n", rptConfig.rp());
         auto const& rptPrunes = rptConfig.prunes();
         if (not rptPrunes.empty()) {
@@ -24,10 +24,10 @@ struct formatter<pimc::RPT<A>>: formatter<string_view> {
     }
 };
 
-template <pimc::net::IPAddress A>
-struct formatter<pimc::GroupConfig<A>>: formatter<string_view> {
+template <pimc::IPVersion V>
+struct formatter<pimc::GroupConfig<V>>: formatter<string_view> {
     template <typename FormatContext>
-    auto format(pimc::GroupConfig<A> const& gCfg, FormatContext& ctx) {
+    auto format(pimc::GroupConfig<V> const& gCfg, FormatContext& ctx) {
         auto out = fmt::format_to(ctx.out(), "  {}\n", gCfg.group());
         auto const& rpt = gCfg.rpt();
         if (rpt)
@@ -42,10 +42,10 @@ struct formatter<pimc::GroupConfig<A>>: formatter<string_view> {
     }
 };
 
-template <pimc::net::IPAddress A>
-struct formatter<pimc::JPConfig<A>>: formatter<string_view> {
+template <pimc::IPVersion V>
+struct formatter<pimc::JPConfig<V>>: formatter<string_view> {
     template <typename FormatContext>
-    auto format(pimc::JPConfig<A> const& jpConfig, FormatContext& ctx) {
+    auto format(pimc::JPConfig<V> const& jpConfig, FormatContext& ctx) {
         auto out = fmt::format_to(ctx.out(), "Join/Prune config:\n");
         for (auto const& gCfg: jpConfig.groups())
             out = fmt::format_to(out, "{}", gCfg);
@@ -54,10 +54,10 @@ struct formatter<pimc::JPConfig<A>>: formatter<string_view> {
     }
 };
 
-template <pimc::net::IPAddress A>
-struct formatter<pimc::PIMSMConfig<A>>: formatter<string_view> {
+template <pimc::IPVersion V>
+struct formatter<pimc::PIMSMConfig<V>>: formatter<string_view> {
     template <typename FormatContext>
-    auto format(pimc::PIMSMConfig<A> const& pimsmConfig, FormatContext& ctx) {
+    auto format(pimc::PIMSMConfig<V> const& pimsmConfig, FormatContext& ctx) {
         return fmt::format_to(
                 ctx.out(),
                 "PIM sparse-mode:\n  neighbor: {}\n",

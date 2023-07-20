@@ -8,10 +8,10 @@
 namespace fmt {
 
 template<>
-struct formatter<pimc::net::IPv4Address> : formatter<string_view> {
+struct formatter<pimc::IPv4Address> : formatter<string_view> {
 
     template<typename FormatContext>
-    auto format(const pimc::net::IPv4Address& addr, FormatContext& ctx) {
+    auto format(const pimc::IPv4Address& addr, FormatContext& ctx) {
         return fmt::format_to(
                 ctx.out(),
                 "{}.{}.{}.{}",
@@ -20,10 +20,10 @@ struct formatter<pimc::net::IPv4Address> : formatter<string_view> {
 };
 
 template<>
-struct formatter<pimc::net::IPv4Prefix> : formatter<string_view> {
+struct formatter<pimc::IPv4Prefix> : formatter<string_view> {
 
     template<typename FormatContext>
-    auto format(const pimc::net::IPv4Prefix& pfx, FormatContext& ctx) {
+    auto format(const pimc::IPv4Prefix& pfx, FormatContext& ctx) {
         return fmt::format_to(ctx.out(), "{}/{}", pfx.address(), pfx.length());
     }
 };

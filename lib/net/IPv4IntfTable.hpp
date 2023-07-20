@@ -15,7 +15,7 @@ namespace pimc {
 struct IPv4IntfInfo {
     std::string name;
     unsigned ifindex;
-    net::IPv4Address address;
+    IPv4Address address;
 };
 
 class IPv4IntfTable final {

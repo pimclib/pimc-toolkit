@@ -178,7 +178,7 @@ private:
     }
 
     void join() {
-        if (cfg_.source() != net::IPv4Address{}) {
+        if (cfg_.source() != IPv4Address{}) {
             ip_mreq_source mreq_source{};
             mreq_source.imr_interface.s_addr = cfg_.intfAddr().to_nl();
             mreq_source.imr_multiaddr.s_addr = cfg_.group().to_nl();

@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <arpa/inet.h>
 
-namespace pimc::net {
+namespace pimc {
 
 /*!
  * An IPv4 address class.
@@ -355,13 +355,13 @@ private:
     uint32_t addr_;
 };
 
-} // namespace pimc::net
+} // namespace pimc
 
 namespace std {
 
-template <> struct hash<pimc::net::IPv4Address> {
+template <> struct hash<pimc::IPv4Address> {
     std::size_t operator() (
-            pimc::net::IPv4Address address) const noexcept{
+            pimc::IPv4Address address) const noexcept{
         return std::hash<uint32_t>{}(address.value());
     }
 };

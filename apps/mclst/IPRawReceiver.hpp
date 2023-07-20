@@ -189,7 +189,7 @@ public:
             return PacketStatus::AcceptedNoShow;
         }
 
-        pktInfo.source = net::IPv4Address::from_nl(ipHdr.saddr());
+        pktInfo.source = IPv4Address::from_nl(ipHdr.saddr());
         pktInfo.sport = ntohs(udpHdr.sport());
         pktInfo.dport = ntohs(udpHdr.dport());
 

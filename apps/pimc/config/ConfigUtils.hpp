@@ -3,9 +3,9 @@
 #include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/core/Result.hpp"
-#include "pimc/net/IPv4Address.hpp"
-#include "pimc/parsers/IPv4Parsers.hpp"
-#include "pimc/formatters/IPv4Formatters.hpp"
+#include "pimc/net/IP.hpp"
+#include "pimc/parsers/IPParsers.hpp"
+#include "pimc/formatters/IPFormatters.hpp"
 #include "pimc/yaml/Structured.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
 
@@ -43,23 +43,24 @@ struct formatter<pimc::UCAddrType>: formatter<string_view> {
 
 namespace pimc {
 
-inline auto ucAddr(
-        std::string const& s, UCAddrType typ) -> Result<net::IPv4Address, std::string> {
-    auto osa = parseIPv4Address(s);
+template <IPVersion V>
+inline auto ucAddr(std::string const& s, UCAddrType typ)
+-> Result<typename IP<V>::Address, std::string> {
+    auto osa = parse<V>::address(s);
     if (not osa)
-        return fail(fmt::format("invalid {} IPv4 address '{}'", typ, s));
+        return fail(fmt::format("invalid {} {} address '{}'", V{}, typ, s));
 
-    net::IPv4Address sa = osa.value();
+    IPv4Address sa = osa.value();
     if (sa.isDefault() or sa.isLocalBroadcast())
-        return fail(fmt::format("invalid {} IPv4 address {}", typ, sa));
+        return fail(fmt::format("invalid {} {} address {}", V{}, typ, sa));
 
     if (sa.isLoopback())
         return fail(fmt::format(
-                "invalid {} IPv4 address {}: address may not be loopback", typ, sa));
+                "invalid {} {} address {}: address may not be loopback", V{}, typ, sa));
 
     if (sa.isMcast())
         return fail(fmt::format(
-                "invalid {} IPv4 address {}: address may not be multicast", typ, sa));
+                "invalid {} {} address {}: address may not be multicast", V{}, typ, sa));
 
     return sa;
 }

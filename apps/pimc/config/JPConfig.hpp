@@ -3,14 +3,16 @@
 #include <optional>
 #include <vector>
 
-#include "pimc/net/IPAddress.hpp"
+#include "pimc/net/IP.hpp"
 
 namespace pimc {
 
-template <net::IPAddress A>
+template <IPVersion V>
 class RPT final {
 public:
-    RPT(A rp, std::vector<A> prunes)
+    using IPAddress = typename IP<V>::Address;
+
+    RPT(IPAddress rp, std::vector<IPAddress> prunes)
     : rp_{rp}, prunes_{std::move(prunes)} {}
 
     /*!
@@ -19,7 +21,7 @@ public:
      * @return the RP address
      */
     [[nodiscard]]
-    A rp() const { return rp_; }
+    IPAddress rp() const { return rp_; }
 
     /*!
      * \brief Returns a list of RPT-pruned sources.
@@ -31,22 +33,24 @@ public:
      * @return a list of RPT-pruned sources
      */
     [[nodiscard]]
-    std::vector<A> const& prunes() const {
+    std::vector<IPAddress> const& prunes() const {
         return prunes_;
     }
 
 private:
-    A rp_;
-    std::vector<A> prunes_;
+    IPAddress rp_;
+    std::vector<IPAddress> prunes_;
 };
 
-template <net::IPAddress A>
+template <IPVersion V>
 class GroupConfig {
 public:
+    using IPAddress = typename IP<V>::Address;
+
     GroupConfig(
-            net::IPv4Address group,
-            std::optional<RPT<A>> spt,
-            std::vector<A> joins)
+            IPv4Address group,
+            std::optional<RPT<V>> spt,
+            std::vector<IPAddress> joins)
             : group_{group}
             , spt_{std::move(spt)}
             , joins_{std::move(joins)} {}
@@ -57,7 +61,7 @@ public:
      * @return the multicast group
      */
     [[nodiscard]]
-    A group() const { return group_; }
+    IPAddress group() const { return group_; }
 
     /*!
      * \brief Returns the RP-tree join/prun configuration for the
@@ -66,7 +70,7 @@ public:
      * @return the RP-tree join/prun configuration for the group
      */
     [[nodiscard]]
-    std::optional<RPT<A>> const& rpt() const { return spt_; }
+    std::optional<RPT<V>> const& rpt() const { return spt_; }
 
     /*!
      * \brief Returns a list of SPT-joined sources.
@@ -76,17 +80,19 @@ public:
      * @return a list of SPT-joined source sources
      */
     [[nodiscard]]
-    std::vector<A> const& spt() const { return joins_; }
+    std::vector<IPAddress> const& spt() const { return joins_; }
 private:
-    A group_;
-    std::optional<RPT<A>> spt_;
-    std::vector<A> joins_;
+    IPAddress group_;
+    std::optional<RPT<V>> spt_;
+    std::vector<IPAddress> joins_;
 };
 
-template <net::IPAddress A>
+template <IPVersion V>
 class JPConfig final {
 public:
-    explicit JPConfig(std::vector<GroupConfig<A>> groups)
+    using IPAddress = typename IP<V>::Address;
+
+    explicit JPConfig(std::vector<GroupConfig<V>> groups)
     : groups_{std::move(groups)} {}
 
     /*!
@@ -98,9 +104,9 @@ public:
      * @return a list of multicast group configurations
      */
     [[nodiscard]]
-    std::vector<GroupConfig<A>> const& groups() const { return groups_; }
+    std::vector<GroupConfig<V>> const& groups() const { return groups_; }
 private:
-    std::vector<GroupConfig<A>> groups_;
+    std::vector<GroupConfig<V>> groups_;
 };
 
 } // namespace pimc

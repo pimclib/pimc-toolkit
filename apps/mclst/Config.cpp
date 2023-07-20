@@ -43,7 +43,7 @@ char const* header =
     "destined for all UDP ports";
 
 auto parseGroupPort(
-        std::string const& gp) -> std::tuple<net::IPv4Address, uint16_t, bool> {
+        std::string const& gp) -> std::tuple<IPv4Address, uint16_t, bool> {
     auto cpos = gp.find(':');
 
     if (cpos != std::string::npos) {
@@ -71,8 +71,8 @@ auto parseGroupPort(
 }
 
 auto parseSourceOfG(
-        std::vector<std::string> const& sofg) -> net::IPv4Address {
-    if (sofg.empty()) return net::IPv4Address{};
+        std::vector<std::string> const& sofg) -> IPv4Address {
+    if (sofg.empty()) return IPv4Address{};
 
     auto const& ss = sofg[0];
     auto s = parseIPv4Address(ss);
@@ -240,7 +240,7 @@ Config Config::fromArgs(int argc, char** argv) {
     if (intf.empty())
         raise<CommandLineError>("interface is required");
 
-    net::IPv4Address group;
+    IPv4Address group;
     uint16_t dport;
     bool wildcard;
     std::tie(group, dport, wildcard) = parseGroupPort(gp[0]);

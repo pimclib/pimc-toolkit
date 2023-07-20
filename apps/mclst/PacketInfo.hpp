@@ -17,9 +17,9 @@ constexpr std::size_t BufferSize{67584};
 
 struct PacketInfo final {
     uint64_t timestamp;
-    net::IPv4Address source;
+    IPv4Address source;
     uint16_t sport;
-    net::IPv4Address group;
+    IPv4Address group;
     uint16_t dport;
     // the index of the interface on which the packet was received
     unsigned ifIndex;

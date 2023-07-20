@@ -28,7 +28,7 @@ public:
     auto processPacket(
             sockaddr_in const& sender, PacketInfo& pktInfo) -> PacketStatus {
         pktInfo.dport = cfg_.dport();
-        pktInfo.source = net::IPv4Address::from_nl(sender.sin_addr.s_addr);
+        pktInfo.source = IPv4Address::from_nl(sender.sin_addr.s_addr);
         pktInfo.sport = ntohs(sender.sin_port);
         pktInfo.payload = pktInfo.receivedData;
         pktInfo.payloadSize = pktInfo.receivedSize;

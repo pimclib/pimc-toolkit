@@ -28,7 +28,7 @@ constexpr void writeHdr(PacketWriter& pw, uint8_t type) {
  * @param pw the packet writer
  * @param uaddr the address to encode
  */
-void writeIPv4Addr(PacketWriter& pw, net::IPv4Address uaddr) {
+void writeIPv4Addr(PacketWriter& pw, IPv4Address uaddr) {
     auto* h = next<PIMSMv2EncUAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
@@ -43,7 +43,7 @@ void writeIPv4Addr(PacketWriter& pw, net::IPv4Address uaddr) {
  * @param pw the packet writer
  * @param group the multicast group to encode
  */
-void writeIPv4Grp(PacketWriter& pw, net::IPv4Address group) {
+void writeIPv4Grp(PacketWriter& pw, IPv4Address group) {
     auto* h = next<PIMSMv2EncGAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
@@ -60,7 +60,7 @@ void writeIPv4Grp(PacketWriter& pw, net::IPv4Address group) {
  * @param pw the packet writer
  * @param rp the PIM SM v2 rendezvous point (RP)
  */
-void writeIPv4RP(PacketWriter& pw, net::IPv4Address rp) {
+void writeIPv4RP(PacketWriter& pw, IPv4Address rp) {
     auto* h = next<PIMSMv2EncSrcAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
@@ -85,7 +85,7 @@ void writeIPv4RP(PacketWriter& pw, net::IPv4Address rp) {
  * @param rpt the flag specifying if the source is on the shared or
  * shortest path tree
  */
-void writeIPv4Src(PacketWriter& pw, net::IPv4Address src, bool rpt) {
+void writeIPv4Src(PacketWriter& pw, IPv4Address src, bool rpt) {
     auto* h = next<PIMSMv2EncSrcAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;

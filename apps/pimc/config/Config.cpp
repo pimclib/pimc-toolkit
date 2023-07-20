@@ -7,12 +7,12 @@
 #include "version.hpp"
 
 #include "Config.hpp"
-#include "IPv4PIMCConfigLoader.hpp"
+#include "PIMCConfigLoader.hpp"
 #include "Formatters.hpp"
 
 #define OID(id) static_cast<uint32_t>(Options::id)
 
-namespace pimc {
+namespace pimc::pimsm_config {
 
 namespace {
 enum class Options: uint32_t {
@@ -24,7 +24,7 @@ char const* header = "[Options] pimc-config.yml";
 
 } // anon.namespace
 
-PIMCConfig<net::IPv4Address> loadIPv4Config(int argc, char** argv) {
+PIMCConfig<IPv4> loadIPv4Config(int argc, char** argv) {
     auto args = GetOptLong::with(header)
             .flag(OID(ShowConfig), GetOptLong::LongOnly, "show-config",
                   "Show config and exit")
@@ -58,7 +58,7 @@ PIMCConfig<net::IPv4Address> loadIPv4Config(int argc, char** argv) {
                 yamlDocs.size());
     }
 
-    auto rCfg = loadIPv4PIMCConfig(yaml::ValueContext::root(yamlDocs[0]));
+    auto rCfg = loadPIMCConfig<IPv4>(yaml::ValueContext::root(yamlDocs[0]));
     if (not rCfg) {
         yaml::StderrErrorHandler ec{yamlfn.c_str()};
         for (auto const& eCtx: rCfg.error())
@@ -78,4 +78,4 @@ PIMCConfig<net::IPv4Address> loadIPv4Config(int argc, char** argv) {
     return pimcCfg;
 }
 
-} // namespace pimc
+} // namespace pimc::pimsm_config

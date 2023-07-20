@@ -3,22 +3,22 @@
 #include "PIMSMConfig.hpp"
 #include "JPConfig.hpp"
 
-namespace pimc {
+namespace pimc::pimsm_config {
 
-template <net::IPAddress A>
+template <IPVersion V>
 class PIMCConfig final {
 public:
-    PIMCConfig(PIMSMConfig<A> pimsmConfig, JPConfig<A> jpConfig)
+    PIMCConfig(PIMSMConfig<V> pimsmConfig, JPConfig<V> jpConfig)
     : pimsmConfig_{std::move(pimsmConfig)}, jpConfig_{std::move(jpConfig)} {}
 
     [[nodiscard]]
-    PIMSMConfig<A> const& pimsmConfig() const { return pimsmConfig_; }
+    PIMSMConfig<V> const& pimsmConfig() const { return pimsmConfig_; }
 
     [[nodiscard]]
-    JPConfig<A> const& jpConfig() const { return jpConfig_; }
+    JPConfig<V> const& jpConfig() const { return jpConfig_; }
 private:
-    PIMSMConfig<A> pimsmConfig_;
-    JPConfig<A> jpConfig_;
+    PIMSMConfig<V> pimsmConfig_;
+    JPConfig<V> jpConfig_;
 };
 
-} // namespace pimc
+} // namespace pimc::pimsm_config

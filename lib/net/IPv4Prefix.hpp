@@ -2,7 +2,7 @@
 
 #include "pimc/net/IPv4Address.hpp"
 
-namespace pimc::net {
+namespace pimc {
 
 /*!
  * An IPv4 prefix -- this is a wrapper over two 32-bit unsigned integer values
@@ -210,15 +210,15 @@ private:
     uint32_t plen_;
 };
 
-} // namespace pimc::net
+} // namespace pimc
 
 
 namespace std {
 
-template <> struct hash<pimc::net::IPv4Prefix> {
+template <> struct hash<pimc::IPv4Prefix> {
     std::size_t operator() (
-            pimc::net::IPv4Prefix prefix) const noexcept{
-        std::size_t h1 = std::hash<pimc::net::IPv4Address>{}(prefix.address());
+            pimc::IPv4Prefix prefix) const noexcept{
+        std::size_t h1 = std::hash<pimc::IPv4Address>{}(prefix.address());
         std::size_t h2 = std::hash<uint32_t>{}(prefix.length());
         return h1 ^ (h2 << 1);
     }

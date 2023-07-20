@@ -45,7 +45,7 @@ Result<IPv4IntfTable, std::string> IPv4IntfTable::newTable() {
             intfs.emplace_back(IPv4IntfInfo{
                 .name = p->ifa_name,
                 .ifindex = ifindex,
-                .address = net::IPv4Address::from_nl(sin->sin_addr.s_addr)
+                .address = IPv4Address::from_nl(sin->sin_addr.s_addr)
             });
         }
     }

@@ -1,105 +1,66 @@
 #include <deque>
 #include <algorithm>
 
-#include "pimc/packets/PIMSMv2.hpp"
+#include "pimc/net/IP.hpp"
 
+#include "config/PIMSMParams.hpp"
 #include "config/JPConfig.hpp"
 #include "Update.hpp"
 
 namespace pimc {
 
-template <net::IPAddress A>
-std::vector<Update<A>> pack(JPConfig<A> const&);
+template <IPVersion V>
+std::vector<Update<V>> pack(JPConfig<typename IP<V>::Address> const&);
 
 namespace pimsm_detail {
 
-template <net::IPAddress A>
-struct params {};
+template<IPVersion> class UpdatePacker;
 
-template <>
-struct params<net::IPv4Address> {
-    /// The capacity of the IPv4 Join/Prune message for the group entries
-    /// in bytes:
-    ///
-    /// Ethernet MTU: 1522 bytes
-    /// MAC Header:
-    ///   Dst MAC Addr      6 bytes
-    ///   Src Mac Addr      6 bytes
-    ///   802.1Q tag        4 bytes (optional)
-    ///   Ethertype         2 bytes (0x0800 for IPv4)
-    /// Trailer FCS         4 bytes
-    ///                    22 bytes (subtotal)
-    ///           1500 bytes remaining
-    /// IPv4 Header        20 bytes
-    ///           1480 bytes remaining
-    /// PIM-SM v2 for IPv4 Join/Prune header:
-    ///   PIM Header         4 bytes
-    ///   Upstream Neighbor  6 bytes
-    ///   Reserved           1 byte
-    ///   Number of groups   1 byte
-    ///   Hold time          2 bytes
-    ///                     14 bytes (subtotal)
-    ///           1466 bytes remaining for group entries
-    static constexpr size_t capacity{1466ul};
-    /// PIM-SM encoded IPv4 multicast address size [8 bytes]
-    static constexpr size_t GrpASize{PIMSMv2EncUIPv4AddrSize};
-    /// PIM-SM group "header" size. The "header" has the following structure:
-    ///  +--------------------------------------------------
-    ///  | Multicast Group Address (Encoded-Group format) [12 bytes]
-    ///  +-------------------------------------------------------------------+
-    ///  | Number of Joined Srcs (2 bytes) | Number of Prunes Srcs (2 bytes) |
-    ///  +-------------------------------------------------------------------+
-    static constexpr size_t GrpHdrSize{GrpASize + 2ul + 2ul};
-    /// PIM-SM encoded IPv4 source address size [8 bytes]
-    static constexpr size_t SrcASize{PIMSMv2EncSrcAddrSize};
-    /// The minimum size of the group entry, i.e. group header and just one
-    /// join or prune entry
-    static constexpr size_t MinEntrySize{GrpHdrSize + SrcASize};
-};
-
-template<net::IPAddress> class UpdatePacker;
-
-template <net::IPAddress A>
+template <IPVersion V>
 class GroupEntryBuilder final {
-    template<net::IPAddress> friend class UpdatePacker;
+    using IPAddress = typename IP<V>::Address;
+
+    template<IPVersion> friend class UpdatePacker;
 private:
-    GroupEntryBuilder(A group, size_t jcnt, size_t pcnt)
+    GroupEntryBuilder(IPAddress group, size_t jcnt, size_t pcnt)
     : group_{group} {
         joins_.reserve(jcnt);
         prunes_.reserve(pcnt);
     }
 
-    void join(A src, bool wildcard, bool rpt) {
+    void join(IPAddress src, bool wildcard, bool rpt) {
         joins_.emplace_back(src, wildcard, rpt);
     }
 
-    void prune(A src, bool wildcard, bool rpt) {
+    void prune(IPAddress src, bool wildcard, bool rpt) {
         prunes_.emplace_back(src, wildcard, rpt);
     }
 
     [[nodiscard]]
     size_t size() const {
-        return params<A>::GrpHdrSize +
-                (joins_.size() + prunes_.size()) * params<A>::SrcASize;
+        return pimsm::params<V>::GrpHdrSize +
+                (joins_.size() + prunes_.size()) * pimsm::params<V>::SrcASize;
     }
 
-    GroupEntry<A> build() {
+    GroupEntry<V> build() {
         return {group_, std::move(joins_), std::move(prunes_)};
     }
 
 private:
-    A group_;
-    std::vector<Source<A>> joins_;
-    std::vector<Source<A>> prunes_;
+    IPAddress group_;
+    std::vector<IPAddress> joins_;
+    std::vector<IPAddress> prunes_;
 };
 
-template <net::IPAddress A>
+template <IPVersion V>
 class UpdateBuilder final {
-    template<net::IPAddress> friend class UpdatePacker;
+    template<IPVersion> friend class UpdatePacker;
 private:
-    UpdateBuilder(): sz_{0ul} {}
+    using IPAddress = typename IP<V>::Address;
 
-    void add(GroupEntry<A> group, size_t sz) {
+    explicit UpdateBuilder(): sz_{0ul} {}
+
+    void add(GroupEntry<V> group, size_t sz) {
         chkSz(sz);
         groups_.emplace_back(std::move(group));
         sz_ += sz;
@@ -107,38 +68,39 @@ private:
 
     [[nodiscard]]
     size_t remaining() const {
-        return static_cast<size_t>(params<A>::capacity - sz_);
+        return static_cast<size_t>(pimsm::params<V>::capacity - sz_);
     }
 
-    Update<A> build() {
+    Update<V> build() {
         return {std::move(groups_)};
     }
 
     void chkSz(size_t sz) {
-        if (sz_ + sz > params<A>::capacity)
+        if (sz_ + sz > pimsm::params<V>::capacity)
             raise<std::logic_error>(
                     "pim-update capacity {}, current size {}, update size {}",
-                    params<A>::capacity, sz_, sz);
+                    pimsm::params<V>::capacity, sz_, sz);
     }
 
     [[nodiscard]]
     bool empty() const { return groups_.empty(); }
 private:
-    std::vector<GroupEntry<A>> groups_;
+    std::vector<GroupEntry<V>> groups_;
     size_t sz_;
 };
 
 
-template<net::IPAddress A>
+template<IPVersion V>
 class UpdatePacker final {
-    template <net::IPAddress Addr>
-    friend std::vector<Update<Addr>> pimc::pack(JPConfig<A> const&);
+    using IPAddress = typename IP<V>::Address;
+
+    template <IPVersion U>
+    friend std::vector<Update<U>> pimc::pack(JPConfig<U> const&);
 
     class UBCursor final {
-        template <net::IPAddress>
-        friend class UpdatePacker;
+        template <IPVersion> friend class UpdatePacker;
 
-        constexpr UBCursor(std::deque<UpdateBuilder<A>>* ubq, size_t& start)
+        constexpr UBCursor(std::deque<UpdateBuilder<V>>* ubq, size_t& start)
         : ubq_{ubq}, start_{start}, i_{start} {}
 
         auto operator++ () -> UBCursor& {
@@ -147,19 +109,19 @@ class UpdatePacker final {
             return *this;
         }
 
-        auto operator* () -> UpdateBuilder<A>& {
+        auto operator* () -> UpdateBuilder<V>& {
             return (*ubq_)[i_];
         }
 
-        auto operator-> () -> UpdateBuilder<A>* {
+        auto operator-> () -> UpdateBuilder<V>* {
             return addr();
         }
 
-        auto addr() -> UpdateBuilder<A>* {
+        auto addr() -> UpdateBuilder<V>* {
             return &((*ubq_)[i_]);
         }
 
-        void add(GroupEntryBuilder<A> geb) {
+        void add(GroupEntryBuilder<V> geb) {
             auto geSz = geb.size();
             (*ubq_)[i_].add(geb.build(), geSz);
             updateStart();
@@ -167,7 +129,7 @@ class UpdatePacker final {
 
         void updateStart() {
             for (size_t j = start_; j <= i_; ++j) {
-                if ((*ubq_)[j].remaining() < params<A>::MinEntrySize)
+                if ((*ubq_)[j].remaining() < pimsm::params<V>::MinEntrySize)
                     start_ = j;
                 else return;
             }
@@ -176,7 +138,7 @@ class UpdatePacker final {
                 ubq_->emplace_back();
         }
 
-        std::deque<UpdateBuilder<A>>* ubq_;
+        std::deque<UpdateBuilder<V>>* ubq_;
         size_t& start_;
         size_t i_;
     };
@@ -185,25 +147,25 @@ private:
         ubq_.emplace_back();
     }
 
-    void pack(JPConfig<A> const& jpCfg) {
+    void pack(JPConfig<V> const& jpCfg) {
         for (auto const& ge: jpCfg.groups()) fitGroupEntry(ge);
     }
 
-    UpdateBuilder<A>* findRptUb(GroupEntry<A> const& ge) {
+    UpdateBuilder<V>* findRptUb(GroupEntry<V> const& ge) {
         if (not ge.rpt()) return nullptr;
         size_t rptSz{
-            params<A>::GrpHdrSize +
-            params<A>::SrcASize * (ge.rpt().prunes() + 1)};
+            pimsm::params<V>::GrpHdrSize +
+            pimsm::params<V>::SrcASize * (ge.rpt().prunes() + 1)};
         UBCursor c{&ubq_, start_};
         while (c->remaining() < rptSz) ++c;
         return c.addr();
     }
 
     static size_t maxSources(size_t rem) {
-        return (rem - params<A>::GrpHdrSize) / params<A>::SrcASize;
+        return (rem - pimsm::params<V>::GrpHdrSize) / pimsm::params<V>::SrcASize;
     }
 
-    void fitGroupEntry(GroupEntry<A> const& ge) {
+    void fitGroupEntry(GroupEntry<V> const& ge) {
         auto* rptUb = findRptUb(ge);
 
         UBCursor c{&ubq_, start_};
@@ -215,7 +177,7 @@ private:
                 auto cnt = std::max(
                         maxSources(c->remaining()),
                         spt.size() - srci);
-                GroupEntryBuilder<A> geb{ge.group(), cnt, 0};
+                GroupEntryBuilder<V> geb{ge.group(), cnt, 0};
                 for (size_t i{srci}; i < cnt; ++i)
                     geb.join(spt[i], false, false);
                 c.add(geb);
@@ -224,10 +186,10 @@ private:
                 auto cnt = std::max(
                         maxSources(
                                 c->remaining() -
-                                (params<A>::GrpHdrSize +
-                                 params<A>::SrcASize * (ge.rpt().prunes() + 1))),
+                                (pimsm::params<V>::GrpHdrSize +
+                                 pimsm::params<V>::SrcASize * (ge.rpt().prunes() + 1))),
                         spt.size() - srci);
-                GroupEntryBuilder<A> geb{ge.group(), cnt + 1, ge.rpt().prunes()};
+                GroupEntryBuilder<V> geb{ge.group(), cnt + 1, ge.rpt().prunes()};
                 for (size_t i{srci}; i < cnt; ++i)
                     geb.join(spt[i], false, false);
                 geb.join(ge.rpt().rp(), true, true);
@@ -242,7 +204,7 @@ private:
         }
 
         if (rptUb != nullptr) {
-            GroupEntryBuilder<A> geb{ge.group(), 1, ge.rpt().prunes()};
+            GroupEntryBuilder<V> geb{ge.group(), 1, ge.rpt().prunes()};
             geb.join(ge.rpt().rp(), true, true);
             auto const& rptPrunes = ge.rpt().prunes();
             for (auto const& rptPruneSrc: rptPrunes)
@@ -252,13 +214,13 @@ private:
         }
     }
 
-    std::vector<Update<A>> build() {
+    std::vector<Update<V>> build() {
         // TODO is it possible there there are multiple empty builders at
         //      the end? Unlikely, but need to make sure
         size_t resSz = ubq_.size();
         if (ubq_[ubq_.size() - 1].empty())
             --resSz;
-        std::vector<Update<A>> updates;
+        std::vector<Update<V>> updates;
         updates.reserve(resSz);
         std::transform(
                 ubq_.begin(), ubq_.end(),
@@ -268,16 +230,16 @@ private:
     }
 
 private:
-    std::deque<UpdateBuilder<A>> ubq_;
+    std::deque<UpdateBuilder<V>> ubq_;
     std::size_t start_;
 };
 
 
 } // namespace pimc::pimsm_detail
 
-template <net::IPAddress A>
-inline std::vector<Update<A>> pack(JPConfig<A> const& jpCfg) {
-    pimsm_detail::UpdatePacker<A> up{};
+template <IPVersion V>
+inline std::vector<Update<V>> pack(JPConfig<V> const& jpCfg) {
+    pimsm_detail::UpdatePacker<V> up{};
     up.pack(jpCfg);
     return up.build();
 }
