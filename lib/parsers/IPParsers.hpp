@@ -11,7 +11,7 @@ template <typename>
 struct parse {};
 
 template <>
-struct parse<IP<v4>> {
+struct parse<IPv4> {
 
     /*!
      * \copydoc ::pimc::parseIPv4Address(I, S)

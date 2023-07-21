@@ -21,18 +21,23 @@ public:
     void acceptJoinSG(IPAddress sa) { sgJoinedSources_.emplace(sa); }
 
     [[nodiscard]]
-    GroupConfig<V> build() const {
-        std::vector<IPAddress> rptPrunedSources;
+    GroupConfig<V> build(IPAddress group) const {
+        std::optional<RPT<V>> rpt;
+        if (rp_) {
+            std::vector<IPAddress> rptPrunedSources;
+            rptPrunedSources.reserve(rptPrunedSources_.size());
+            std::copy(
+                    rptPrunedSources_.begin(), rptPrunedSources_.end(),
+                    std::back_inserter(rptPrunedSources));
+            rpt.emplace(rp_.value(), std::move(rptPrunedSources));
+        }
         std::vector<IPAddress> sgJoinedSources;
-        rptPrunedSources.reserve(rptPrunedSources_.size());
-        std::copy(
-                rptPrunedSources_.begin(), rptPrunedSources_.end(),
-                std::back_inserter(rptPrunedSources));
         sgJoinedSources.reserve(sgJoinedSources_.size());
         std::copy(
                 sgJoinedSources_.begin(), sgJoinedSources_.end(),
                 std::back_inserter(sgJoinedSources));
-        return {rp_, std::move(rptPrunedSources), std::move(sgJoinedSources)};
+        return GroupConfig<V>{
+            group, std::move(rpt), std::move(sgJoinedSources)};
     }
 private:
     std::optional<IPAddress> rp_;

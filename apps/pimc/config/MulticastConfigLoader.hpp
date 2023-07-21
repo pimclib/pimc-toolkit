@@ -1,5 +1,6 @@
 #include <concepts>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "pimc/net/IP.hpp"
 #include "pimc/parsers/IPParsers.hpp"
@@ -51,7 +52,7 @@ struct JPSourceInfo {
 
 template <IPVersion V>
 Result<typename IP<V>::Address, std::string> grpAddr(std::string const &g) {
-    auto oga = parse<IP<V>>::Address(g);
+    auto oga = parse<V>::address(g);
     if (not oga)
         return fail(fmt::format("invalid multicast {} group address '{}'", V{}, g));
 
@@ -78,7 +79,7 @@ IPVersion<V> and requires(
     { gcb.build(ga) } -> std::same_as<GroupConfig<V>>;
 };
 
-template <IPVersion V, GroupConfigBuilderImpl<V> GCB>
+template <IPVersion V, typename GCB>
 class GroupConfigBuilderBase: BuilderBase {
 public:
     using IPAddress = typename IP<V>::Address;
@@ -92,7 +93,7 @@ public:
             , line_{line}
             , rptPrunedSources_{0ul} {}
 
-    void loadJPGroupConfig(yaml::ValueContext const &grpCtx) {
+    void loadGroupConfig(yaml::ValueContext const &grpCtx) {
         auto rGrpCfg = chk(
                 grpCtx.getMapping(fmt::format("{} group {} config", V{}, group_)));
 
@@ -127,7 +128,7 @@ public:
     GroupConfig<V> build() { return impl()->build(group_); }
 
 private:
-    template <typename Self>
+    template <typename Self = GCB>
     Self* impl() requires GroupConfigBuilderImpl<Self, V> {
         return static_cast<Self*>(this);
     }
@@ -148,7 +149,7 @@ private:
 
                 if (rRPA) {
                     if (chkSrc(rRP.value(), rRPA.value(), JPSourceType::RP))
-                        impl()->accptRP(rRPA.value());
+                        impl()->acceptRP(rRPA.value());
                 }
             }
 
@@ -275,7 +276,7 @@ public:
                     auto rGrp = chk(ii.first.getScalar());
 
                     if (rGrp) {
-                        auto rGrpA = chk(grpAddr(
+                        auto rGrpA = chk(grpAddr<V>(
                                 rGrp->value()).mapError(
                                 [&rGrp](auto msg) {
                                     return rGrp->error(msg);
@@ -312,7 +313,10 @@ public:
         std::transform(groups_.begin(), groups_.end(),
                        std::back_inserter(groups),
                        [this](auto const &ga) {
-                           return groupBldMap_[ga].build();
+                           if (auto ii = groupBldMap_.find(ga);
+                               ii != groupBldMap_.end())
+                               return ii->second.build(ga);
+                           throw std::logic_error{"indexed group not in map"};
                        });
         return JPConfig<V>{std::move(groups)};
     }
