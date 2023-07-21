@@ -6,60 +6,64 @@ set_target_properties(
 target_sources(
     PimcLib
     PRIVATE
-        net/IPv4IntfTable.cpp
+        pimc/net/IPv4IntfTable.cpp
     PUBLIC
-        core/CompilerUtils.hpp
-        core/TypeUtils.hpp
-        core/Deferred.hpp
-        core/OptionalResultHelpers.hpp
-        core/Optional.hpp
-        core/Result.hpp
-        core/Endian.hpp
-        net/IP.hpp
-        net/IPv4Address.hpp
-        net/IPv4Prefix.hpp
-        net/IPv4PktInfo.hpp
-        net/IPv4IntfTable.hpp
-        formatters/Fmt.hpp
-        formatters/FmtChrono.hpp
-        formatters/IPFormatters.hpp
-        formatters/detect_strerror_r.hpp
-        formatters/IPv4Formatters.hpp
-        formatters/SysErrorFormatter.hpp
-        formatters/IPv4Ostream.hpp
-        formatters/SysErrorOstream.hpp
-        parsers/IPParsers.hpp
-        parsers/IPv4Parsers.hpp
-        parsers/NumberParsers.hpp
-        packets/PacketView.hpp
-        packets/IPv4HdrView.hpp
-        packets/UDPHdrView.hpp
-        packets/PIMSMv2.hpp
-        packets/PIMSMv2Utils.hpp
-        system/Exceptions.hpp
-        system/SysError.hpp
-        text/MemoryBuffer.hpp
-        text/NumberLengths.hpp
-        text/ConsumeIfUnlessEscaped.hpp
-        text/HexAsciiBlock.hpp
-        text/NanosText.hpp
-        text/IndentBlock.hpp
-        text/CString.hpp
-        text/SCLine.hpp
-        text/Location.hpp
-        unix/SignalHandler.hpp
-        unix/GetOptLong.hpp
-        unix/GetOptLong.cpp
-        unix/TerminalColors.hpp
-        yaml/Structured.hpp
-        yaml/Structured.cpp
-        yaml/BuilderBase.hpp
-        yaml/ErrorHandler.hpp
-        yaml/LoadAll.hpp
-        yaml/LoadAll.cpp
+        pimc/core/CompilerUtils.hpp
+        pimc/core/TypeUtils.hpp
+        pimc/core/Deferred.hpp
+        pimc/core/OptionalResultHelpers.hpp
+        pimc/core/Optional.hpp
+        pimc/core/Result.hpp
+        pimc/core/Endian.hpp
+        pimc/net/IP.hpp
+        pimc/net/IPv4Address.hpp
+        pimc/net/IPv4Prefix.hpp
+        pimc/net/IPv4PktInfo.hpp
+        pimc/net/IPv4IntfTable.hpp
+        pimc/formatters/Fmt.hpp
+        pimc/formatters/FmtChrono.hpp
+        pimc/formatters/IPFormatters.hpp
+        pimc/formatters/detect_strerror_r.hpp
+        pimc/formatters/IPv4Formatters.hpp
+        pimc/formatters/SysErrorFormatter.hpp
+        pimc/formatters/IPv4Ostream.hpp
+        pimc/formatters/SysErrorOstream.hpp
+        pimc/parsers/IPParsers.hpp
+        pimc/parsers/IPv4Parsers.hpp
+        pimc/parsers/NumberParsers.hpp
+        pimc/packets/PacketView.hpp
+        pimc/packets/IPv4HdrView.hpp
+        pimc/packets/UDPHdrView.hpp
+        pimc/packets/PIMSMv2.hpp
+        pimc/packets/PIMSMv2Utils.hpp
+        pimc/system/Exceptions.hpp
+        pimc/system/SysError.hpp
+        pimc/text/MemoryBuffer.hpp
+        pimc/text/NumberLengths.hpp
+        pimc/text/ConsumeIfUnlessEscaped.hpp
+        pimc/text/HexAsciiBlock.hpp
+        pimc/text/NanosText.hpp
+        pimc/text/IndentBlock.hpp
+        pimc/text/CString.hpp
+        pimc/text/SCLine.hpp
+        pimc/text/Location.hpp
+        pimc/unix/SignalHandler.hpp
+        pimc/unix/GetOptLong.hpp
+        pimc/unix/GetOptLong.cpp
+        pimc/unix/TerminalColors.hpp
+        pimc/yaml/Structured.hpp
+        pimc/yaml/Structured.cpp
+        pimc/yaml/BuilderBase.hpp
+        pimc/yaml/ErrorHandler.hpp
+        pimc/yaml/LoadAll.hpp
+        pimc/yaml/LoadAll.cpp
 )
 
-export_headers(PimcLib ${CMAKE_CURRENT_LIST_DIR} pimc)
+target_include_directories(
+        PimcLib
+        PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}
+)
 
 target_link_libraries(
         PimcLib
@@ -72,19 +76,19 @@ target_link_libraries(
 target_sources(
         Tests
         PRIVATE
-            core/tests/TypeUtils-Tests.cpp
-            core/tests/Optional-Result-TestUtils.hpp
-            core/tests/Optional-Tests.cpp
-            core/tests/Failure-Tests.cpp
-            core/tests/ResultConstexpr-Tests.cpp
-            core/tests/Result-Tests.cpp
-            core/tests/Result-AdHoc-Tests.cpp
-            core/tests/Deferred-Tests.cpp
-            net/tests/IPv4Net-tests.cpp
-            parsers/tests/IPv4Parser-tests.cpp
-            parsers/tests/NumberParsers-Tests.cpp
-            formatters/tests/IPv4Output-Tests.cpp
-            text/tests/ConsumeIfUnlessEscaped-tests.cpp
-            text/tests/NanosText-tests.cpp
-            time/TimeUtils.hpp
+            pimc/core/tests/TypeUtils-Tests.cpp
+            pimc/core/tests/Optional-Result-TestUtils.hpp
+            pimc/core/tests/Optional-Tests.cpp
+            pimc/core/tests/Failure-Tests.cpp
+            pimc/core/tests/ResultConstexpr-Tests.cpp
+            pimc/core/tests/Result-Tests.cpp
+            pimc/core/tests/Result-AdHoc-Tests.cpp
+            pimc/core/tests/Deferred-Tests.cpp
+            pimc/net/tests/IPv4Net-tests.cpp
+            pimc/parsers/tests/IPv4Parser-tests.cpp
+            pimc/parsers/tests/NumberParsers-Tests.cpp
+            pimc/formatters/tests/IPv4Output-Tests.cpp
+            pimc/text/tests/ConsumeIfUnlessEscaped-tests.cpp
+            pimc/text/tests/NanosText-tests.cpp
+            pimc/time/TimeUtils.hpp
 )
