@@ -14,8 +14,7 @@ class PIMSMConfigLoader final: BuilderBase {
 public:
     using IPAddress = typename IP<V>::Address;
 
-    explicit PIMSMConfigLoader(std::vector<yaml::ErrorContext>& errors)
-    : BuilderBase{errors} {}
+    using BuilderBase::BuilderBase;
 
     void loadPIMSMConfig(yaml::ValueContext const& vCtx) {
         auto rPIMSMCfg = chk(vCtx.getMapping("PIM-SM config"));

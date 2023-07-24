@@ -66,8 +66,7 @@ target_link_libraries(
 
 add_executable(
         pimc-tests
-        tests/IPv4PackingVerifierConfigLoader.hpp
-        tests/IPv4PackingVerifierConfigLoader.cpp
+        tests/PackingVerifierConfigLoader.hpp
 )
 
 target_include_directories(
