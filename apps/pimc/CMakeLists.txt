@@ -66,7 +66,8 @@ target_link_libraries(
 
 add_executable(
         pimc-tests
-        tests/PackingVerifierConfigLoader.hpp
+        tests/PackingVerifierConfig.hpp
+        tests/UpdateLoader.hpp
 )
 
 target_include_directories(

@@ -13,42 +13,6 @@
 #include "JPConfig.hpp"
 
 namespace pimc::pimsm_config {
-enum class JPSourceType: unsigned {
-    RP = 0,
-    RptPruned = 1,
-    SptJoined = 2
-};
-} // namespace pimc::pimsm_config
-
-namespace fmt {
-
-template <>
-struct formatter<pimc::pimsm_config::JPSourceType>: formatter<string_view> {
-    template <typename FormatContext>
-    auto format(pimc::pimsm_config::JPSourceType const& jpst, FormatContext& ctx) {
-        switch (jpst) {
-
-        case pimc::pimsm_config::JPSourceType::RP:
-            return fmt::format_to(ctx.out(), "RP");
-        case pimc::pimsm_config::JPSourceType::RptPruned:
-            return fmt::format_to(ctx.out(), "RPT-pruned source");
-        case pimc::pimsm_config::JPSourceType::SptJoined:
-            return fmt::format_to(ctx.out(), "SPT-joined source");
-        }
-
-        return fmt::format_to(
-                ctx.out(), "unknown source type {}", static_cast<unsigned>(jpst));
-    }
-};
-
-} // namespace fmt
-
-namespace pimc::pimsm_config {
-
-struct JPSourceInfo {
-    JPSourceType type_;
-    int line_;
-};
 
 template <IPVersion V>
 Result<typename IP<V>::Address, std::string> grpAddr(std::string const &g) {
@@ -145,7 +109,7 @@ private:
             if (rRP) {
                 auto rRPA = chk(
                         ucAddr<V>(rRP->value(), UCAddrType::RP).mapError(
-                                [&rRP](auto msg) { return rRP->error(msg); }));
+                                [&rRP](auto msg) { return rRP->error(std::move(msg)); }));
 
                 if (rRPA) {
                     if (chkSrc(rRP.value(), rRPA.value(), JPSourceType::RP))
@@ -169,7 +133,7 @@ private:
                                     ucAddr<V>(rSrc->value(), UCAddrType::Source)
                                             .mapError(
                                                     [&rSrc](auto msg) {
-                                                        return rSrc->error(msg);
+                                                        return rSrc->error(std::move(msg));
                                                     }));
 
                             if (rSrcA) {
@@ -262,8 +226,7 @@ template <IPVersion V, GroupConfigBuilderImpl<V> GCB>
 class MulticastConfigBuilder final : BuilderBase {
     using IPAddress = typename IP<V>::Address;
 public:
-    explicit MulticastConfigBuilder(std::vector<yaml::ErrorContext> &errors)
-    : BuilderBase{errors} {}
+    using BuilderBase::BuilderBase;
 
     void loadMulticastConfig(yaml::ValueContext const &jpCfgCtx) {
         auto rJPCfg = chk(jpCfgCtx.getMapping(fmt::format("{} multicast config", V{})));

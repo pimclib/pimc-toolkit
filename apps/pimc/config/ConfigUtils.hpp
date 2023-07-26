@@ -9,7 +9,38 @@
 #include "pimc/yaml/Structured.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
 
-namespace pimc {
+namespace pimc::pimsm_config {
+enum class JPSourceType: unsigned {
+    RP = 0,
+    RptPruned = 1,
+    SptJoined = 2
+};
+} // namespace pimc::pimsm_config
+
+namespace fmt {
+
+template <>
+struct formatter<pimc::pimsm_config::JPSourceType>: formatter<string_view> {
+    template <typename FormatContext>
+    auto format(pimc::pimsm_config::JPSourceType const& jpst, FormatContext& ctx) {
+        switch (jpst) {
+
+        case pimc::pimsm_config::JPSourceType::RP:
+            return fmt::format_to(ctx.out(), "RP");
+        case pimc::pimsm_config::JPSourceType::RptPruned:
+            return fmt::format_to(ctx.out(), "RPT-pruned source");
+        case pimc::pimsm_config::JPSourceType::SptJoined:
+            return fmt::format_to(ctx.out(), "SPT-joined source");
+        }
+
+        return fmt::format_to(
+                ctx.out(), "unknown source type {}", static_cast<unsigned>(jpst));
+    }
+};
+
+} // namespace fmt
+
+namespace pimc::pimsm_config {
 enum class UCAddrType: unsigned {
     RP = 0,
     Source = 1,
@@ -20,17 +51,17 @@ enum class UCAddrType: unsigned {
 namespace fmt {
 
 template <>
-struct formatter<pimc::UCAddrType>: formatter<string_view> {
+struct formatter<pimc::pimsm_config::UCAddrType>: formatter<string_view> {
 
     template <typename FormatContext>
-    auto format(pimc::UCAddrType const& typ, FormatContext& ctx) {
+    auto format(pimc::pimsm_config::UCAddrType const& typ, FormatContext& ctx) {
         switch (typ) {
 
-        case pimc::UCAddrType::RP:
+        case pimc::pimsm_config::UCAddrType::RP:
             return fmt::format_to(ctx.out(), "RP");
-        case pimc::UCAddrType::Source:
+        case pimc::pimsm_config::UCAddrType::Source:
             return fmt::format_to(ctx.out(), "source");
-        case pimc::UCAddrType::Neighbor:
+        case pimc::pimsm_config::UCAddrType::Neighbor:
             return fmt::format_to(ctx.out(), "neighbor");
         }
 
@@ -41,7 +72,14 @@ struct formatter<pimc::UCAddrType>: formatter<string_view> {
 
 } // namespace fmt
 
-namespace pimc {
+namespace pimc::pimsm_config {
+
+
+struct JPSourceInfo {
+    JPSourceType type_;
+    int line_;
+};
+
 
 template <IPVersion V>
 inline auto ucAddr(std::string const& s, UCAddrType typ)
