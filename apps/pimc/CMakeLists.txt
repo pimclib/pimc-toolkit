@@ -68,6 +68,7 @@ add_executable(
         pimc-tests
         tests/PackingVerifierConfig.hpp
         tests/UpdateLoader.hpp
+        tests/UpdateCompare.hpp
 )
 
 target_include_directories(

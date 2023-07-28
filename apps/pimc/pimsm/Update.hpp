@@ -7,13 +7,24 @@
 namespace pimc {
 
 template <IPVersion V>
-struct Source final {
+class Source final {
+public:
     using IPAddress = typename IP<V>::Address;
 
-    constexpr Source(IPAddress saddr, bool wildcard, bool rpt)
-    : saddr_{saddr}, wildcard_{wildcard}, rpt_{rpt} {}
+    constexpr Source(IPAddress addr, bool wildcard, bool rpt)
+    : addr_{addr}, wildcard_{wildcard}, rpt_{rpt} {}
 
-    IPAddress saddr_;
+    [[nodiscard]]
+    IPAddress addr() const { return addr_; }
+
+    [[nodiscard]]
+    bool wildcard() const { return wildcard_; }
+
+    [[nodiscard]]
+    bool rpt() const { return rpt_; }
+
+private:
+    IPAddress addr_;
     bool wildcard_;
     bool rpt_;
 };
@@ -30,6 +41,9 @@ public:
             : group_{group}
             , joins_{std::move(joins)}
             , prunes_{std::move(prunes)} {}
+
+    [[nodiscard]]
+    IPAddress group() const { return group_; }
 
     [[nodiscard]]
     std::vector<Source<IPAddress>> const& joins() const { return joins_; }
