@@ -11,7 +11,7 @@
 
 #include "config/JPConfig.hpp"
 #include "config/JPConfigLoader.hpp"
-#include "PackingVerifierConfigLoader.hpp"
+#include "UpdateLoader.hpp"
 
 namespace pimc::pimsm_config {
 
@@ -21,12 +21,17 @@ class PackingVerifierConfig final {
     friend PackingVerifierConfig<U> parse(char const* cfg);
 public:
 
+    [[nodiscard]]
+    JPConfig<V> const& jpConfig() const { return jpCfg_; }
+
+    [[nodiscard]]
+    std::vector<Update<V>> updates() const { return updates_; }
 private:
-    PackingVerifierConfig(JPConfig<V> jpCfg, std::vector<JPConfig<V>> pktCfgs)
-    : jpCfg_{std::move(jpCfg)}, pktCfgs_{std::move(pktCfgs)} {}
+    PackingVerifierConfig(JPConfig<V> jpCfg, std::vector<Update<V>> updates)
+    : jpCfg_{std::move(jpCfg)}, updates_{std::move(updates)} {}
 private:
     JPConfig<V> jpCfg_;
-    std::vector<JPConfig<V>> pktCfgs_;
+    std::vector<Update<V>> updates_;
 };
 
 struct ThrowingErrorHandler: public yaml::ErrorHandler {
@@ -83,16 +88,16 @@ inline PackingVerifierConfig<V> parse(const char* cfg) {
         if (rJPCtx) {
             auto rJPCfg = eh.chkErrors(loadJPConfig<V>(rJPCtx.value()));
 
-            auto rPVCfgCtx = eh.chk(rPVefCfg->required("verify"));
+            auto rUpdatesCtx = eh.chk(rPVefCfg->required("verify"));
 
-            if (rPVCfgCtx) {
-                auto rPktCfgs =
-                        eh.chkErrors(loadPackingVerifierConfig<V>(rPVefCfg.value()));
+            if (rUpdatesCtx) {
+                auto rUpdates =
+                        eh.chkErrors(loadUpdates<V>(rUpdatesCtx.value()));
 
-                if (rPktCfgs)
+                if (rUpdates)
                     return PackingVerifierConfig<V>{
                             std::move(rJPCfg).value(),
-                            std::move(rPktCfgs).value()
+                            std::move(rUpdates).value()
                     };
             }
         }

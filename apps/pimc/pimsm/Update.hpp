@@ -36,8 +36,8 @@ public:
 
     GroupEntry(
             IPAddress group,
-            std::vector<Source<IPAddress>> joins,
-            std::vector<Source<IPAddress>> prunes)
+            std::vector<Source<V>> joins,
+            std::vector<Source<V>> prunes)
             : group_{group}
             , joins_{std::move(joins)}
             , prunes_{std::move(prunes)} {}
@@ -46,15 +46,15 @@ public:
     IPAddress group() const { return group_; }
 
     [[nodiscard]]
-    std::vector<Source<IPAddress>> const& joins() const { return joins_; }
+    std::vector<Source<V>> const& joins() const { return joins_; }
 
     [[nodiscard]]
-    std::vector<Source<IPAddress>> const& prunes() const { return prunes_; }
+    std::vector<Source<V>> const& prunes() const { return prunes_; }
 
 private:
     IPAddress group_;
-    std::vector<Source<IPAddress>> joins_;
-    std::vector<Source<IPAddress>> prunes_;
+    std::vector<Source<V>> joins_;
+    std::vector<Source<V>> prunes_;
 };
 
 template <IPVersion V>

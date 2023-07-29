@@ -13,6 +13,7 @@ set(JPConfig
 set(PIMUpdate
         pimsm/Update.hpp
         pimsm/Pack.hpp
+        pimsm/UpdateFormatter.hpp
 )
 
 add_executable(
@@ -66,9 +67,11 @@ target_link_libraries(
 
 add_executable(
         pimc-tests
+        ${JPConfig}
+        ${PIMUpdate}
         tests/PackingVerifierConfig.hpp
         tests/UpdateLoader.hpp
-        tests/UpdateCompare.hpp
+        tests/PackingTests.cpp
 )
 
 target_include_directories(

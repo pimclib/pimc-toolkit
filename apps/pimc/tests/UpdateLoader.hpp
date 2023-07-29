@@ -29,10 +29,10 @@ public:
 
         if (rGECfg) {
             for (auto const& ii: rGECfg->items()) {
-                auto ost = sourceListType(ii->first);
+                auto ost = sourceListType(ii.first);
                 if (ost) {
                     auto st = ost.value();
-                    auto rlst = chk(ii->second.getSequence(fmt::format("{} list", st)));
+                    auto rlst = chk(ii.second.getSequence(fmt::format("{} list", st)));
 
                     if (rlst)
                         processList(st, rlst.value());
@@ -40,6 +40,9 @@ public:
             }
         }
     }
+
+    [[nodiscard]]
+    int line() const { return line_; }
 
     GroupEntry<V> build() {
         return {group_, std::move(joins_), std::move(prunes_)};
@@ -49,7 +52,7 @@ private:
     Optional<JPSourceType> sourceListType(yaml::ValueContext const& vCtx) {
         auto rfn = chk(vCtx.getScalar("source list name"));
         if (rfn) {
-            auto const& fn = rfn.value();
+            auto const& fn = rfn->value();
             if (fn == "Join(*,G)")
                 return JPSourceType::RP;
             if (fn == "Join(S,G)")
@@ -88,7 +91,7 @@ private:
                 if (rs) {
                     auto src = rs.value();
 
-                    if (not chkSrc(rs.value(), src, st))
+                    if (not chkSrc(re.value(), src, st))
                         continue;
 
                     if (st == JPSourceType::RptPruned) {
@@ -154,8 +157,8 @@ private:
     bool joining_;
     size_t rptPrunedSources_;
     std::unordered_map<IPAddress, JPSourceInfo> sources_;
-    std::vector<Source<IPAddress>> joins_;
-    std::vector<Source<IPAddress>> prunes_;
+    std::vector<Source<V>> joins_;
+    std::vector<Source<V>> prunes_;
 };
 
 template <IPVersion V>
@@ -215,7 +218,7 @@ public:
                        [this](auto const &ga) {
                            if (auto ii = groupBldMap_.find(ga);
                                    ii != groupBldMap_.end())
-                               return ii->second.build(ga);
+                               return ii->second.build();
                            throw std::logic_error{"indexed group not in map"};
                        });
         return Update<V>{std::move(groups)};
@@ -237,7 +240,7 @@ auto loadUpdateConfig(yaml::ValueContext const& vCtx)
 }
 
 template<IPVersion V>
-class PackingVerifierConfigBuilder final: BuilderBase {
+class UpdatesBuilder final: BuilderBase {
 public:
     using BuilderBase::BuilderBase;
 
@@ -250,7 +253,7 @@ public:
             for (auto const& vPktCfgCtx: rPktCfgList->list()) {
                 auto rPktCfg = chkErrors(loadUpdateConfig<V>(vPktCfgCtx));
                 if (rPktCfg)
-                    updates_.emplace_back(rPktCfg->build());
+                    updates_.emplace_back(std::move(rPktCfg).value());
             }
         }
     }
@@ -263,10 +266,10 @@ private:
 };
 
 template<IPVersion V>
-auto loadPackingVerifierConfig(yaml::ValueContext const &pvCfgCtx)
+auto loadUpdates(yaml::ValueContext const &pvCfgCtx)
 -> Result<std::vector<Update<V>>, std::vector<yaml::ErrorContext>> {
     std::vector<yaml::ErrorContext> errors;
-    PackingVerifierConfigBuilder<V> pvfb{errors};
+    UpdatesBuilder<V> pvfb{errors};
     pvfb.loadPackingVerifierConfig(pvCfgCtx);
     if (not errors.empty()) return fail(std::move(errors));
     return pvfb.build();

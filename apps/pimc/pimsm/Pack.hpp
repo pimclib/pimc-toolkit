@@ -1,7 +1,7 @@
 #include <deque>
-#include <algorithm>
 
 #include "pimc/net/IP.hpp"
+#include "pimc/system/Exceptions.hpp"
 
 #include "config/PIMSMParams.hpp"
 #include "config/JPConfig.hpp"
@@ -48,18 +48,20 @@ private:
 
 private:
     IPAddress group_;
-    std::vector<IPAddress> joins_;
-    std::vector<IPAddress> prunes_;
+    std::vector<Source<V>> joins_;
+    std::vector<Source<V>> prunes_;
 };
 
 template <IPVersion V>
 class UpdateBuilder final {
     template<IPVersion> friend class UpdatePacker;
-private:
+
+public:
     using IPAddress = typename IP<V>::Address;
 
     explicit UpdateBuilder(): sz_{0ul} {}
 
+private:
     void add(GroupEntry<V> group, size_t sz) {
         chkSz(sz);
         groups_.emplace_back(std::move(group));
@@ -72,7 +74,7 @@ private:
     }
 
     Update<V> build() {
-        return {std::move(groups_)};
+        return Update<V>{std::move(groups_)};
     }
 
     void chkSz(size_t sz) {
@@ -148,14 +150,15 @@ private:
     }
 
     void pack(JPConfig<V> const& jpCfg) {
-        for (auto const& ge: jpCfg.groups()) fitGroupEntry(ge);
+        for (auto const& ge: jpCfg.groups()) fitGroup(ge);
     }
 
-    UpdateBuilder<V>* findRptUb(GroupEntry<V> const& ge) {
+    UpdateBuilder<V>* findRptUb(GroupConfig<V> const& ge) {
         if (not ge.rpt()) return nullptr;
+        auto const& rpt = ge.rpt().value();
         size_t rptSz{
             pimsm::params<V>::GrpHdrSize +
-            pimsm::params<V>::SrcASize * (ge.rpt().prunes() + 1)};
+            pimsm::params<V>::SrcASize * (rpt.prunes().size() + 1)};
         UBCursor c{&ubq_, start_};
         while (c->remaining() < rptSz) ++c;
         return c.addr();
@@ -165,7 +168,7 @@ private:
         return (rem - pimsm::params<V>::GrpHdrSize) / pimsm::params<V>::SrcASize;
     }
 
-    void fitGroupEntry(GroupEntry<V> const& ge) {
+    void fitGroup(GroupConfig<V> const& ge) {
         auto* rptUb = findRptUb(ge);
 
         UBCursor c{&ubq_, start_};
@@ -183,18 +186,19 @@ private:
                 c.add(geb);
                 srci += cnt;
             } else {
+                auto const& rpt = ge.rpt().value();
                 auto cnt = std::max(
                         maxSources(
                                 c->remaining() -
                                 (pimsm::params<V>::GrpHdrSize +
-                                 pimsm::params<V>::SrcASize * (ge.rpt().prunes() + 1))),
+                                 pimsm::params<V>::SrcASize * (rpt.prunes().size() + 1))),
                         spt.size() - srci);
-                GroupEntryBuilder<V> geb{ge.group(), cnt + 1, ge.rpt().prunes()};
+                GroupEntryBuilder<V> geb{
+                    ge.group(), cnt + 1, rpt.prunes().size()};
                 for (size_t i{srci}; i < cnt; ++i)
                     geb.join(spt[i], false, false);
-                geb.join(ge.rpt().rp(), true, true);
-                auto const& rptPrunes = ge.rpt().prunes();
-                for (auto const& rptPruneSrc: rptPrunes)
+                geb.join(rpt.rp(), true, true);
+                for (auto const& rptPruneSrc: rpt.prunes())
                     geb.prune(rptPruneSrc, false, true);
                 c.add(geb);
                 srci += cnt;
@@ -204,10 +208,10 @@ private:
         }
 
         if (rptUb != nullptr) {
-            GroupEntryBuilder<V> geb{ge.group(), 1, ge.rpt().prunes()};
-            geb.join(ge.rpt().rp(), true, true);
-            auto const& rptPrunes = ge.rpt().prunes();
-            for (auto const& rptPruneSrc: rptPrunes)
+            auto const& rpt = ge.rpt().value();
+            GroupEntryBuilder<V> geb{ge.group(), 1, rpt.prunes().size()};
+            geb.join(rpt.rp(), true, true);
+            for (auto const& rptPruneSrc: rpt.prunes())
                 geb.prune(rptPruneSrc, false, true);
             auto geSz = geb.size();
             rptUb->add(geb.build(), geSz);
@@ -222,10 +226,8 @@ private:
             --resSz;
         std::vector<Update<V>> updates;
         updates.reserve(resSz);
-        std::transform(
-                ubq_.begin(), ubq_.end(),
-                std::back_inserter(updates),
-                [] (auto& ub) { return ub.build(); });
+        for (size_t i = 0; i < resSz; ++i)
+            updates.template emplace_back(ubq_[i].build());
         return updates;
     }
 
