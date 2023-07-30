@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #pragma GCC diagnostic push
@@ -17,19 +18,26 @@ namespace pimc::pimsm_config {
 
 template <IPVersion V>
 class PackingVerifierConfig final {
-    template <IPVersion U>
-    friend PackingVerifierConfig<U> parse(char const* cfg);
 public:
+    PackingVerifierConfig(
+            std::string name,
+            JPConfig<V> jpCfg,
+            std::vector<Update<V>> updates)
+            : name_{std::move(name)}
+            , jpCfg_{std::move(jpCfg)}
+            , updates_{std::move(updates)} {}
+
+    [[nodiscard]]
+    std::string const& name() const { return name_; }
 
     [[nodiscard]]
     JPConfig<V> const& jpConfig() const { return jpCfg_; }
 
     [[nodiscard]]
     std::vector<Update<V>> updates() const { return updates_; }
+
 private:
-    PackingVerifierConfig(JPConfig<V> jpCfg, std::vector<Update<V>> updates)
-    : jpCfg_{std::move(jpCfg)}, updates_{std::move(updates)} {}
-private:
+    std::string name_;
     JPConfig<V> jpCfg_;
     std::vector<Update<V>> updates_;
 };
@@ -69,41 +77,52 @@ struct ThrowingErrorHandler: public yaml::ErrorHandler {
 };
 
 template <IPVersion V>
-inline PackingVerifierConfig<V> parse(const char* cfg) {
+inline std::vector<PackingVerifierConfig<V>> parse(const char* cfg) {
     auto nodes = YAML::LoadAll(cfg);
     if (nodes.empty())
         throw std::logic_error{"empty packing verifier config"};
 
-    if (nodes.size() > 1)
-        throw std::logic_error{"multiple documents in packing verifier config"};
+    std::vector<PackingVerifierConfig<V>> configs;
+    configs.reserve(nodes.size());
 
-    auto vCtx = yaml::ValueContext::root(nodes[0]);
+    for (auto const& node: nodes) {
+        auto vCtx = yaml::ValueContext::root(node);
 
-    ThrowingErrorHandler eh{};
-    auto rPVefCfg = eh.chk(vCtx.getMapping("packing verifier config"));
+        ThrowingErrorHandler eh{};
+        auto rPVefCfg = eh.chk(vCtx.getMapping("packing verifier config"));
 
-    if (rPVefCfg) {
-        auto rJPCtx = eh.chk(rPVefCfg->required("multicast"));
+        if (rPVefCfg) {
+            auto rName = eh.chk(
+                    rPVefCfg->required("name").flatMap(yaml::scalar("Test Name")));
 
-        if (rJPCtx) {
-            auto rJPCfg = eh.chkErrors(loadJPConfig<V>(rJPCtx.value()));
+            if (rName) {
+                auto rJPCtx = eh.chk(rPVefCfg->required("multicast"));
 
-            auto rUpdatesCtx = eh.chk(rPVefCfg->required("verify"));
+                if (rJPCtx) {
+                    auto rJPCfg = eh.chkErrors(loadJPConfig<V>(rJPCtx.value()));
 
-            if (rUpdatesCtx) {
-                auto rUpdates =
-                        eh.chkErrors(loadUpdates<V>(rUpdatesCtx.value()));
+                    auto rUpdatesCtx = eh.chk(rPVefCfg->required("verify"));
 
-                if (rUpdates)
-                    return PackingVerifierConfig<V>{
-                            std::move(rJPCfg).value(),
-                            std::move(rUpdates).value()
-                    };
+                    if (rUpdatesCtx) {
+                        auto rUpdates =
+                                eh.chkErrors(loadUpdates<V>(rUpdatesCtx.value()));
+
+                        if (rUpdates) {
+                            configs.emplace_back(
+                                    rName->value(),
+                                    std::move(rJPCfg).value(),
+                                    std::move(rUpdates).value());
+                            continue;
+                        }
+                    }
+                }
             }
         }
+
+        throw std::logic_error{"*** unknown error ***"};
     }
 
-    throw std::logic_error{"*** unknown error ***"};
+    return configs;
 }
 
 } // namespace pimc::pimsm_config

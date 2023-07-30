@@ -10,7 +10,7 @@
 namespace pimc {
 
 template <IPVersion V>
-std::vector<Update<V>> pack(JPConfig<typename IP<V>::Address> const&);
+std::vector<Update<V>> pack(JPConfig<V> const&);
 
 namespace pimsm_detail {
 
@@ -177,7 +177,7 @@ private:
 
         while (srci < spt.size()) {
             if (c.addr() != rptUb) {
-                auto cnt = std::max(
+                auto cnt = std::min(
                         maxSources(c->remaining()),
                         spt.size() - srci);
                 GroupEntryBuilder<V> geb{ge.group(), cnt, 0};
@@ -187,7 +187,7 @@ private:
                 srci += cnt;
             } else {
                 auto const& rpt = ge.rpt().value();
-                auto cnt = std::max(
+                auto cnt = std::min(
                         maxSources(
                                 c->remaining() -
                                 (pimsm::params<V>::GrpHdrSize +

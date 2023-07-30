@@ -1,47 +1,45 @@
 #include <gtest/gtest.h>
 
 #include "pimsm/Pack.hpp"
+#include "pimsm/UpdateFormatter.hpp"
 
 #include "PackingVerifierConfig.hpp"
 
 namespace pimc::testing {
 
+#include "PackingVerifierConfigs.incl"
+
 class PackingTests: public ::testing::Test {
 protected:
+
+    template <IPVersion V>
+    [[nodiscard]]
+    static std::string updatesText(std::vector<Update<V>> const& us) {
+        auto& mb = getMemoryBuffer();
+        auto bi = std::back_inserter(mb);
+
+        int i{0};
+        for (auto const& u: us)
+            fmt::format_to(bi, "#{} {}\n", ++i, u);
+
+        return fmt::to_string(mb);
+    }
 };
 
-namespace {
-char const* basic1 = R"yaml(
----
-multicast:
-  239.1.2.3:
-    Join*:
-      RP: 192.168.1.5
-      Prune:
-        - 10.1.1.120
-        - 10.1.1.90
-        - 10.1.0.100
-    Join:
-      - 10.1.1.50
-      - 10.1.1.52
 
-verify:
-  - 239.1.2.3:
-      Join(*,G):
-        - 192.168.1.5
-      Join(S,G):
-        - 10.1.1.50
-        - 10.1.1.52
-      Prune(S,G,rpt):
-        - 10.1.1.120
-        - 10.1.1.90
-        - 10.1.0.100
-)yaml";
-} // anon.namespace
 
 TEST_F(PackingTests, Basic1) {
-    auto vcf = pimsm_config::parse<IPv4>(basic1);
-    auto updates = pack(vcf.jpConfig());
+    auto vcfs = pimsm_config::parse<IPv4>(pvConfigs);
+
+    for (auto const& vcf: vcfs) {
+        auto updates = pack(vcf.jpConfig());
+        auto exp = updatesText(vcf.updates());
+        auto eff = updatesText(updates);
+        EXPECT_TRUE(exp == eff)
+          << "\n"
+          << "Test: " << vcf.name() << "\n\n"
+          << "Expecting:\n\n" << exp << "Received:\n\n" << eff;
+    }
 }
 
 } // namespace pimc::testing

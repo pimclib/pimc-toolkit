@@ -71,10 +71,12 @@ private:
         UCAddrType uat;
         if (st == JPSourceType::RP) {
             uat = UCAddrType::RP;
-            if (lst.size() != 0)
+            if (lst.size() != 1) {
                 consume(lst.error(
                         "Join(*,G) list must contain exactly 1 entry, not {}",
                         lst.size()));
+                return;
+            }
         } else uat = UCAddrType::Source;
 
         for (auto const& vCtx: lst.list()) {
@@ -123,6 +125,12 @@ private:
                                     re->error(
                                             "Join({},G) may not appear after Prune(S,G,rpt)",
                                             st == JPSourceType::RP ? '*' : 'S'));
+
+                        if (st == JPSourceType::RP) {
+                            if (rpJoined_)
+                                re->error("Duplicate Join(*,G), with RP {}", src);
+                            else rpJoined_ = true;
+                        }
 
                         auto wcrpt = st == JPSourceType::RP;
                         joins_.emplace_back(src, wcrpt, wcrpt);

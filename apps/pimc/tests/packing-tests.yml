@@ -1,0 +1,28 @@
+---
+name: >-
+  Basic test with one group and some Join(S,G)s
+  and Join(*,G)/Prune(S,G,rpt)s
+
+multicast:
+  239.1.2.3:
+    Join*:
+      RP: 192.168.1.5
+      Prune:
+        - 10.1.1.120
+        - 10.1.1.90
+        - 10.1.0.100
+    Join:
+      - 10.1.1.50
+      - 10.1.1.52
+
+verify:
+  - 239.1.2.3:
+      Join(S,G):
+        - 10.1.1.50
+        - 10.1.1.52
+      Join(*,G):
+        - 192.168.1.5
+      Prune(S,G,rpt):
+        - 10.1.0.100
+        - 10.1.1.90
+        - 10.1.1.120

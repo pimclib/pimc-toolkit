@@ -49,7 +49,7 @@ struct formatter<pimc::Update<V>>: formatter<string_view> {
         auto const& groups = update.groups();
         auto out = fmt::format_to(ctx.out(), "Update with {} groups:\n", groups.size());
         for (auto const& ge: groups)
-            out = fmt::format_to(out, ge);
+            out = fmt::format_to(out, "{}", ge);
 
         return out;
     }
