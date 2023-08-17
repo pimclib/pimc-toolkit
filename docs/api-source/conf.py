@@ -58,3 +58,5 @@ html_static_path = ['_static']
 html_css_files = [
     'page_width.css',
 ]
+
+html_favicon = '_static/favicon.ico'

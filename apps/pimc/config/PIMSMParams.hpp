@@ -35,10 +35,11 @@ struct params<IPv4> {
     ///           1466 bytes remaining for group entries
     static constexpr size_t capacity{1466ul};
     /// PIM-SM encoded IPv4 multicast address size [8 bytes]
-    static constexpr size_t GrpASize{PIMSMv2EncUIPv4AddrSize};
-    /// PIM-SM group "header" size. The "header" has the following structure:
+    static constexpr size_t GrpASize{PIMSMv2EncGIPv4AddrSize};
+    /// PIM-SM group "header" size [12 bytes]
+    /// The "header" has the following structure:
     ///  +--------------------------------------------------
-    ///  | Multicast Group Address (Encoded-Group format) [12 bytes]
+    ///  | Multicast Group Address (Encoded-Group format, for IPv4 8 bytes)
     ///  +-------------------------------------------------------------------+
     ///  | Number of Joined Srcs (2 bytes) | Number of Prunes Srcs (2 bytes) |
     ///  +-------------------------------------------------------------------+
@@ -46,7 +47,7 @@ struct params<IPv4> {
     /// PIM-SM encoded IPv4 source address size [8 bytes]
     static constexpr size_t SrcASize{PIMSMv2EncSrcAddrSize};
     /// The minimum size of the group entry, i.e. group header and just one
-    /// join or prune entry
+    /// join or prune entry [20 bytes]
     static constexpr size_t MinEntrySize{GrpHdrSize + SrcASize};
 
     static constexpr size_t MaxPruneSGrptLen{PIMSMv2IPv4MaxPruneSGrptLen};

@@ -69,6 +69,9 @@ private:
     }
 
     [[nodiscard]]
+    size_t size() const { return sz_; }
+
+    [[nodiscard]]
     size_t remaining() const {
         return static_cast<size_t>(pimsm::params<V>::capacity - sz_);
     }
@@ -86,6 +89,9 @@ private:
 
     [[nodiscard]]
     bool empty() const { return groups_.empty(); }
+
+    [[nodiscard]]
+    bool full() const { return remaining() < pimsm::params<V>::MinEntrySize; };
 private:
     std::vector<GroupEntry<V>> groups_;
     size_t sz_;
@@ -106,8 +112,9 @@ class UpdatePacker final {
         : ubq_{ubq}, start_{start}, i_{start} {}
 
         auto operator++ () -> UBCursor& {
-            if (++i_ > ubq_->size())
+            if (++i_ >= ubq_->size())
                 ubq_->emplace_back();
+
             return *this;
         }
 
@@ -131,13 +138,20 @@ class UpdatePacker final {
 
         void updateStart() {
             for (size_t j = start_; j <= i_; ++j) {
-                if ((*ubq_)[j].remaining() < pimsm::params<V>::MinEntrySize)
+                if ((*ubq_)[j].full())
                     start_ = j;
                 else return;
             }
 
             if (start_ == ubq_->size())
                 ubq_->emplace_back();
+        }
+
+        // TODO debug
+        void debugQState(char const* h) {
+            fmt::print(
+                    "*** debug: {}: i_ = {}, start_ = {}, ubq_.size = {}\n",
+                    h, i_, start_, ubq_->size());
         }
 
         std::deque<UpdateBuilder<V>>* ubq_;
@@ -165,6 +179,7 @@ private:
     }
 
     static size_t maxSources(size_t rem) {
+        if (rem <= pimsm::params<V>::GrpHdrSize) return 0;
         return (rem - pimsm::params<V>::GrpHdrSize) / pimsm::params<V>::SrcASize;
     }
 
@@ -180,22 +195,23 @@ private:
                 auto cnt = std::min(
                         maxSources(c->remaining()),
                         spt.size() - srci);
-                GroupEntryBuilder<V> geb{ge.group(), cnt, 0};
-                for (size_t i{srci}; i < cnt; ++i)
-                    geb.join(spt[i], false, false);
-                c.add(geb);
-                srci += cnt;
+                if (cnt > 0) {
+                    GroupEntryBuilder<V> geb{ge.group(), cnt, 0};
+                    for (size_t i{srci}; i < srci + cnt; ++i)
+                        geb.join(spt[i], false, false);
+                    c.add(geb);
+                    srci += cnt;
+                }
             } else {
                 auto const& rpt = ge.rpt().value();
                 auto cnt = std::min(
                         maxSources(
                                 c->remaining() -
-                                (pimsm::params<V>::GrpHdrSize +
-                                 pimsm::params<V>::SrcASize * (rpt.prunes().size() + 1))),
+                                (pimsm::params<V>::SrcASize * (rpt.prunes().size() + 1))),
                         spt.size() - srci);
                 GroupEntryBuilder<V> geb{
                     ge.group(), cnt + 1, rpt.prunes().size()};
-                for (size_t i{srci}; i < cnt; ++i)
+                for (size_t i{srci}; i < srci + cnt; ++i)
                     geb.join(spt[i], false, false);
                 geb.join(rpt.rp(), true, true);
                 for (auto const& rptPruneSrc: rpt.prunes())
@@ -219,15 +235,20 @@ private:
     }
 
     std::vector<Update<V>> build() {
-        // TODO is it possible there there are multiple empty builders at
-        //      the end? Unlikely, but need to make sure
+        // TODO debug
+        int ii = 0;
+        for (const auto& ub: ubq_)
+            fmt::print(
+                    "***** debug: ubq[{}]: size = {}, remaining = {}, empty = {}, full = {}\n",
+                    ii++, ub.size(), ub.remaining(), ub.empty(), ub.full());
+
         size_t resSz = ubq_.size();
-        if (ubq_[ubq_.size() - 1].empty())
+        if (ubq_[resSz - 1].empty())
             --resSz;
         std::vector<Update<V>> updates;
         updates.reserve(resSz);
         for (size_t i = 0; i < resSz; ++i)
-            updates.template emplace_back(ubq_[i].build());
+            updates.emplace_back(ubq_[i].build());
         return updates;
     }
 

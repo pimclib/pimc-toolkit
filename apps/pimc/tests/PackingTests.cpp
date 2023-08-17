@@ -26,12 +26,14 @@ protected:
     }
 };
 
-
-
-TEST_F(PackingTests, Basic1) {
+TEST_F(PackingTests, AllTests) {
     auto vcfs = pimsm_config::parse<IPv4>(pvConfigs);
 
+    int ii{0};
     for (auto const& vcf: vcfs) {
+        if (ii++ != 5) continue;
+        // TODO debug
+        fmt::print("** TEST: {}\n", vcf.name());
         auto updates = pack(vcf.jpConfig());
         auto exp = updatesText(vcf.updates());
         auto eff = updatesText(updates);
