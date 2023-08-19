@@ -1,9 +1,12 @@
 #include <gtest/gtest.h>
 
+#include "pimc/text/MemoryBuffer.hpp"
+
 #include "pimsm/Pack.hpp"
 #include "pimsm/UpdateFormatter.hpp"
 
 #include "PackingVerifierConfig.hpp"
+#include "JPConfigUpdateCompare.hpp"
 
 namespace pimc::testing {
 
@@ -29,18 +32,45 @@ protected:
 TEST_F(PackingTests, AllTests) {
     auto vcfs = pimsm_config::parse<IPv4>(pvConfigs);
 
-    int ii{0};
     for (auto const& vcf: vcfs) {
-        if (ii++ != 5) continue;
         // TODO debug
         fmt::print("** TEST: {}\n", vcf.name());
         auto updates = pack(vcf.jpConfig());
+
+        auto rc = pimsm_config::jpConfigUpdateCompare(vcf.jpConfig(), updates);
+        if (not rc)
+            ADD_FAILURE() << rc.error();
+
         auto exp = updatesText(vcf.updates());
         auto eff = updatesText(updates);
-        EXPECT_TRUE(exp == eff)
-          << "\n"
-          << "Test: " << vcf.name() << "\n\n"
-          << "Expecting:\n\n" << exp << "Received:\n\n" << eff;
+
+        if (exp != eff) {
+            std::vector<UpdateSummary<IPv4>> expuss, rsltuss;
+            expuss.reserve(vcf.updates().size());
+            size_t i{1};
+            for (auto const& u: vcf.updates())
+                expuss.emplace_back(i++, u);
+            i = 1;
+            rsltuss.reserve(updates.size());
+            for (auto const& u: updates)
+                rsltuss.emplace_back(i++, u);
+
+            auto& mb = getMemoryBuffer();
+            auto bi = std::back_inserter(mb);
+
+            fmt::format_to(bi, "Test: {}\n", vcf.name());
+
+            fmt::format_to(bi, "\nExpecting:\n");
+            for (auto const& us: expuss)
+                fmt::format_to(bi, "{}", us);
+            fmt::format_to(bi, "\nReceived:\n");
+            for (auto const& us: rsltuss)
+                fmt::format_to(bi, "{}", us);
+
+            fmt::format_to(bi, "\nExpecting:\n{}\nReceived:\n{}", exp, eff);
+
+            ADD_FAILURE() << fmt::to_string(mb);
+        }
     }
 }
 

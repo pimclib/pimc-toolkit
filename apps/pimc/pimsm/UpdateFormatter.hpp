@@ -2,7 +2,10 @@
 
 #include <algorithm>
 
+#include "pimc/formatters/Fmt.hpp"
 #include "pimc/text/MemoryBuffer.hpp"
+#include "pimc/text/NumberLengths.hpp"
+#include "pimc/text/SCLine.hpp"
 
 #include "pimsm/Update.hpp"
 
@@ -54,5 +57,59 @@ struct formatter<pimc::Update<V>>: formatter<string_view> {
         return out;
     }
 };
+
+template <pimc::IPVersion V>
+struct formatter<pimc::UpdateSummary<V>>: formatter<string_view> {
+
+    template <typename FormatContext>
+    auto format(pimc::UpdateSummary<V> const& us, FormatContext& ctx) {
+        char gbuf[32];
+        size_t groupColW{5ul};
+        size_t joinsColW{5ul};
+        size_t prunesColW{6ul};
+        size_t sizeColW{4ul};
+
+        for (auto const& gs: us.groups()) {
+            groupColW = std::max(groupColW, gs.group().charlen());
+            joinsColW = std::max(joinsColW, pimc::decimalUIntLen(gs.joins()));
+            prunesColW = std::max(prunesColW, pimc::decimalUIntLen(gs.prunes()));
+            sizeColW = std::max(sizeColW, pimc::decimalUIntLen(gs.size()));
+        }
+
+        pimc::SCLine<'='> sep{std::max({groupColW, joinsColW, prunesColW, sizeColW})};
+        pimc::SCLine<' '> ind{2};
+
+        auto fmts = fmt::format(
+                "{}{{:<{}}} {{:>{}}} {{:>{}}} {{:>{}}}\n",
+                ind(), groupColW, joinsColW, prunesColW, sizeColW);
+
+        auto out = fmt::format_to(
+                ctx.out(),
+                "Update #{}, size {}, remaining size {}\n",
+                us.n(), us.size(), us.remaining());
+
+        out = fmt::format_to(
+                out, fmt::runtime(fmts),
+                "group", "joins", "prunes", "size");
+        out = fmt::format_to(
+                out, fmt::runtime(fmts),
+                sep(groupColW), sep(joinsColW), sep(prunesColW), sep(sizeColW));
+
+        for (auto const& gs: us.groups()) {
+            auto* p = fmt::format_to(gbuf, "{}", gs.group());
+            size_t blanks = groupColW - static_cast<size_t>(p - gbuf);
+            for (size_t i = 0; i < blanks; ++i) {
+                *p++ = ' ';
+            }
+            *p = static_cast<char>(0);
+            out = fmt::format_to(
+                    out, fmt::runtime(fmts),
+                    gbuf, gs.joins(), gs.prunes(), gs.size());
+        }
+
+        return out;
+    }
+};
+
 
 } // namespace fmt

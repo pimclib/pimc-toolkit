@@ -87,6 +87,7 @@ add_executable(
         ${PIMUpdate}
         tests/PackingVerifierConfig.hpp
         tests/UpdateLoader.hpp
+        tests/JPConfigUpdateCompare.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/PackingVerifierConfigs.incl
         tests/PackingTests.cpp
 )

@@ -71,4 +71,68 @@ private:
     std::vector<GroupEntry<V>> groups_;
 };
 
+template <IPVersion V>
+class GroupSummary final {
+public:
+    using IPAddress = typename IP<V>::Address;
+public:
+    explicit GroupSummary(GroupEntry<V> const& ge)
+    : group_{ge.group()}
+    , joins_{ge.joins().size()}
+    , prunes_{ge.prunes().size()}
+    , size_{pimsm::params<V>::GrpHdrSize + (joins_ + prunes_) * pimsm::params<V>::SrcASize}
+    {}
+
+    [[nodiscard]]
+    IPAddress group() const { return group_; }
+
+    [[nodiscard]]
+    size_t joins() const { return joins_; }
+
+    [[nodiscard]]
+    size_t prunes() const { return prunes_; }
+
+    [[nodiscard]]
+    size_t size() const { return size_; }
+
+private:
+    IPAddress group_;
+    size_t joins_;
+    size_t prunes_;
+    size_t size_;
+};
+
+template <IPVersion V>
+class UpdateSummary final {
+public:
+    UpdateSummary(size_t n, Update<V> const& update): n_{n}, size_{0} {
+        groups_.reserve(update.groups().size());
+        for (auto const& ge: update.groups())
+            groups_.emplace_back(ge);
+
+        for (auto const& gs: groups_)
+            size_ += gs.size();
+
+        remaining_ = pimsm::params<V>::capacity - size_;
+    }
+
+    [[nodiscard]]
+    size_t n() const { return n_; }
+
+    [[nodiscard]]
+    std::vector<GroupSummary<V>> groups() const { return groups_; }
+
+    [[nodiscard]]
+    size_t size() const { return size_; }
+
+    [[nodiscard]]
+    size_t remaining() const { return remaining_; }
+
+private:
+    size_t n_;
+    std::vector<GroupSummary<V>> groups_;
+    size_t size_;
+    size_t remaining_;
+};
+
 } // namespace pimc
