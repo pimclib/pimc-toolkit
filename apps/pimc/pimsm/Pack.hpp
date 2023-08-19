@@ -147,13 +147,6 @@ class UpdatePacker final {
                 ubq_->emplace_back();
         }
 
-        // TODO debug
-        void debugQState(char const* h) {
-            fmt::print(
-                    "*** debug: {}: i_ = {}, start_ = {}, ubq_.size = {}\n",
-                    h, i_, start_, ubq_->size());
-        }
-
         std::deque<UpdateBuilder<V>>* ubq_;
         size_t& start_;
         size_t i_;
@@ -235,13 +228,6 @@ private:
     }
 
     std::vector<Update<V>> build() {
-        // TODO debug
-        int ii = 0;
-        for (const auto& ub: ubq_)
-            fmt::print(
-                    "***** debug: ubq[{}]: size = {}, remaining = {}, empty = {}, full = {}\n",
-                    ii++, ub.size(), ub.remaining(), ub.empty(), ub.full());
-
         size_t resSz = ubq_.size();
         if (ubq_[resSz - 1].empty())
             --resSz;

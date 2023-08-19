@@ -33,8 +33,6 @@ TEST_F(PackingTests, AllTests) {
     auto vcfs = pimsm_config::parse<IPv4>(pvConfigs);
 
     for (auto const& vcf: vcfs) {
-        // TODO debug
-        fmt::print("** TEST: {}\n", vcf.name());
         auto updates = pack(vcf.jpConfig());
 
         auto rc = pimsm_config::jpConfigUpdateCompare(vcf.jpConfig(), updates);
