@@ -6,8 +6,7 @@
 #include <getopt.h>
 
 #include "pimc/formatters/Fmt.hpp"
-
-#include "pimc/text/IndentBlock.hpp"
+#include "pimc/formatters/IndentBlock.hpp"
 
 #include "GetOptLong.hpp"
 

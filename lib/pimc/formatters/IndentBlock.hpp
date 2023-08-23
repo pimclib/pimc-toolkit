@@ -10,7 +10,7 @@
 
 #include "pimc/core/CompilerUtils.hpp"
 #include "pimc/system/Exceptions.hpp"
-#include "pimc/text/ConsumeIfUnlessEscaped.hpp"
+#include "ConsumeIfUnlessEscaped.hpp"
 
 namespace pimc {
 

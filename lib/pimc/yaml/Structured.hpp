@@ -16,7 +16,7 @@
 #include "pimc/core/Optional.hpp"
 #include "pimc/core/Result.hpp"
 #include "pimc/system/Exceptions.hpp"
-#include "pimc/text/MemoryBuffer.hpp"
+#include "pimc/formatters/MemoryBuffer.hpp"
 
 using namespace std::string_literals;
 

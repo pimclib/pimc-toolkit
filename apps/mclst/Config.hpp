@@ -4,7 +4,7 @@
 #include <string>
 
 #include "pimc/net/IPv4Address.hpp"
-#include "pimc/net/IPv4IntfTable.hpp"
+#include "pimc/net/IntfTable.hpp"
 
 namespace pimc {
 
@@ -62,7 +62,7 @@ public:
     bool colors() const { return colors_; }
 
     [[nodiscard]]
-    IPv4IntfTable const& intfTable() const { return intfTable_; };
+    IntfTable const& intfTable() const { return intfTable_; };
 
     [[nodiscard]]
     bool showConfig() const { return showConfig_; }
@@ -83,7 +83,7 @@ private:
         uint64_t count,
         bool showPayload,
         bool colors,
-        IPv4IntfTable intfTable,
+        IntfTable intfTable,
         bool showConfig)
         : group_{group}
         , dport_{dport}
@@ -115,7 +115,7 @@ private:
     uint64_t count_;
     bool showPayload_;
     bool colors_;
-    IPv4IntfTable intfTable_;
+    IntfTable intfTable_;
     bool showConfig_;
 };
 

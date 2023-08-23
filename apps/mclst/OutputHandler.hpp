@@ -8,10 +8,10 @@
 #include "pimc/formatters/Fmt.hpp"
 #include "pimc/formatters/FmtChrono.hpp"
 
-#include "pimc/text/MemoryBuffer.hpp"
 #include "pimc/text/NumberLengths.hpp"
-#include "pimc/text/HexAsciiBlock.hpp"
-#include "pimc/text/NanosText.hpp"
+#include "pimc/formatters/MemoryBuffer.hpp"
+#include "pimc/formatters/HexAsciiBlock.hpp"
+#include "pimc/formatters/NanosText.hpp"
 #include "pimc/text/SCLine.hpp"
 #include "pimc/formatters/IPv4Formatters.hpp"
 #include "pimc/unix/TerminalColors.hpp"
@@ -24,7 +24,7 @@ namespace pimc {
 
 struct Interface {
     unsigned value;
-    IPv4IntfTable const& intfTable;
+    IntfTable const& intfTable;
 };
 
 struct TTL {
@@ -60,8 +60,7 @@ struct formatter<pimc::Interface>: formatter<string_view> {
             auto rIntfInfo = intf.intfTable.byIndex(intf.value);
 
             if (rIntfInfo) {
-                auto const& intfName =
-                        static_cast<pimc::IPv4IntfInfo const&>(*rIntfInfo).name;
+                auto const& intfName =(*rIntfInfo).name;
                 return fmt::format_to(ctx.out(), "{} (#{})", intfName, intf.value);
             } else {
                 return fmt::format_to(ctx.out(), "*unknown intf* (#{})", intf.value);
@@ -79,7 +78,7 @@ struct formatter<pimc::TTL>: formatter<string_view> {
         if (ttl.value != -1) {
             if (ttl.value >= 0 and ttl.value <= 255)
                 return fmt::format_to(ctx.out(), "{}", ttl.value);
-            // For some reason on MacOS this happens :(
+            // This shouldn't happen, but just in case
             return fmt::format_to(ctx.out(), "[Err]");
         }
         return fmt::format_to(ctx.out(), "N/A");

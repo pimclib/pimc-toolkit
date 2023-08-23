@@ -6,7 +6,7 @@ set_target_properties(
 target_sources(
     PimcLib
     PRIVATE
-        pimc/net/IPv4IntfTable.cpp
+        pimc/net/IntfTable.cpp
     PUBLIC
         pimc/core/CompilerUtils.hpp
         pimc/core/TypeUtils.hpp
@@ -19,12 +19,18 @@ target_sources(
         pimc/net/IPv4Address.hpp
         pimc/net/IPv4Prefix.hpp
         pimc/net/IPv4PktInfo.hpp
-        pimc/net/IPv4IntfTable.hpp
+        pimc/net/IntfTable.hpp
         pimc/formatters/Fmt.hpp
         pimc/formatters/FmtChrono.hpp
+        pimc/formatters/MemoryBuffer.hpp
         pimc/formatters/IPFormatters.hpp
+        pimc/formatters/ConsumeIfUnlessEscaped.hpp
+        pimc/formatters/HexAsciiBlock.hpp
+        pimc/formatters/NanosText.hpp
+        pimc/formatters/IndentBlock.hpp
         pimc/formatters/detect_strerror_r.hpp
         pimc/formatters/IPv4Formatters.hpp
+        pimc/formatters/IntfTableFormatter.hpp
         pimc/formatters/SysErrorFormatter.hpp
         pimc/formatters/IPv4Ostream.hpp
         pimc/formatters/SysErrorOstream.hpp
@@ -38,12 +44,7 @@ target_sources(
         pimc/packets/PIMSMv2Utils.hpp
         pimc/system/Exceptions.hpp
         pimc/system/SysError.hpp
-        pimc/text/MemoryBuffer.hpp
         pimc/text/NumberLengths.hpp
-        pimc/text/ConsumeIfUnlessEscaped.hpp
-        pimc/text/HexAsciiBlock.hpp
-        pimc/text/NanosText.hpp
-        pimc/text/IndentBlock.hpp
         pimc/text/CString.hpp
         pimc/text/SCLine.hpp
         pimc/text/Location.hpp
@@ -88,7 +89,7 @@ target_sources(
             pimc/parsers/tests/IPv4Parser-tests.cpp
             pimc/parsers/tests/NumberParsers-Tests.cpp
             pimc/formatters/tests/IPv4Output-Tests.cpp
-            pimc/text/tests/ConsumeIfUnlessEscaped-tests.cpp
-            pimc/text/tests/NanosText-tests.cpp
+            pimc/formatters/tests/ConsumeIfUnlessEscaped-tests.cpp
+            pimc/formatters/tests/NanosText-tests.cpp
             pimc/time/TimeUtils.hpp
 )

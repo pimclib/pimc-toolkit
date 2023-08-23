@@ -5,8 +5,6 @@
 
 #include "pimc/formatters/Fmt.hpp"
 
-#include "pimc/text/MemoryBuffer.hpp"
-
 namespace pimc {
 
 /*!
@@ -25,10 +23,10 @@ requires
         std::derived_from<Ex, std::runtime_error>
 [[noreturn]]
 void raise(fmt::format_string<Ts...> const& fs, Ts&& ... args) {
-    auto& mb = getMemoryBuffer();
-    auto bi = std::back_inserter(mb);
+    fmt::memory_buffer buf;
+    auto bi = std::back_inserter(buf);
     fmt::format_to(bi, fs, std::forward<Ts>(args)...);
-    throw Ex{fmt::to_string(mb)};
+    throw Ex{fmt::to_string(buf)};
 }
 
 } // namespace pimc

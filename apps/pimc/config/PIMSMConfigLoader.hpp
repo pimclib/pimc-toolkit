@@ -33,16 +33,25 @@ public:
                     neighbor_ = rNeiA.value();
                 }
             }
+
+            auto rIntf = chk(rPIMSMCfg->required("interface")
+                    .flatMap(yaml::scalar(fmt::format("PIM SM {} interface", V{}))));
+
+            if (rIntf) {
+
+            }
         }
     }
 
     [[nodiscard]]
     PIMSMConfig<V> build() const {
-        return PIMSMConfig<V>{neighbor_};
+        return PIMSMConfig<V>{neighbor_, intfAddr_, intfName_};
     }
 
 private:
     IPAddress neighbor_;
+    IPAddress intfAddr_;
+    std::string intfName_;
 };
 
 template <IPVersion V>

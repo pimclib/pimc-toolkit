@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pimc/formatters/Fmt.hpp"
+#include "Fmt.hpp"
 
 namespace pimc {
 

@@ -8,9 +8,10 @@
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/parsers/NumberParsers.hpp"
 #include "pimc/parsers/IPv4Parsers.hpp"
+#include "pimc/formatters/MemoryBuffer.hpp"
 #include "pimc/formatters/IPv4Formatters.hpp"
+#include "pimc/formatters/IntfTableFormatter.hpp"
 #include "pimc/text/NumberLengths.hpp"
-#include "pimc/text/SCLine.hpp"
 #include "pimc/unix/GetOptLong.hpp"
 #include "version.hpp"
 
@@ -142,40 +143,6 @@ auto parseCount(std::vector<std::string> const& counts) -> unsigned {
     return *rCount;
 }
 
-template <std::output_iterator<char> OI>
-void showIPv4IntfTable(OI oi, IPv4IntfTable const& intfTable, unsigned indent) {
-    auto ifIndexes = intfTable.ifIndexes();
-    std::ranges::sort(ifIndexes);
-    auto const indexColW = std::max(decimalUIntLen(ifIndexes[ifIndexes.size()-1]), 5ul);
-    size_t intfNameColW{9u};
-    size_t addrColW{7};
-
-    for (auto const& ifIdx: ifIndexes) {
-        auto ifInfo = static_cast<IPv4IntfInfo const&>(*intfTable.byIndex(ifIdx));
-        intfNameColW = std::max(ifInfo.name.size(), intfNameColW);
-        addrColW = std::max(ifInfo.address.charlen(), addrColW);
-    }
-
-    SCLine<'='> sep{std::max({indexColW, intfNameColW, addrColW})};
-    SCLine<' '> ind{indent};
-
-    auto fmts = fmt::format(
-            "{}{{:<{}}} {{:<{}}} {{:<{}}}\n",
-            ind(), indexColW, intfNameColW, addrColW);
-
-    fmt::format_to(
-            oi, fmt::runtime(fmts), "Index", "Interface", "Address");
-    fmt::format_to(
-            oi, fmt::runtime(fmts),
-            sep(indexColW), sep(intfNameColW), sep(addrColW));
-
-    for (auto const& ifIdx: ifIndexes) {
-        auto ifInfo = static_cast<IPv4IntfInfo const &>(*intfTable.byIndex(ifIdx));
-        fmt::format_to(
-                oi, fmt::runtime(fmts),
-                ifInfo.ifindex, ifInfo.name, ifInfo.address);
-    }
-}
 
 } // anon.namespace
 
@@ -245,7 +212,7 @@ Config Config::fromArgs(int argc, char** argv) {
     bool wildcard;
     std::tie(group, dport, wildcard) = parseGroupPort(gp[0]);
 
-    auto rIntfTable = IPv4IntfTable::newTable();
+    auto rIntfTable = IntfTable::newTable();
     if (not rIntfTable)
         raise<CommandLineError>(
                 "unable to query host's interfaces: {}", rIntfTable.error());
@@ -259,10 +226,17 @@ Config Config::fromArgs(int argc, char** argv) {
         auto bi = std::back_inserter(buf);
         fmt::format_to(bi, "unknown interface '{}'\n\n", intfName);
         fmt::format_to(bi, "available interfaces:\n");
-        showIPv4IntfTable(bi, intfTable, 0);
+        formatIPv4IntfTable(bi, intfTable, 0);
+        throw CommandLineError{fmt::to_string(buf)};
+    } else if (not intfInfo->ipv4addr) {
+        auto& buf = getMemoryBuffer();
+        auto bi = std::back_inserter(buf);
+        fmt::format_to(bi, "interface '{}' has no IPv4 address\n\n", intfName);
+        fmt::format_to(bi, "available interfaces:\n");
+        formatIPv4IntfTable(bi, intfTable, 0);
         throw CommandLineError{fmt::to_string(buf)};
     }
-    auto intfAddr = static_cast<IPv4IntfInfo const&>(*intfInfo).address;
+    auto intfAddr = intfInfo->ipv4addr.value();
 
     auto sourceAddr = parseSourceOfG(args.values(OID(SourceOfG)));
     auto timeoutSecs = parseTimeoutSecs(args.values(OID(Timeout)));
@@ -323,7 +297,7 @@ void Config::show() const {
     fmt::format_to(bi, "Interface: {} ({})\n", intf_, intfAddr_);
     fmt::format_to(bi, "Colors: {}\n", colors_ ? "YES" : "NO");
     fmt::format_to(bi, "\nHost IPv4 interfaces:\n\n");
-    showIPv4IntfTable(bi, intfTable_, 2);
+    formatIPv4IntfTable(bi, intfTable_, 2);
     buf.push_back(static_cast<char>(0));
 
     std::fputs(buf.data(), stdout);
