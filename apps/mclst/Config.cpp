@@ -226,14 +226,14 @@ Config Config::fromArgs(int argc, char** argv) {
         auto bi = std::back_inserter(buf);
         fmt::format_to(bi, "unknown interface '{}'\n\n", intfName);
         fmt::format_to(bi, "available interfaces:\n");
-        formatIPv4IntfTable(bi, intfTable, 0);
+        formatIntfTable(bi, intfTable, 0);
         throw CommandLineError{fmt::to_string(buf)};
     } else if (not intfInfo->ipv4addr) {
         auto& buf = getMemoryBuffer();
         auto bi = std::back_inserter(buf);
-        fmt::format_to(bi, "interface '{}' has no IPv4 address\n\n", intfName);
+        fmt::format_to(bi, "interface {} has no IPv4 address\n\n", intfName);
         fmt::format_to(bi, "available interfaces:\n");
-        formatIPv4IntfTable(bi, intfTable, 0);
+        formatIntfTable(bi, intfTable, 0);
         throw CommandLineError{fmt::to_string(buf)};
     }
     auto intfAddr = intfInfo->ipv4addr.value();
@@ -296,8 +296,8 @@ void Config::show() const {
     fmt::format_to(bi, "\n");
     fmt::format_to(bi, "Interface: {} ({})\n", intf_, intfAddr_);
     fmt::format_to(bi, "Colors: {}\n", colors_ ? "YES" : "NO");
-    fmt::format_to(bi, "\nHost IPv4 interfaces:\n\n");
-    formatIPv4IntfTable(bi, intfTable_, 2);
+    fmt::format_to(bi, "\nHost interfaces:\n\n");
+    formatIntfTable(bi, intfTable_, 2);
     buf.push_back(static_cast<char>(0));
 
     std::fputs(buf.data(), stdout);

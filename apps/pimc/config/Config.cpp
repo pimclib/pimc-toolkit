@@ -1,4 +1,5 @@
 #include "pimc/formatters/Fmt.hpp"
+#include "pimc/net/IntfTable.hpp"
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/yaml/LoadAll.hpp"
 #include "pimc/yaml/Structured.hpp"
@@ -58,7 +59,14 @@ PIMCConfig<IPv4> loadIPv4Config(int argc, char** argv) {
                 yamlDocs.size());
     }
 
-    auto rCfg = loadPIMCConfig<IPv4>(yaml::ValueContext::root(yamlDocs[0]));
+    auto rIntfTable = IntfTable::newTable();
+    if (not rIntfTable) {
+        raise<std::runtime_error>(
+                "unable to get host interfaces: {}", rIntfTable.error());
+    }
+
+    auto rCfg = loadPIMCConfig<IPv4>(
+            yaml::ValueContext::root(yamlDocs[0]), rIntfTable.value());
     if (not rCfg) {
         yaml::StderrErrorHandler ec{yamlfn.c_str()};
         for (auto const& eCtx: rCfg.error())

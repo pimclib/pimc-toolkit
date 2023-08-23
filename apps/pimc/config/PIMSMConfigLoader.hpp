@@ -2,6 +2,8 @@
 
 #include "pimc/formatters/Fmt.hpp"
 #include "pimc/net/IP.hpp"
+#include "pimc/net/IntfTable.hpp"
+#include "pimc/formatters/IntfTableFormatter.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
 
 #include "PIMSMConfig.hpp"
@@ -16,7 +18,8 @@ public:
 
     using BuilderBase::BuilderBase;
 
-    void loadPIMSMConfig(yaml::ValueContext const& vCtx) {
+    void loadPIMSMConfig(
+            yaml::ValueContext const& vCtx, IntfTable const& intfTable) {
         auto rPIMSMCfg = chk(vCtx.getMapping("PIM-SM config"));
 
         if (rPIMSMCfg) {
@@ -38,7 +41,25 @@ public:
                     .flatMap(yaml::scalar(fmt::format("PIM SM {} interface", V{}))));
 
             if (rIntf) {
-
+                auto rIntfInfo = intfTable.byName(rIntf->value());
+                if (not rIntfInfo) {
+                    auto& buf = getMemoryBuffer();
+                    auto bi = std::back_inserter(buf);
+                    fmt::format_to(bi, "unknown interface '{}'\n\n", rIntf->value());
+                    fmt::format_to(bi, "  available interfaces:\n");
+                    formatIntfTable(bi, intfTable, 2, false);
+                    consume(rIntf->error(fmt::to_string(buf)));
+                } else {
+                    Optional<IPAddress> intfAddr = IPIntf<V>::address(rIntfInfo.value());
+                    if (not intfAddr) {
+                        auto& buf = getMemoryBuffer();
+                        auto bi = std::back_inserter(buf);
+                        fmt::format_to(bi, "interface {} has no {} address\n", rIntf->value(), V{});
+                        fmt::format_to(bi, "  available interfaces:\n");
+                        formatIntfTable(bi, intfTable, 2, false);
+                        consume(rIntf->error(fmt::to_string(buf)));
+                    } else intfAddr_ = intfAddr.value();
+                }
             }
         }
     }
@@ -55,11 +76,12 @@ private:
 };
 
 template <IPVersion V>
-auto loadPIMSMConfig(yaml::ValueContext const& pimsmCfgCtx)
+auto loadPIMSMConfig(
+        yaml::ValueContext const& pimsmCfgCtx, IntfTable const& intfTable)
 -> Result<PIMSMConfig<V>, std::vector<yaml::ErrorContext>> {
     std::vector<yaml::ErrorContext> errors;
     PIMSMConfigLoader<V> pimsmCfgLdr{errors};
-    pimsmCfgLdr.loadPIMSMConfig(pimsmCfgCtx);
+    pimsmCfgLdr.loadPIMSMConfig(pimsmCfgCtx, intfTable);
     if (not errors.empty()) return fail(errors);
     return pimsmCfgLdr.build();
 }

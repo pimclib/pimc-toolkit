@@ -10,7 +10,8 @@
 namespace pimc {
 
 template<std::output_iterator<char> OI>
-void formatIPv4IntfTable(OI oi, IntfTable const &intfTable, unsigned indent) {
+void formatIntfTable(
+        OI oi, IntfTable const &intfTable, unsigned indent, bool eotNl = true) {
     size_t indexColW{5ul};
     size_t intfNameColW{9u};
     size_t addrColW{12};
@@ -30,11 +31,12 @@ void formatIPv4IntfTable(OI oi, IntfTable const &intfTable, unsigned indent) {
     SCLine<' '> ind{indent};
 
     auto fmts = fmt::format(
-            "{}{{:<{}}} {{:<{}}} {{:<{}}}\n",
+            "{}{{:<{}}} {{:<{}}} {{:<{}}}",
             ind(), indexColW, intfNameColW, addrColW);
 
     fmt::format_to(
             oi, fmt::runtime(fmts), "Index", "Interface", "IPv4 Address");
+    fmt::format_to(oi, "\n");;
     fmt::format_to(
             oi, fmt::runtime(fmts),
             sep(indexColW), sep(intfNameColW), sep(addrColW));
@@ -43,11 +45,15 @@ void formatIPv4IntfTable(OI oi, IntfTable const &intfTable, unsigned indent) {
             [&oi, &fmts] (IntfInfo const& intfInfo) {
                 // TODO we're currently only show IPv4 interfaces,
                 //      need to add support for IPv6
-                if (intfInfo.ipv4addr)
+                if (intfInfo.ipv4addr) {
+                    fmt::format_to(oi, "\n");
                     fmt::format_to(
                             oi, fmt::runtime(fmts),
                             intfInfo.ifindex, intfInfo.name, intfInfo.ipv4addr.value());
+                }
             });
+
+    if (eotNl) fmt::format_to(oi, "\n");
 }
 
 
