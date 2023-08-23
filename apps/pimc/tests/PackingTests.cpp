@@ -4,9 +4,9 @@
 
 #include "pimsm/Pack.hpp"
 #include "pimsm/UpdateFormatter.hpp"
+#include "pimsm/UpdatesSanityCheck.hpp"
 
 #include "PackingVerifierConfig.hpp"
-#include "JPConfigUpdateCompare.hpp"
 
 namespace pimc::testing {
 
@@ -35,7 +35,7 @@ TEST_F(PackingTests, AllTests) {
     for (auto const& vcf: vcfs) {
         auto updates = pack(vcf.jpConfig());
 
-        auto rc = pimsm_config::jpConfigUpdateCompare(vcf.jpConfig(), updates);
+        auto rc = verifyUpdates(vcf.jpConfig(), updates);
         if (not rc)
             ADD_FAILURE() << rc.error();
 

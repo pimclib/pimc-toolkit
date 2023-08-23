@@ -13,14 +13,12 @@
 #include "config/JPConfig.hpp"
 #include "pimsm/Update.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
-namespace detail {
-
-template <std::input_iterator I,
-          std::sentinel_for<I> S,
-          typename T>
-std::string concat(I start, S end, T&& sep) {
+template<std::input_iterator I,
+        std::sentinel_for<I> S,
+        typename T>
+std::string concat(I start, S end, T &&sep) {
     fmt::memory_buffer buf;
     auto bi = std::back_inserter(buf);
     bool separating = false;
@@ -35,58 +33,59 @@ std::string concat(I start, S end, T&& sep) {
     return fmt::to_string(buf);
 }
 
-template <std::ranges::input_range R, typename T>
-std::string concat(R&& r, T&& sep) {
+template<std::ranges::input_range R, typename T>
+std::string concat(R &&r, T &&sep) {
     return concat(r.begin(), r.end(), std::forward<T>(sep));
 }
 
-template <IPVersion V>
+template<IPVersion V>
 auto compareAddrSets(
-        std::unordered_set<typename IP<V>::Address> const& a,
-        std::unordered_set<typename IP<V>::Address> const& b)
+        std::unordered_set<typename IP<V>::Address> const &a,
+        std::unordered_set<typename IP<V>::Address> const &b)
 -> std::tuple<std::set<typename IP<V>::Address>, std::set<typename IP<V>::Address>> {
     using IPAddress = typename IP<V>::Address;
     std::set<IPAddress> missing;
     std::set<IPAddress> extraneous;
 
-    for (auto const& addr: a) {
+    for (auto const &addr: a) {
         if (not b.contains(addr)) missing.emplace(addr);
     }
 
-    for (auto const& addr: b) {
+    for (auto const &addr: b) {
         if (not a.contains(addr)) extraneous.emplace(addr);
     }
 
     return {missing, extraneous};
 }
 
-template <IPVersion V, typename T>
-auto keySet(std::unordered_map<typename IP<V>::Address, T> const& m)
+template<IPVersion V, typename T>
+auto keySet(std::unordered_map<typename IP<V>::Address, T> const &m)
 -> std::unordered_set<typename IP<V>::Address> {
     std::unordered_set<typename IP<V>::Address> keys;
-    for (auto const& ii: m) keys.emplace(ii.first);
+    for (auto const &ii: m) keys.emplace(ii.first);
     return keys;
 }
 
-template <IPVersion V>
-auto vecSet(std::vector<typename IP<V>::Address> const& v)
+template<IPVersion V>
+auto vecSet(std::vector<typename IP<V>::Address> const &v)
 -> std::unordered_set<typename IP<V>::Address> {
     std::unordered_set<typename IP<V>::Address> items;
-    for (auto const& a: v) items.emplace(a);
+    for (auto const &a: v) items.emplace(a);
     return items;
 }
 
+namespace pimsm_detail {
 
-template <IPVersion V>
+template<IPVersion V>
 class GroupBase {
 protected:
     using IPAddress = typename IP<V>::Address;
 
 protected:
-    explicit GroupBase(IPAddress group): group_{group}, failed_{false} {}
+    explicit GroupBase(IPAddress group) : group_{group}, failed_{false} {}
 
-    template <typename ... Ts>
-    void error(fmt::format_string<Ts...> const& fs, Ts&& ... args) {
+    template<typename ... Ts>
+    void error(fmt::format_string<Ts...> const &fs, Ts &&... args) {
         auto bi = std::back_inserter(buf_);
         if (not failed_) {
             fmt::format_to(bi, "Group {}:\n", group_);
@@ -115,16 +114,16 @@ private:
     fmt::memory_buffer buf_;
 };
 
-template <IPVersion V>
-class GroupEntryConverter final: private GroupBase<V> {
+template<IPVersion V>
+class GroupEntryConverter final : private GroupBase<V> {
     using IPAddress = typename IP<V>::Address;
     using GroupBase<V>::error;
 public:
     explicit GroupEntryConverter(IPAddress group)
-    : GroupBase<V>{group} {}
+            : GroupBase<V>{group} {}
 
-    void add(int updateNo, GroupEntry<V> const& ge) {
-        for (auto const& se: ge.joins()) {
+    void add(int updateNo, GroupEntry<V> const &ge) {
+        for (auto const &se: ge.joins()) {
             auto addr = se.addr();
             if (se.wildcard()) {
                 if (not se.rpt())
@@ -158,7 +157,7 @@ public:
                   "ignoring {} RPT pruned sources",
                   updateNo, ge.prunes().size());
         else {
-            for (auto const& se: ge.prunes()) {
+            for (auto const &se: ge.prunes()) {
                 auto addr = se.addr();
 
                 if (se.wildcard())
@@ -208,8 +207,8 @@ private:
 
 };
 
-template <IPVersion V>
-auto convertUpdatesToJPConfig(std::vector<Update<V>> const& updates)
+template<IPVersion V>
+auto convertUpdatesToJPConfig(std::vector<Update<V>> const &updates)
 -> Result<
         std::unordered_map<typename IP<V>::Address, GroupConfig<V>>,
         std::vector<std::string>> {
@@ -217,8 +216,8 @@ auto convertUpdatesToJPConfig(std::vector<Update<V>> const& updates)
     std::unordered_map<IPAddress, GroupEntryConverter<V>> cvmap;
 
     int i{1};
-    for (auto const& update: updates) {
-        for (auto const& ge: update.groups()) {
+    for (auto const &update: updates) {
+        for (auto const &ge: update.groups()) {
             auto maddr = ge.group();
             auto ii = cvmap.try_emplace(maddr, maddr);
             ii.first->second.add(i++, ge);
@@ -227,7 +226,7 @@ auto convertUpdatesToJPConfig(std::vector<Update<V>> const& updates)
 
     std::vector<std::string> errors;
     std::unordered_map<IPAddress, GroupConfig<V>> jpCfg;
-    for (auto& ii: cvmap) {
+    for (auto &ii: cvmap) {
         auto r = ii.second.convert();
 
         if (r)
@@ -242,15 +241,15 @@ auto convertUpdatesToJPConfig(std::vector<Update<V>> const& updates)
     return std::move(jpCfg);
 }
 
-template <IPVersion V>
-class GroupConfigComparator: private GroupBase<V> {
+template<IPVersion V>
+class GroupConfigComparator : private GroupBase<V> {
     using IPAddress = typename IP<V>::Address;
     using GroupBase<V>::error;
 public:
     explicit GroupConfigComparator(IPAddress group)
-    : GroupBase<V>{group} {}
+            : GroupBase<V>{group} {}
 
-    auto compare(GroupConfig<V> const& orig, GroupConfig<V> rslt)
+    auto compare(GroupConfig<V> const &orig, GroupConfig<V> rslt)
     -> Result<void, std::string> {
         std::set<IPAddress> mjs, ejs;
         std::tie(mjs, ejs) =
@@ -266,8 +265,8 @@ public:
                   "    {}",
                   concat(ejs, "\n    "));
 
-        auto const& origRpt = orig.rpt();
-        auto const& rsltRpt = rslt.rpt();
+        auto const &origRpt = orig.rpt();
+        auto const &rsltRpt = rslt.rpt();
 
         if (origRpt and not rsltRpt) {
             error("the original has RPT with RP {} and {} pruned sources, "
@@ -302,22 +301,23 @@ public:
 
         return {};
     }
+
 private:
 };
 
 class ErrorTracker {
 public:
-    ErrorTracker(): failed_{false} {}
+    ErrorTracker() : failed_{false} {}
 
-    template <typename ... Ts>
-    void error(fmt::format_string<Ts...> const& fs, Ts&& ...args) {
+    template<typename ... Ts>
+    void error(fmt::format_string<Ts...> const &fs, Ts &&...args) {
         auto bi = std::back_inserter(buf_);
         failed_ = true;
         fmt::format_to(bi, fs, std::forward<Ts>(args)...);
         fmt::format_to(bi, "\n\n");
     }
 
-    void append(std::string const& msg) {
+    void append(std::string const &msg) {
         failed_ = true;
         buf_.append(msg);
     }
@@ -329,16 +329,17 @@ public:
     std::string msg() {
         return fmt::to_string(buf_);
     }
+
 private:
     bool failed_;
     fmt::memory_buffer buf_;
 };
 
 
-template <IPVersion V>
+template<IPVersion V>
 auto compareJPConfigs(
-        std::unordered_map<typename IP<V>::Address, GroupConfig<V> const*> const& orig,
-        std::unordered_map<typename IP<V>::Address, GroupConfig<V>> const& rslt)
+        std::unordered_map<typename IP<V>::Address, GroupConfig<V> const *> const &orig,
+        std::unordered_map<typename IP<V>::Address, GroupConfig<V>> const &rslt)
 -> Result<void, std::string> {
     using IPAddress = typename IP<V>::Address;
 
@@ -378,15 +379,15 @@ auto compareJPConfigs(
     return {};
 }
 
-} // namespace detail
+} // namespace pimsm_detail
 
 template <IPVersion V>
-auto jpConfigUpdateCompare(
+auto verifyUpdates(
         JPConfig<V> const& jpCfg, std::vector<Update<V>> const& updates)
 -> Result<void, std::string> {
     using IPAddress = typename IP<V>::Address;
 
-    auto r = detail::convertUpdatesToJPConfig(updates);
+    auto r = pimsm_detail::convertUpdatesToJPConfig(updates);
     if (not r) {
         fmt::memory_buffer buf;
         for (auto const& msg: r.error())
@@ -399,8 +400,8 @@ auto jpConfigUpdateCompare(
     for (auto const& ge: jpCfg.groups())
         origCfg.try_emplace(ge.group(), &ge);
 
-    return detail::compareJPConfigs(origCfg, r.value());
+    return pimsm_detail::compareJPConfigs(origCfg, r.value());
 }
 
+} // namespace pimc
 
-} // namespace pimc::pimsm_config
