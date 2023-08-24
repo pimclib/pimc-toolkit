@@ -14,6 +14,7 @@ bool stopped{false};
 } // anon.namespace
 
 int main(int argc, char** argv) {
+    char const* progname = argv[0];
     try {
         auto const cfg = pimc::Config::fromArgs(argc, argv);
 
@@ -30,18 +31,18 @@ int main(int argc, char** argv) {
             if (cfg.count() == 0) {
                 if (not cfg.wildcard()) {
                     pimc::Receiver<pimc::UnlimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 } else {
                     pimc::IPRawReceiver<pimc::UnlimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 }
             } else {
                 if (not cfg.wildcard()) {
                     pimc::Receiver<pimc::LimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 } else {
                     pimc::IPRawReceiver<pimc::LimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 }
             }
         } else {

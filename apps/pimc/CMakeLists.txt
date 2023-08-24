@@ -29,24 +29,8 @@ add_executable(
         ${JPConfig}
         config/Formatters.hpp
         ${PIMUpdate}
+        net/IPv4PIMIntf.hpp
 )
-
-find_file(CAPABILITY_H sys/capability.h)
-find_library(LIBCAP cap)
-
-if ((NOT CAPABILITY_H) OR (NOT LIBCAP))
-    message(
-            STATUS
-            "pimc: sys/capability.h is not found, consider installing libcap-devel"
-    )
-    set(MCLST_LIBS)
-else()
-    target_compile_definitions(
-            pimc
-            PRIVATE
-            WITH_LIBCAP)
-    set(PIMC_LIBS ${LIBCAP})
-endif()
 
 target_include_directories(
         pimc
@@ -62,8 +46,6 @@ target_link_libraries(
             ProjectSettings
             VersionLib
             PimcLib
-            fmt
-            ${PIMC_LIBS}
 )
 
 add_custom_command(

@@ -16,7 +16,7 @@ protected:
     using Base::dissectMclstBeaconPayload;
 
 public:
-    auto openSocket() -> int {
+    auto openSocket(char const*) -> int {
         int s = socket(AF_INET, SOCK_DGRAM, 0);
 
         if (s == -1)

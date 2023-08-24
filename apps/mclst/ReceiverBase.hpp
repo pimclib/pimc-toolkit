@@ -68,9 +68,9 @@ enum class PacketStatus: unsigned {
 
 template <typename T>
 concept ReceiverProvider = requires(
-        T rcvp, sockaddr_in const& sender, PacketInfo& pktInfo) {
+        T rcvp, char const* progname, sockaddr_in const& sender, PacketInfo& pktInfo) {
     // The provider must throw an exception instead of returning -1
-    { rcvp.openSocket() } -> std::same_as<int>;
+    { rcvp.openSocket(progname) } -> std::same_as<int>;
     { rcvp.processPacket(sender, pktInfo) } -> std::same_as<PacketStatus>;
 };
 
@@ -119,8 +119,8 @@ private:
         return static_cast<Self&>(*this);
     }
 
-    void configure() {
-        socket_ = impl().openSocket();
+    void configure(char const* progname) {
+        socket_ = impl().openSocket(progname);
 
         // Make socket non-blocking
         int flags = fcntl(socket_, F_GETFL);
@@ -314,8 +314,8 @@ private:
     }
 
 public:
-    void run() {
-        configure();
+    void run(char const* progname) {
+        configure(progname);
         join();
         receiveLoop();
         oh_.showRxStats(rxStats_, stopped_);

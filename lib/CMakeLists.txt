@@ -7,6 +7,7 @@ target_sources(
     PimcLib
     PRIVATE
         pimc/net/IntfTable.cpp
+        pimc/packets/IPChecksum.cpp
     PUBLIC
         pimc/core/CompilerUtils.hpp
         pimc/core/TypeUtils.hpp
@@ -40,6 +41,7 @@ target_sources(
         pimc/packets/PacketView.hpp
         pimc/packets/IPv4HdrView.hpp
         pimc/packets/UDPHdrView.hpp
+        pimc/packets/IPChecksum.hpp
         pimc/packets/PIMSMv2.hpp
         pimc/packets/PIMSMv2Utils.hpp
         pimc/system/Exceptions.hpp
@@ -50,6 +52,7 @@ target_sources(
         pimc/text/Plural.hpp
         pimc/text/Location.hpp
         pimc/unix/SignalHandler.hpp
+        pimc/unix/CapNetRaw.hpp
         pimc/unix/GetOptLong.hpp
         pimc/unix/GetOptLong.cpp
         pimc/unix/TerminalColors.hpp
@@ -60,6 +63,24 @@ target_sources(
         pimc/yaml/LoadAll.hpp
         pimc/yaml/LoadAll.cpp
 )
+
+find_file(CAPABILITY_H sys/capability.h)
+find_library(LIBCAP cap)
+
+if ((NOT CAPABILITY_H) OR (NOT LIBCAP))
+    message(
+            STATUS
+            "PimcLib: sys/capability.h is not found, consider installing libcap-devel"
+    )
+    set(EXTRA_LIBS)
+else()
+    target_compile_definitions(
+            PimcLib
+            PUBLIC
+            WITH_LIBCAP)
+    set(EXTRA_LIBS ${LIBCAP})
+endif()
+
 
 target_include_directories(
         PimcLib
@@ -73,6 +94,7 @@ target_link_libraries(
             ProjectSettings
             fmt::fmt
             yaml-cpp
+            ${EXTRA_LIBS}
 )
 
 target_sources(
