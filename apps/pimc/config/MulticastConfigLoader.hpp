@@ -12,7 +12,7 @@
 #include "PIMSMParams.hpp"
 #include "JPConfig.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 template <IPVersion V>
 Result<typename IP<V>::Address, std::string> grpAddr(std::string const &g) {
@@ -289,4 +289,4 @@ private:
     std::unordered_map<IPAddress, GCB> groupBldMap_;
 };
 
-} // namespace pimc::pimsm_config
+} // namespace pimc

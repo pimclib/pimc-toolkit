@@ -14,7 +14,7 @@
 #include "config/JPConfigLoader.hpp"
 #include "UpdateLoader.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 template <IPVersion V>
 class PackingVerifierConfig final {
@@ -77,7 +77,7 @@ struct ThrowingErrorHandler: public yaml::ErrorHandler {
 };
 
 template <IPVersion V>
-inline std::vector<PackingVerifierConfig<V>> parse(const char* cfg) {
+inline std::vector<PackingVerifierConfig<V>> parsePVConfigs(const char* cfg) {
     auto nodes = YAML::LoadAll(cfg);
     if (nodes.empty())
         throw std::logic_error{"empty packing verifier config"};
@@ -125,4 +125,4 @@ inline std::vector<PackingVerifierConfig<V>> parse(const char* cfg) {
     return configs;
 }
 
-} // namespace pimc::pimsm_config
+} // namespace pimc

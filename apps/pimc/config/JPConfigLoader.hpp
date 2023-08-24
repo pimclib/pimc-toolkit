@@ -5,7 +5,7 @@
 
 #include "MulticastConfigLoader.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 template <IPVersion V>
 class JPGroupConfigBuilder final:
@@ -56,4 +56,4 @@ auto loadJPConfig(yaml::ValueContext const& jpCfgCtx)
 }
 
 
-} // namespace pimc::pimsm_config
+} // namespace pimc

@@ -29,7 +29,10 @@ add_executable(
         ${JPConfig}
         config/Formatters.hpp
         ${PIMUpdate}
+        net/IPv4RawSocket.hpp
+        net/IPv4RawSocket.cpp
         net/IPv4PIMIntf.hpp
+        net/IPv4PIMIntf.cpp
 )
 
 target_include_directories(

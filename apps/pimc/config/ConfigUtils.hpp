@@ -9,27 +9,27 @@
 #include "pimc/yaml/Structured.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 enum class JPSourceType: unsigned {
     RP = 0,
     RptPruned = 1,
     SptJoined = 2
 };
-} // namespace pimc::pimsm_config
+} // namespace pimc
 
 namespace fmt {
 
 template <>
-struct formatter<pimc::pimsm_config::JPSourceType>: formatter<string_view> {
+struct formatter<pimc::JPSourceType>: formatter<string_view> {
     template <typename FormatContext>
-    auto format(pimc::pimsm_config::JPSourceType const& jpst, FormatContext& ctx) {
+    auto format(pimc::JPSourceType const& jpst, FormatContext& ctx) {
         switch (jpst) {
 
-        case pimc::pimsm_config::JPSourceType::RP:
+        case pimc::JPSourceType::RP:
             return fmt::format_to(ctx.out(), "RP");
-        case pimc::pimsm_config::JPSourceType::RptPruned:
+        case pimc::JPSourceType::RptPruned:
             return fmt::format_to(ctx.out(), "RPT-pruned source");
-        case pimc::pimsm_config::JPSourceType::SptJoined:
+        case pimc::JPSourceType::SptJoined:
             return fmt::format_to(ctx.out(), "SPT-joined source");
         }
 
@@ -40,7 +40,7 @@ struct formatter<pimc::pimsm_config::JPSourceType>: formatter<string_view> {
 
 } // namespace fmt
 
-namespace pimc::pimsm_config {
+namespace pimc {
 enum class UCAddrType: unsigned {
     RP = 0,
     Source = 1,
@@ -51,17 +51,17 @@ enum class UCAddrType: unsigned {
 namespace fmt {
 
 template <>
-struct formatter<pimc::pimsm_config::UCAddrType>: formatter<string_view> {
+struct formatter<pimc::UCAddrType>: formatter<string_view> {
 
     template <typename FormatContext>
-    auto format(pimc::pimsm_config::UCAddrType const& typ, FormatContext& ctx) {
+    auto format(pimc::UCAddrType const& typ, FormatContext& ctx) {
         switch (typ) {
 
-        case pimc::pimsm_config::UCAddrType::RP:
+        case pimc::UCAddrType::RP:
             return fmt::format_to(ctx.out(), "RP");
-        case pimc::pimsm_config::UCAddrType::Source:
+        case pimc::UCAddrType::Source:
             return fmt::format_to(ctx.out(), "source");
-        case pimc::pimsm_config::UCAddrType::Neighbor:
+        case pimc::UCAddrType::Neighbor:
             return fmt::format_to(ctx.out(), "neighbor");
         }
 
@@ -72,7 +72,7 @@ struct formatter<pimc::pimsm_config::UCAddrType>: formatter<string_view> {
 
 } // namespace fmt
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 
 struct JPSourceInfo {

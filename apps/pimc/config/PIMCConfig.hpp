@@ -5,7 +5,7 @@
 
 #include "pimsm/Update.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 template <IPVersion V>
 class PIMCConfig final {
@@ -32,4 +32,4 @@ private:
     std::vector<Update<V>> updates_;
 };
 
-} // namespace pimc::pimsm_config
+} // namespace pimc

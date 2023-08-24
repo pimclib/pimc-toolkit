@@ -1,5 +1,16 @@
 #pragma once
 
+/*
+ * IMPORTANT:
+ *
+ * This file should be included *before* any of the files in
+ * the "pimc/net" directory. Otherwise g++ reports errors for
+ * the Linux types __u32, __le16, etc in file
+ * /usr/include/linux/capability.h, e.g.:
+ *
+ * /usr/include/linux/capability.h, 40 error: "__u32" does not name a type
+ */
+
 #ifdef WITH_LIBCAP
 #include <unistd.h>
 #include <sys/capability.h>

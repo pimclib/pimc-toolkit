@@ -9,7 +9,7 @@
 #include "PIMSMConfig.hpp"
 #include "ConfigUtils.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 template <IPVersion V>
 class PIMSMConfigLoader final: BuilderBase {
@@ -89,4 +89,4 @@ auto loadPIMSMConfig(
     return pimsmCfgLdr.build();
 }
 
-} // namespace pimc::pimsm_config
+} // namespace pimc

@@ -15,7 +15,7 @@
 #include "pimsm/Pack.hpp"
 #include "pimsm/PackSanityCheck.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 template <IPVersion V>
 class PIMCConfigLoader final: BuilderBase {
@@ -85,4 +85,4 @@ auto loadPIMCConfig(yaml::ValueContext const& cfgfgCtx, IntfTable const& intfTab
     return pimcConfigLoader.build();
 }
 
-} // namespace pimc::pimsm_config
+} // namespace pimc

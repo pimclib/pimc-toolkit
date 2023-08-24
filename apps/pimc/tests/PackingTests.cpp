@@ -30,7 +30,7 @@ protected:
 };
 
 TEST_F(PackingTests, AllTests) {
-    auto vcfs = pimsm_config::parse<IPv4>(pvConfigs);
+    auto vcfs = parsePVConfigs<IPv4>(pvConfigs);
 
     for (auto const& vcf: vcfs) {
         auto updates = pack(vcf.jpConfig());

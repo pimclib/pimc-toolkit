@@ -6,7 +6,7 @@
 #include "config/ConfigUtils.hpp"
 #include "pimsm/Update.hpp"
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 template <IPVersion V>
 class GroupEntryBuilder final: BuilderBase {
@@ -283,4 +283,4 @@ auto loadUpdates(yaml::ValueContext const &pvCfgCtx)
     return pvfb.build();
 }
 
-} // namespace pimc::pimsm_config
+} // namespace pimc

@@ -14,7 +14,7 @@
 
 #define OID(id) static_cast<uint32_t>(Options::id)
 
-namespace pimc::pimsm_config {
+namespace pimc {
 
 namespace {
 enum class Options: uint32_t {
@@ -99,4 +99,4 @@ PIMCConfig<IPv4> loadIPv4Config(int argc, char** argv) {
     return pimcCfg;
 }
 
-} // namespace pimc::pimsm_config
+} // namespace pimc
