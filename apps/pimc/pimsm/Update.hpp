@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "pimc/net/IP.hpp"
+#include "config/PIMSMParams.hpp"
 
 namespace pimc {
 

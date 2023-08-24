@@ -10,6 +10,7 @@
 #include "Config.hpp"
 #include "PIMCConfigLoader.hpp"
 #include "Formatters.hpp"
+#include "pimsm/UpdateFormatter.hpp"
 
 #define OID(id) static_cast<uint32_t>(Options::id)
 
@@ -78,8 +79,20 @@ PIMCConfig<IPv4> loadIPv4Config(int argc, char** argv) {
     auto pimcCfg = std::move(rCfg).value();
 
     if (args.flag(OID(ShowConfig))) {
-        fmt::print("{}", pimcCfg.pimsmConfig());
-        fmt::print("{}", pimcCfg.jpConfig());
+        auto& mb = getMemoryBuffer();
+        auto bi = std::back_inserter(mb);
+        fmt::format_to(bi, "{}\n", pimcCfg.pimsmConfig());
+        fmt::format_to(bi, "{}\n", pimcCfg.jpConfig());
+        fmt::format_to(
+                bi, "Will send {} update{}:\n\n",
+                pimcCfg.updates().size(), plural(pimcCfg.updates()));
+        unsigned n{1};
+        for (auto const& update: pimcCfg.updates())
+            fmt::format_to(
+                    bi, "{}\n", std::tuple<unsigned, Update<IPv4> const&>(n, update));
+
+        mb.push_back(static_cast<char>(0));
+        fputs(mb.data(), stdout);
         exit(0);
     }
 

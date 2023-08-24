@@ -11,6 +11,9 @@
 #include "PIMCConfig.hpp"
 #include "PIMSMConfigLoader.hpp"
 #include "JPConfigLoader.hpp"
+#include "pimsm/Update.hpp"
+#include "pimsm/Pack.hpp"
+#include "pimsm/PackSanityCheck.hpp"
 
 namespace pimc::pimsm_config {
 
@@ -55,9 +58,16 @@ public:
         if (not pimsmConfig_ or not jpConfig_)
             raise<std::logic_error>("PIM SM config or J/P config is not loaded");
 
+        auto updates = pack(jpConfig_.value());
+        auto r = verifyUpdates(jpConfig_.value(), updates);
+
+        if (not r)
+            throw std::logic_error{r.error()};
+
         return PIMCConfig{
             std::move(pimsmConfig_).value(),
-            std::move(jpConfig_).value()
+            std::move(jpConfig_).value(),
+            std::move(updates),
         };
     }
 

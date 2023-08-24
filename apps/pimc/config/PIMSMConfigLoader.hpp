@@ -58,7 +58,10 @@ public:
                         fmt::format_to(bi, "  available interfaces:\n");
                         formatIntfTable(bi, intfTable, 2, false);
                         consume(rIntf->error(fmt::to_string(buf)));
-                    } else intfAddr_ = intfAddr.value();
+                    } else {
+                        intfAddr_ = intfAddr.value();
+                        intfName_ = rIntfInfo->name;
+                    }
                 }
             }
         }

@@ -60,8 +60,12 @@ struct formatter<pimc::PIMSMConfig<V>>: formatter<string_view> {
     auto format(pimc::PIMSMConfig<V> const& pimsmConfig, FormatContext& ctx) {
         return fmt::format_to(
                 ctx.out(),
-                "PIM sparse-mode:\n  neighbor: {}\n",
-                pimsmConfig.neighbor());
+                "PIM sparse-mode:\n"
+                "  neighbor: {}\n"
+                "  interface: {} [{}]\n",
+                pimsmConfig.neighbor(),
+                pimsmConfig.intfName(),
+                pimsmConfig.intfAddr());
     }
 };
 

@@ -1,11 +1,13 @@
 #pragma once
 
+#include <tuple>
 #include <algorithm>
 
 #include "pimc/formatters/Fmt.hpp"
-#include "pimc/text/MemoryBuffer.hpp"
+#include "pimc/formatters/MemoryBuffer.hpp"
 #include "pimc/text/NumberLengths.hpp"
 #include "pimc/text/SCLine.hpp"
+#include "pimc/text/Plural.hpp"
 
 #include "pimsm/Update.hpp"
 
@@ -50,13 +52,37 @@ struct formatter<pimc::Update<V>>: formatter<string_view> {
     template <typename FormatContext>
     auto format(pimc::Update<V> const& update, FormatContext& ctx) {
         auto const& groups = update.groups();
-        auto out = fmt::format_to(ctx.out(), "Update with {} groups:\n", groups.size());
+        auto out = fmt::format_to(
+                ctx.out(),
+                "Update with {} group{}:\n",
+                groups.size(), pimc::plural(groups));
         for (auto const& ge: groups)
             out = fmt::format_to(out, "{}", ge);
 
         return out;
     }
 };
+
+template <pimc::IPVersion V>
+struct formatter<std::tuple<unsigned, pimc::Update<V> const&>>: formatter<string_view> {
+
+    template <typename FormatContext>
+    auto format(
+            std::tuple<unsigned, pimc::Update<V> const&> const& eu, FormatContext& ctx) {
+        unsigned n = std::get<unsigned>(eu);
+        auto const& update = std::get<pimc::Update<V> const&>(eu);
+        auto const& groups = update.groups();
+        auto out = fmt::format_to(
+                ctx.out(),
+                "Update # {} with {} group{}:\n",
+                n, groups.size(), pimc::plural(groups));
+        for (auto const& ge: groups)
+            out = fmt::format_to(out, "{}", ge);
+
+        return out;
+    }
+};
+
 
 template <pimc::IPVersion V>
 struct formatter<pimc::UpdateSummary<V>>: formatter<string_view> {

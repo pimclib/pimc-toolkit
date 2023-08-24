@@ -47,6 +47,7 @@ target_sources(
         pimc/text/NumberLengths.hpp
         pimc/text/CString.hpp
         pimc/text/SCLine.hpp
+        pimc/text/Plural.hpp
         pimc/text/Location.hpp
         pimc/unix/SignalHandler.hpp
         pimc/unix/GetOptLong.hpp

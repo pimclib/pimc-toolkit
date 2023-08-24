@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "pimc/text/MemoryBuffer.hpp"
+#include "pimc/formatters//MemoryBuffer.hpp"
 
 #include "pimsm/Pack.hpp"
 #include "pimsm/UpdateFormatter.hpp"
-#include "pimsm/UpdatesSanityCheck.hpp"
+#include "pimsm/PackSanityCheck.hpp"
 
 #include "PackingVerifierConfig.hpp"
 

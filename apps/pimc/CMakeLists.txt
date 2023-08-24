@@ -13,7 +13,7 @@ set(JPConfig
 set(PIMUpdate
         pimsm/Update.hpp
         pimsm/Pack.hpp
-        pimsm/UpdatesSanityCheck.hpp
+        pimsm/PackSanityCheck.hpp
         pimsm/UpdateFormatter.hpp
 )
 
