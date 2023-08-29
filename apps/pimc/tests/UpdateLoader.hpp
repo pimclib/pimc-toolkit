@@ -214,7 +214,8 @@ public:
                 }
             } else
                 errors_.emplace_back(
-                        jpCfgCtx.error("IPv4 J/P config contains no groups"));
+                        jpCfgCtx.error(
+                                fmt::format("{} J/P config contains no groups", V{})));
         }
     }
 

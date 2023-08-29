@@ -31,6 +31,10 @@ add_executable(
         ${PIMUpdate}
         net/IPv4RawSocket.hpp
         net/IPv4RawSocket.cpp
+        net/BindToDevice.hpp
+        net/BindToDevice.cpp
+        net/BindToDeviceLinux.icc
+        net/BindToDeviceMacos.icc
         net/IPv4PIMIntf.hpp
         net/IPv4PIMIntf.cpp
 )

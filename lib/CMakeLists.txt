@@ -7,7 +7,11 @@ target_sources(
     PimcLib
     PRIVATE
         pimc/net/IntfTable.cpp
+        pimc/net/SocketUtils.cpp
         pimc/packets/IPChecksum.cpp
+        pimc/unix/GetOptLong.cpp
+        pimc/yaml/Structured.cpp
+        pimc/yaml/LoadAll.cpp
     PUBLIC
         pimc/core/CompilerUtils.hpp
         pimc/core/TypeUtils.hpp
@@ -21,9 +25,11 @@ target_sources(
         pimc/net/IPv4Prefix.hpp
         pimc/net/IPv4PktInfo.hpp
         pimc/net/IntfTable.hpp
+        pimc/net/SocketUtils.hpp
         pimc/formatters/Fmt.hpp
         pimc/formatters/FmtChrono.hpp
         pimc/formatters/MemoryBuffer.hpp
+        pimc/formatters/FailureFormatter.hpp
         pimc/formatters/IPFormatters.hpp
         pimc/formatters/ConsumeIfUnlessEscaped.hpp
         pimc/formatters/HexAsciiBlock.hpp
@@ -39,7 +45,9 @@ target_sources(
         pimc/parsers/IPv4Parsers.hpp
         pimc/parsers/NumberParsers.hpp
         pimc/packets/PacketView.hpp
+        pimc/packets/PacketWriter.hpp
         pimc/packets/IPv4HdrView.hpp
+        pimc/packets/IPv4HdrWriter.hpp
         pimc/packets/UDPHdrView.hpp
         pimc/packets/IPChecksum.hpp
         pimc/packets/PIMSMv2.hpp
@@ -54,14 +62,11 @@ target_sources(
         pimc/unix/SignalHandler.hpp
         pimc/unix/CapNetRaw.hpp
         pimc/unix/GetOptLong.hpp
-        pimc/unix/GetOptLong.cpp
         pimc/unix/TerminalColors.hpp
         pimc/yaml/Structured.hpp
-        pimc/yaml/Structured.cpp
         pimc/yaml/BuilderBase.hpp
         pimc/yaml/ErrorHandler.hpp
         pimc/yaml/LoadAll.hpp
-        pimc/yaml/LoadAll.cpp
 )
 
 find_file(CAPABILITY_H sys/capability.h)

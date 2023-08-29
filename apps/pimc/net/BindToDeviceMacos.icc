@@ -1,0 +1,37 @@
+#ifdef __APPLE__
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <net/if.h>
+
+#include <string>
+
+#include "pimc/core/Result.hpp"
+#include "pimc/system/SysError.hpp"
+#include "pimc/formatters/Fmt.hpp"
+#include "pimc/formatters/FailureFormatter.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
+
+#include "BindToDevice.hpp"
+
+namespace pimc {
+
+Result<int, std::string> bindToDevice(
+        int s, bool ipv6, char const* intfName, unsigned intfIndex) {
+    if (not ipv6) {
+        if (setsockopt(s, IPPROTO_IP, IP_BOUND_IF, &intfIndex, sizeof(intfIndex)))
+            sfail("unable to bind IPv4 PIM socket to interface {} [#{}]: {}",
+                  intfName, intfIndex, SysError{});
+    } else {
+        if (setsockopt(s, IPPROTO_IPV6, IPV6_BOUND_IF, &intfIndex, sizeof(intfIndex)))
+            sfail("unable to bind IPv6 PIM socket to interface {} [#{}]: {}",
+                  intfName, intfIndex, SysError{});
+    }
+
+    return s;
+}
+
+} // namespace pimc
+
+#endif

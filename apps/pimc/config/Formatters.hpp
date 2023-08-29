@@ -62,9 +62,10 @@ struct formatter<pimc::PIMSMConfig<V>>: formatter<string_view> {
                 ctx.out(),
                 "PIM sparse-mode:\n"
                 "  neighbor: {}\n"
-                "  interface: {} [{}]\n",
+                "  interface: {}, #{}, addr {}\n",
                 pimsmConfig.neighbor(),
                 pimsmConfig.intfName(),
+                pimsmConfig.intfIndex(),
                 pimsmConfig.intfAddr());
     }
 };

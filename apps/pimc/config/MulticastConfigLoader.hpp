@@ -20,7 +20,7 @@ Result<typename IP<V>::Address, std::string> grpAddr(std::string const &g) {
     if (not oga)
         return fail(fmt::format("invalid multicast {} group address '{}'", V{}, g));
 
-    IPv4Address ga = oga.value();
+    auto ga = oga.value();
     if (not ga.isMcast())
         return fail(fmt::format(
                 "invalid multicast {} group address {}: not multicast", V{}, ga));
@@ -266,7 +266,8 @@ public:
                 }
             } else
                 errors_.emplace_back(
-                        jpCfgCtx.error("IPv4 J/P config contains no groups"));
+                        jpCfgCtx.error(
+                                fmt::format("{} J/P config contains no groups", V{})));
         }
     }
 

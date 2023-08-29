@@ -11,14 +11,19 @@ public:
 
     constexpr explicit PIMSMConfig(
             IPAddress neighbor,
+            unsigned intfIndex,
             IPAddress intfAddr,
             std::string intfName)
     : neighbor_{neighbor}
+    , intfIndex_{intfIndex}
     , intfAddr_{intfAddr}
     , intfName_{std::move(intfName)} {}
 
     [[nodiscard]]
     IPAddress neighbor() const { return neighbor_; }
+
+    [[nodiscard]]
+    unsigned intfIndex() const { return intfIndex_; }
 
     [[nodiscard]]
     IPAddress intfAddr() const { return intfAddr_; }
@@ -28,6 +33,7 @@ public:
 
 private:
     IPAddress neighbor_;
+    unsigned intfIndex_;
     IPAddress intfAddr_;
     std::string intfName_;
 };
