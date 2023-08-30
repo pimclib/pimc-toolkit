@@ -6,6 +6,7 @@
 #include "config/PIMSMParams.hpp"
 #include "config/JPConfig.hpp"
 #include "Update.hpp"
+#include "UBCursor.hpp"
 
 namespace pimc {
 
@@ -20,8 +21,7 @@ template <IPVersion V>
 class GroupEntryBuilder final {
     using IPAddress = typename IP<V>::Address;
 
-    template<IPVersion> friend class UpdatePacker;
-private:
+public:
     GroupEntryBuilder(IPAddress group, size_t jcnt, size_t pcnt)
     : group_{group} {
         joins_.reserve(jcnt);
@@ -54,14 +54,11 @@ private:
 
 template <IPVersion V>
 class UpdateBuilder final {
-    template<IPVersion> friend class UpdatePacker;
-
 public:
     using IPAddress = typename IP<V>::Address;
 
     explicit UpdateBuilder(): sz_{0ul} {}
 
-private:
     void add(GroupEntry<V> group, size_t sz) {
         chkSz(sz);
         groups_.emplace_back(std::move(group));
@@ -105,52 +102,6 @@ class UpdatePacker final {
     template <IPVersion U>
     friend std::vector<Update<U>> pimc::pack(JPConfig<U> const&);
 
-    class UBCursor final {
-        template <IPVersion> friend class UpdatePacker;
-
-        constexpr UBCursor(std::deque<UpdateBuilder<V>>* ubq, size_t& start)
-        : ubq_{ubq}, start_{start}, i_{start} {}
-
-        auto operator++ () -> UBCursor& {
-            if (++i_ >= ubq_->size())
-                ubq_->emplace_back();
-
-            return *this;
-        }
-
-        auto operator* () -> UpdateBuilder<V>& {
-            return (*ubq_)[i_];
-        }
-
-        auto operator-> () -> UpdateBuilder<V>* {
-            return addr();
-        }
-
-        auto addr() -> UpdateBuilder<V>* {
-            return &((*ubq_)[i_]);
-        }
-
-        void add(GroupEntryBuilder<V> geb) {
-            auto geSz = geb.size();
-            (*ubq_)[i_].add(geb.build(), geSz);
-            updateStart();
-        }
-
-        void updateStart() {
-            for (size_t j = start_; j <= i_; ++j) {
-                if ((*ubq_)[j].full())
-                    start_ = j;
-                else return;
-            }
-
-            if (start_ == ubq_->size())
-                ubq_->emplace_back();
-        }
-
-        std::deque<UpdateBuilder<V>>* ubq_;
-        size_t& start_;
-        size_t i_;
-    };
 private:
     UpdatePacker(): start_{0} {
         ubq_.emplace_back();

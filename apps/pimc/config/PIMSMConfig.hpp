@@ -13,11 +13,17 @@ public:
             IPAddress neighbor,
             unsigned intfIndex,
             IPAddress intfAddr,
-            std::string intfName)
+            std::string intfName,
+            uint16_t helloPeriod,
+            uint16_t helloHoldtime,
+            uint16_t jpHoldtime)
     : neighbor_{neighbor}
     , intfIndex_{intfIndex}
     , intfAddr_{intfAddr}
-    , intfName_{std::move(intfName)} {}
+    , intfName_{std::move(intfName)}
+    , helloPeriod_{helloPeriod}
+    , helloHoldtime_{helloHoldtime}
+    , jpHoldtime_{jpHoldtime} {}
 
     [[nodiscard]]
     IPAddress neighbor() const { return neighbor_; }

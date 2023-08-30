@@ -12,8 +12,9 @@ namespace pimc {
 
 template <template <typename X> class UB, typename V>
 concept UpdateBuilderImpl =
-IPVersion<V> and requires(UB<V> ub) {
-    UB{};
+IPVersion<V> and requires(UB<V> ub, GroupEntry<V> ge, size_t sz) {
+    UB<V>{};
+    { ub.add(ge, sz) };
     { ub.full() } -> std::same_as<bool>;
     { ub.empty() } -> std::same_as<bool>;
 };
@@ -22,7 +23,7 @@ template <template <typename X> class GEB, typename V>
 concept GroupEntryBuilderImpl =
 IPVersion<V> and requires(GEB<V> geb) {
     { geb.size() } -> std::same_as<size_t>;
-    { geb.build() } -> std::same_as<std::vector<Update<V>>>;
+    { geb.build() } -> std::same_as<GroupEntry<V>>;
 };
 
 template <IPVersion V, template <typename X> class UB>
@@ -76,5 +77,7 @@ public:
     size_t i_;
 };
 
+template <IPVersion V, template <typename X> class UB>
+UBCursor(std::deque<UB<V>>*, size_t&) -> UBCursor<V, UB>;
 
 } // namespace pimc
