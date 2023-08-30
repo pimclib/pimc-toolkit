@@ -37,6 +37,8 @@ add_executable(
         net/BindToDeviceMacos.icc
         net/IPv4PIMIntf.hpp
         net/IPv4PIMIntf.cpp
+        packets/IPv4PIMUpdatePacket.hpp
+        packets/IPv4PIMUpdatePacket.cpp
 )
 
 target_include_directories(

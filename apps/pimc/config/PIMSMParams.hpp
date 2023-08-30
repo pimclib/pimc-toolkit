@@ -33,6 +33,13 @@ struct params<IPv4> {
     ///   Hold time          2 bytes
     ///                     14 bytes (subtotal)
     ///           1466 bytes remaining for group entries
+
+    /// The IPv4 PIM header size [4 bytes]
+    static constexpr size_t PIMHdrSize{4ul};
+    /// The IPv4 PIM Join/Prune message header size, which includes the
+    /// PIM header.
+    static constexpr size_t PIMJPHdrSize{PIMHdrSize + 10ul};
+    /// IPv4 PIM packet capacity after the PIM header
     static constexpr size_t capacity{1466ul};
     /// PIM-SM encoded IPv4 multicast address size [8 bytes]
     static constexpr size_t GrpASize{PIMSMv2EncGIPv4AddrSize};

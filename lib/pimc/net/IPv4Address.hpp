@@ -1,8 +1,11 @@
 #pragma once
 
 #include <cstdint>
-#include <stdexcept>
+#include <netinet/in.h>
 #include <arpa/inet.h>
+
+#include "pimc/core/CompilerUtils.hpp"
+#include "pimc/system/Exceptions.hpp"
 
 namespace pimc {
 
@@ -82,8 +85,8 @@ public:
      * greater than 32
      */
     static IPv4Address toMask(uint32_t plen) {
-        if (plen > 32)
-            throw std::invalid_argument{"illegal IPv4 prefix length"};
+        if (PIMC_UNLIKELY(plen > 32))
+            raise<std::invalid_argument>("illegal IPv4 prefix length {}", plen);
         return IPv4Address{maskValue(plen)};
     };
 
@@ -192,8 +195,9 @@ public:
     [[nodiscard]]
     uint32_t toMask() const {
         if (addr_ == LocalBroadcastAddressValue) return 32;
-        if (not isMask())
-            throw std::logic_error("address is not mask");
+        if (PIMC_UNLIKELY(not isMask()))
+            raise<std::logic_error>(
+                    "address {}.{}.{}.{} is not a mask", oct1(), oct2(), oct3(), oct4());
 
         uint32_t pl{16};
         uint32_t m{LocalBroadcastAddressValue - addr_};

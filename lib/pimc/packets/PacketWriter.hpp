@@ -3,7 +3,14 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "pimc/core/CompilerUtils.hpp"
+
 namespace pimc {
+
+template <typename PW>
+concept PacketWriterObject = requires(PW pw, void* pktData) {
+    PW{pktData};
+};
 
 /*!
  * An object that facilitates writing structured packet data
@@ -12,10 +19,14 @@ namespace pimc {
 class PacketWriter final {
     template <typename T>
     friend constexpr auto next(PacketWriter& pw) -> T*;
+
+    template <PacketWriterObject T>
+    friend constexpr auto next(PacketWriter& pw, size_t sz) -> T;
+
 public:
     /*!
-     * Constructs a PacketWriter object for the memory region starting
-     * at \p m
+     * \brief Constructs a PacketWriter object for the memory region
+     * starting at \p m
      * @param m the start of packet memory region
      */
     constexpr explicit PacketWriter(void* m)
@@ -23,13 +34,34 @@ public:
             , end_{static_cast<uint8_t*>(m)} {}
 
     /*!
-     * Returns the size of the data written to the packet memory.
+     * \brief Returns the size of the data written to the packet memory.
      *
      * @return the size of the accumulated data
      */
     [[nodiscard]]
     constexpr size_t size() const {
         return static_cast<size_t>(end_ - start_);
+    }
+
+    /*!
+     * \brief Returns a new PacketWriter whose start is at the
+     * current position in the data.
+     *
+     * @return a new PacketWriter for the current position
+     */
+    [[nodiscard]]
+    PacketWriter mark() {
+        return PacketWriter(end_);
+    }
+
+    /*!
+     * \brief Returns a pointer to the start of the data.
+     *
+     * @return a pointer to the start of the data
+     */
+    [[nodiscard]]
+    void const* data() const {
+        return static_cast<void const*>(start_);
     }
 
 private:
@@ -47,10 +79,28 @@ private:
  */
 template <typename T>
 [[nodiscard]]
+PIMC_ALWAYS_INLINE
 constexpr auto next(PacketWriter& pw) -> T* {
     auto* p = static_cast<void*>(pw.end_);
     pw.end_ += sizeof(T);
     return static_cast<T*>(p);
+}
+
+/*!
+ * Allocates the object of the specified type T and size in the memory
+ * of the packet and returns a pointer to the object of this type.
+ *
+ * @tparam T an object that satisfies the PacketWriterObject concept
+ * @param pw the PacketWriter into which the object is being written
+ * @param sz the size of the allocated object
+ * @return a pointer of type T
+ */
+template <PacketWriterObject PWO>
+[[nodiscard]]
+PIMC_ALWAYS_INLINE
+constexpr auto next(PacketWriter& pw, size_t sz) -> PWO {
+    pw.end_ += sz;
+    return PWO{static_cast<void*>(pw.end_)};
 }
 
 } // namespace pimc

@@ -59,6 +59,7 @@ public:
                         formatIntfTable(bi, intfTable, 2, false);
                         consume(rIntf->error(fmt::to_string(buf)));
                     } else {
+                        intfIndex_ = rIntfInfo->ifindex;
                         intfAddr_ = intfAddr.value();
                         intfName_ = rIntfInfo->name;
                     }
@@ -69,11 +70,12 @@ public:
 
     [[nodiscard]]
     PIMSMConfig<V> build() const {
-        return PIMSMConfig<V>{neighbor_, intfAddr_, intfName_};
+        return PIMSMConfig<V>{neighbor_, intfIndex_, intfAddr_, intfName_};
     }
 
 private:
     IPAddress neighbor_;
+    unsigned intfIndex_;
     IPAddress intfAddr_;
     std::string intfName_;
 };

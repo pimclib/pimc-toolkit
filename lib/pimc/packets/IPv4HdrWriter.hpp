@@ -67,10 +67,9 @@ public:
      * @param ihlv the header length in 32-bit words
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& ihl(uint8_t ihlv) {
-        ipHdr_->ihl = ihlv;
+        ipHdr_->ihl = 0xf & ihlv;
         return *this;
     }
 
@@ -80,7 +79,6 @@ public:
      * @param tosv the TOS value to set
      * @return a reference this this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& tos(uint8_t tosv) {
         ipHdr_->tos = tosv;
@@ -96,7 +94,6 @@ public:
      * @param lenv the length of the IP datagram
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& totalLen(uint16_t lenv) {
         ipHdr_->tot_len = lenv;
@@ -111,7 +108,6 @@ public:
      * @param idv the ID of the datagram
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& id(uint16_t idv) {
         ipHdr_->id = idv;
@@ -127,7 +123,6 @@ public:
      * @param ffoffv the 16-bit word containing the flags and fragment offset
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& flagsAndFragOff(uint16_t ffoffv) {
         ipHdr_->frag_off = ffoffv;
@@ -140,7 +135,6 @@ public:
      * @param ttlv the TTL value of the datagram
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& ttl(uint8_t ttlv) {
         ipHdr_->ttl = ttlv;
@@ -154,7 +148,6 @@ public:
      * @param protocolv the numeric protovol value
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& protocol(uint8_t protocolv) {
         ipHdr_->protocol = protocolv;
@@ -169,7 +162,6 @@ public:
      * @param hcsv the header checksum
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& hdrChecksum(uint16_t hcsv) {
         ipHdr_->check = hcsv;
@@ -184,7 +176,6 @@ public:
      * @param saddrv the source IP address
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& saddr(uint32_t saddrv) {
         ipHdr_->saddr = saddrv;
@@ -199,7 +190,6 @@ public:
      * @param daddrv the destination IP address
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& daddr(uint32_t daddrv) {
         ipHdr_->daddr = daddrv;
@@ -275,10 +265,9 @@ public:
      * @param ihlv the header length in 32-bit words
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& ihl(uint8_t ihlv) {
-        ipHdr_->ip_v = ihlv;
+        ipHdr_->ip_v = 0xf & ihlv;
         return *this;
     }
 
@@ -288,7 +277,6 @@ public:
      * @param tosv the TOS value to set
      * @return a reference this this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& tos(uint8_t tosv) {
         ipHdr_->ip_tos = tosv;
@@ -304,7 +292,6 @@ public:
      * @param lenv the length of the IP datagram
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& totalLen(uint16_t lenv) {
         ipHdr_->ip_len = lenv;
@@ -319,7 +306,6 @@ public:
      * @param idv the ID of the datagram
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& id(uint16_t idv) {
         ipHdr_->ip_id = idv;
@@ -335,7 +321,6 @@ public:
      * @param ffoffv the 16-bit word containing the flags and fragment offset
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& flagsAndFragOff(uint16_t ffoffv) {
         ipHdr_->ip_off = ffoffv;
@@ -348,7 +333,6 @@ public:
      * @param ttlv the TTL value of the datagram
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& ttl(uint8_t ttlv) {
         ipHdr_->ip_ttl = ttlv;
@@ -362,7 +346,6 @@ public:
      * @param protocolv the numeric protovol value
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& protocol(uint8_t protocolv) {
         ipHdr_->ip_p = protocolv;
@@ -377,7 +360,6 @@ public:
      * @param hcsv the header checksum
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& hdrChecksum(uint16_t hcsv) {
         ipHdr_->ip_sum = hcsv;
@@ -392,7 +374,6 @@ public:
      * @param saddrv the source IP address
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& saddr(uint32_t saddrv) {
         ipHdr_->ip_src.s_addr = saddrv;
@@ -407,7 +388,6 @@ public:
      * @param daddrv the destination IP address
      * @return a reference to this writer
      */
-    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     IPv4HdrWriter& daddr(uint32_t daddrv) {
         ipHdr_->ip_dst.s_addr = daddrv;

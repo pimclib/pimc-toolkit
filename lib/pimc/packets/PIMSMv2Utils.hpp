@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pimc/net/IPv4Address.hpp"
+#include "IPChecksum.hpp"
 #include "PacketWriter.hpp"
 #include "PIMSMv2.hpp"
 
@@ -18,8 +19,24 @@ namespace pimc::pimsmv2 {
 constexpr void writeHdr(PacketWriter& pw, uint8_t type) {
     auto* hdr = next<PIMSMv2Hdr>(pw);
     hdr->Version = 2u;
-    hdr->Type = type;
+    hdr->Type = 0xf & type;
     hdr->Reserved = 0u;
+}
+
+/*!
+ * \brief Computes and writes the IP checksum into the PIM checksum
+ * field.
+ *
+ * The packet writer \p pw must be positioned at the start of the PIM
+ * header and must have size 0.
+ *
+ * @param pw the packet writer positioned at the PIM header
+ * @param sz the size of the PIM payload
+ */
+void writeChkSum(PacketWriter pw, size_t sz) {
+    auto const* data = pw.data();
+    auto* hdr = next<PIMSMv2Hdr>(pw);
+    hdr->Checksum = ipChecksumNs(data, sz);
 }
 
 /*!
@@ -34,6 +51,26 @@ void writeIPv4Addr(PacketWriter& pw, IPv4Address uaddr) {
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
     auto* ap = next<uint32_t>(pw);
     *ap = uaddr.to_nl();
+}
+
+/*!
+ * \brier Writes the Join/Prune header to the current position of
+ * the packet writer \p pw.
+ *
+ * @param pw the packet writer
+ * @param neighbor the IP address of the PIM neighbor
+ * @param grpNum the number of groups in this update
+ * @param holdtime the PIM hold time in the host byte order
+ */
+void writeIPv4JPHdr(
+        PacketWriter& pw, IPv4Address neighbor, uint8_t grpNum, uint16_t holdtime) {
+    writeIPv4Addr(pw, neighbor);
+    auto* reserved = next<uint8_t>(pw);
+    *reserved = 0u;
+    auto* gnp = next<uint8_t>(pw);
+    *gnp = grpNum;
+    auto* htp = next<uint16_t>(pw);
+    *htp = htons(holdtime);
 }
 
 /*!
@@ -54,26 +91,6 @@ void writeIPv4Grp(PacketWriter& pw, IPv4Address group) {
 }
 
 /*!
- * \brief Writes a PIM SM encoded RP address corresponding to
- * \p rp to the current position of the packe writer \p pw.
- *
- * @param pw the packet writer
- * @param rp the PIM SM v2 rendezvous point (RP)
- */
-void writeIPv4RP(PacketWriter& pw, IPv4Address rp) {
-    auto* h = next<PIMSMv2EncSrcAddr>(pw);
-    h->Family = IPv4_FAMILY_NUMBER;
-    h->EncodingType = PIMSMv2_NATIVE_ENCODING;
-    h->R = 1u;
-    h->W = 1u;
-    h->S = 1u;
-    h->Reserved = 0;
-    h->MaskLen = 32;
-    auto* rpa = next<uint32_t>(pw);
-    *rpa = rp.to_nl();
-}
-
-/*!
  * \brief Writes a PIM SM encoded multicast source address corresponding
  * to \p src.
  *
@@ -81,16 +98,17 @@ void writeIPv4RP(PacketWriter& pw, IPv4Address rp) {
  * tree, if \p rpt is true, or the shortest tree, if \p ptr is false.
  *
  * @param pw the packet writer
+ * @param wc the wildcard bit (is set only for RP in Join/Prune(*,G))
  * @param src the multicast source address
  * @param rpt the flag specifying if the source is on the shared or
  * shortest path tree
  */
-void writeIPv4Src(PacketWriter& pw, IPv4Address src, bool rpt) {
+void writeIPv4Src(PacketWriter& pw, IPv4Address src, bool rpt, bool wc) {
     auto* h = next<PIMSMv2EncSrcAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
     h->R = rpt ? 1u : 0u;
-    h->W = 0u;
+    h->W = wc ? 1u : 0u;
     h->S = 1u;
     h->Reserved = 0;
     h->MaskLen = 32;

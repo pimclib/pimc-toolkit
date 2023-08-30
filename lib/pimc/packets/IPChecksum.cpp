@@ -4,8 +4,8 @@
 
 namespace pimc {
 
-uint16_t ipChecksum(void *pktData, size_t length) {
-    auto data = static_cast<char *>(pktData);
+uint16_t ipChecksumNs(void const* pktData, size_t length) {
+    auto data = static_cast<char const*>(pktData);
     uint64_t acc = 0xffff;
 
     // Handle any partial 32-bit word at the start of the data
@@ -21,7 +21,7 @@ uint16_t ipChecksum(void *pktData, size_t length) {
     }
 
     // Handle any complete 32-bit words
-    char *end = data + (length & ~3ul);
+    char const* end = data + (length & ~3ul);
     while (data != end) {
         uint32_t word;
         memcpy(&word, data, 4);
