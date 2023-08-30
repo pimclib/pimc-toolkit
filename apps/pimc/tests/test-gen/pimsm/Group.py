@@ -1,16 +1,8 @@
-import dataclasses
 from typing import Optional, Tuple, Union, List, Mapping, Any
 
 from .IPv4Address import IPv4Address
 from .utils import addr, addr_range
-
-
-@dataclasses.dataclass
-class GroupSummary:
-    group: IPv4Address
-    joins: int
-    prunes: int
-    size: int
+from .group_summary import GroupSummary
 
 
 class Group:
@@ -141,7 +133,7 @@ class Group:
         if count < 0:
             raise ValueError(
                 f"group {self.addr}: "
-                f"invalid number of joins to take {count}, "
+                f"{count} is invalid number of joins to take, "
                 f"must greater than or equal to 0"
             )
         if self.rp is None:

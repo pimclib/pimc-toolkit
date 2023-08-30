@@ -31,11 +31,23 @@ public:
     [[nodiscard]]
     std::string const& intfName() const { return intfName_; }
 
+    [[nodiscard]]
+    uint16_t helloPeriod() const { return helloPeriod_; }
+
+    [[nodiscard]]
+    uint16_t helloHoldtime() const { return helloHoldtime_; }
+
+    [[nodiscard]]
+    uint16_t jpHoldtime() const { return jpHoldtime_; }
+
 private:
     IPAddress neighbor_;
     unsigned intfIndex_;
     IPAddress intfAddr_;
     std::string intfName_;
+    uint16_t helloPeriod_;
+    uint16_t helloHoldtime_;
+    uint16_t jpHoldtime_;
 };
 
 } // namespace pimc

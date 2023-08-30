@@ -2,16 +2,18 @@ from pathlib import Path
 
 from IPython.display import display, HTML
 
-from pimsm import (
+from ..pimsm import (
     updates_summary,
     diff_jpcfg_vs_updates,
     write_config,
     pack,
+    inverse_pack,
 )
 
 
 def test_suite(name: str, *gs):
     updates = pack(gs)
+    inverse_updates = inverse_pack(gs)
 
     df_sum = updates_summary(updates)
 
@@ -29,5 +31,5 @@ def test_suite(name: str, *gs):
     if len(diff) > 0:
         print(diff)
     else:
-        yml = Path.home() / "tmp/new_pv_cfg.yml"
-        write_config(yml, name, gs, updates)
+        yml = str(Path.home() / "tmp/new_pv_cfg.yml")
+        write_config(yml, name, gs, updates, inverse_updates)

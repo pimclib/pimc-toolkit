@@ -16,7 +16,8 @@ class PIMSMConfigLoader final: BuilderBase {
 public:
     using IPAddress = typename IP<V>::Address;
 
-    using BuilderBase::BuilderBase;
+    constexpr explicit PIMSMConfigLoader(std::vector<yaml::ErrorContext>& errors)
+    : BuilderBase{errors}, helloPeriod_{30u}, helloHoldtime_{105u}, jpHoldtime_{210u} {}
 
     void loadPIMSMConfig(
             yaml::ValueContext const& vCtx, IntfTable const& intfTable) {
@@ -70,7 +71,10 @@ public:
 
     [[nodiscard]]
     PIMSMConfig<V> build() const {
-        return PIMSMConfig<V>{neighbor_, intfIndex_, intfAddr_, intfName_};
+        return PIMSMConfig<V>{
+            neighbor_, intfIndex_, intfAddr_, intfName_,
+            helloPeriod_, helloHoldtime_, jpHoldtime_
+        };
     }
 
 private:
@@ -78,6 +82,9 @@ private:
     unsigned intfIndex_;
     IPAddress intfAddr_;
     std::string intfName_;
+    uint16_t helloPeriod_;
+    uint16_t helloHoldtime_;
+    uint16_t jpHoldtime_;
 };
 
 template <IPVersion V>

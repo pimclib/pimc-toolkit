@@ -12,8 +12,10 @@ set(JPConfig
 
 set(PIMUpdate
         pimsm/Update.hpp
+        pimsm/UBCursor.hpp
         pimsm/Pack.hpp
         pimsm/PackSanityCheck.hpp
+        pimsm/InversePack.hpp
         pimsm/UpdateFormatter.hpp
 )
 
@@ -79,6 +81,7 @@ add_executable(
         ${PIMUpdate}
         tests/PackingVerifierConfig.hpp
         tests/UpdateLoader.hpp
+        tests/InverseUpdateLoader.hpp
         ${CMAKE_CURRENT_BINARY_DIR}/PackingVerifierConfigs.incl
         tests/PackingTests.cpp
 )

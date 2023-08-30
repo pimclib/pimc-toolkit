@@ -1,12 +1,19 @@
 from pathlib import Path
 from typing import List
 
-from .Group import Group
-from .Update import Update
+from .group import Group
+from .update import Update
+from .inverse_update import InverseUpdate
 from .info import dump_config
 
 
-def write_config(yaml_file: str, name: str, jp_cfg: List[Group], updates: List[Update]):
+def write_config(
+        yaml_file: str,
+        name: str,
+        jp_cfg: List[Group],
+        updates: List[Update],
+        inverse_updates: List[InverseUpdate],
+):
     p = Path(yaml_file)
 
     if p.exists():
@@ -14,4 +21,4 @@ def write_config(yaml_file: str, name: str, jp_cfg: List[Group], updates: List[U
 
     with open(yaml_file, "w") as yaml_out:
         yaml_out.write("---\n\n")
-        yaml_out.write(dump_config(name, jp_cfg, updates))
+        yaml_out.write(dump_config(name, jp_cfg, updates, inverse_updates))

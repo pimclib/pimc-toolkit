@@ -4,8 +4,10 @@ from typing import Iterable, List
 
 import pandas as pd
 
-from .Group import Group
-from .Update import Update
+from .group import Group
+from .update import Update
+from .inverse_group import InverseGroup
+from .inverse_update import InverseUpdate
 from .utils import dump_struct
 
 
@@ -18,7 +20,11 @@ def updates_summary(updates: List[Update]) -> pd.DataFrame:
     )
 
 
-def dump_config(name: str, jp_cfg: List[Group], updates: List[Update]) -> str:
+def dump_config(
+        name: str, jp_cfg: List[Group],
+        updates: List[Update],
+        inverse_updates: List[InverseUpdate],
+) -> str:
     jp_cfg_d = dict()
     for maddr, ge in [g.as_jp_group_entry() for g in jp_cfg]:
         if maddr in jp_cfg_d:
@@ -29,7 +35,10 @@ def dump_config(name: str, jp_cfg: List[Group], updates: List[Update]) -> str:
         {
             "name": name,
             "multicast": jp_cfg_d,
-            "verify": [u.as_dict() for u in updates],
+            "verify": {
+                "updates": [u.as_dict() for u in updates],
+                "inverse updates": [u.as_dict() for u in inverse_updates],
+            }
         }
     )
 

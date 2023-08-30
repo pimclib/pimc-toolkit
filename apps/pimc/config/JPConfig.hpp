@@ -105,6 +105,7 @@ public:
      */
     [[nodiscard]]
     std::vector<GroupConfig<V>> const& groups() const { return groups_; }
+
 private:
     std::vector<GroupConfig<V>> groups_;
 };

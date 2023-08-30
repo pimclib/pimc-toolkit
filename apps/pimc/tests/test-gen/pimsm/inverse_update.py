@@ -1,12 +1,12 @@
 from typing import List, Mapping, Any
 
-from .group import Group
+from .InverseGroup import InverseGroup
 
 
-class Update:
+class InverseUpdate:
     def __init__(self, max_size: int = 1466) -> None:
         self.max_size = max_size
-        self.groups: List[Group] = list()
+        self.groups: List[InverseGroup] = list()
 
     def size(self) -> int:
         return sum(g.size() for g in self.groups)
@@ -14,7 +14,7 @@ class Update:
     def remaining(self) -> int:
         return self.max_size - self.size()
 
-    def add(self, g: Group) -> None:
+    def add(self, g: InverseGroup) -> None:
         r = self.remaining()
         gsz = g.size()
         if gsz > r:

@@ -1,7 +1,7 @@
 from typing import Optional, Iterable, List
 
-from .Group import Group
-from .Update import Update
+from .group import Group
+from .update import Update
 
 
 def _max_sources(sz: int) -> int:
