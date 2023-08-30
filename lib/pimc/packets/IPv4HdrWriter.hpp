@@ -38,8 +38,8 @@ public:
      * @param p the address of the IPv4 header to write to
      */
     PIMC_ALWAYS_INLINE
-    constexpr explicit IPv4HdrWriter(void const* p)
-    : ipHdr_{static_cast<iphdr const*>(p)} {
+    constexpr explicit IPv4HdrWriter(void* p)
+    : ipHdr_{static_cast<iphdr*>(p)} {
         ipHdr_->version = 2;
         ipHdr_->ihl = 5;
     }
@@ -52,8 +52,8 @@ public:
      * @return a reference to this writer
      */
     PIMC_ALWAYS_INLINE
-    constexpr auto operator= (void const* p) -> IPv4HdrWriter& {
-        ipHdr_ = static_cast<iphdr const*>(p);
+    constexpr auto operator= (void* p) -> IPv4HdrWriter& {
+        ipHdr_ = static_cast<iphdr*>(p);
         return *this;
     }
 
@@ -64,6 +64,7 @@ public:
      * the default IPv4 header size, that is the one that contains no
      * options.
      *
+     * @param ihlv the header length in 32-bit words
      * @return a reference to this writer
      */
     [[nodiscard]]
@@ -76,102 +77,137 @@ public:
     /*!
      * \brief Sets the TOS value.
      *
+     * @param tosv the TOS value to set
      * @return a reference this this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    IPv4HdrWriter& tos(uint8_t tosv) const {
+    IPv4HdrWriter& tos(uint8_t tosv) {
         ipHdr_->tos = tosv;
         return *this;
     }
 
     /*!
-     * \brief Returns the total length of the IP datagram including the
+     * \brief Sets the total length of the IP datagram including the
      * payload in bytes.
      *
-     * \note The returned value is in the network byte order
+     * \note \p lenv must be in the network byte order
      *
-     * @return the size of the IP datagram
+     * @param lenv the length of the IP datagram
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t totalLen() const { return ipHdr_->tot_len; }
+    IPv4HdrWriter& totalLen(uint16_t lenv) {
+        ipHdr_->tot_len = lenv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the ID field.
+     * \brief Sets the ID field.
      *
-     * @return the ID field
+     * \note \p idv must be in the network byte order
+     *
+     * @param idv the ID of the datagram
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t id() const { return ipHdr_->id; }
+    IPv4HdrWriter& id(uint16_t idv) {
+        ipHdr_->id = idv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns a byte containing the flags and the fragmentation
-     * offset.
+     * \brief Sets the 16-bit word in the header which contains the flags
+     * and the fragmentation offset.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p ffoffv must be in the network byte order.
      *
-     * @return a byte containing the flags and the fragmentation offset
+     * @param ffoffv the 16-bit word containing the flags and fragment offset
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t flagsAndFragOff() const { return ipHdr_->frag_off; }
+    IPv4HdrWriter& flagsAndFragOff(uint16_t ffoffv) {
+        ipHdr_->frag_off = ffoffv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the TTL of the IP datagram.
+     * \brief Sets the TTL of the IP datagram.
      *
-     * @return the TTL of the IP datagram
+     * @param ttlv the TTL value of the datagram
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint8_t ttl() const { return ipHdr_->ttl; }
+    IPv4HdrWriter& ttl(uint8_t ttlv) {
+        ipHdr_->ttl = ttlv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the number of the protocol whose data is in the IP
-     * datagram payload.
+     * \brief Sets the numeric value of the protocol whose data will reside
+     * in the IP datagram payload.
      *
-     * @return the protocol number
+     * @param protocolv the numeric protovol value
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint8_t protocol() const { return ipHdr_->protocol; }
+    IPv4HdrWriter& protocol(uint8_t protocolv) {
+        ipHdr_->protocol = protocolv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the header checksum.
+     * \brief Sets the header checksum.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p hcsv must be in in the network byte order.
      *
-     * @return the header checksum
+     * @param hcsv the header checksum
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t hdrChecksum() const { return ipHdr_->check; }
+    IPv4HdrWriter& hdrChecksum(uint16_t hcsv) {
+        ipHdr_->check = hcsv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the source IP address.
+     * \brief Sets the source IP address.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p saddrv must be in the network byte order.
      *
-     * @return the source IP address
+     * @param saddrv the source IP address
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint32_t saddr() const { return ipHdr_->saddr; }
+    IPv4HdrWriter& saddr(uint32_t saddrv) {
+        ipHdr_->saddr = saddrv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the destination IP address.
+     * \brief Sets the destination IP address.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p daddrv must be in the network byte order.
      *
-     * @return the destination IP address.
+     * @param daddrv the destination IP address
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint32_t daddr() const { return ipHdr_->daddr; }
+    IPv4HdrWriter& daddr(uint32_t daddrv) {
+        ipHdr_->daddr = daddrv;
+        return *this;
+    }
 
 private:
-    iphdr const* ipHdr_;
+    iphdr* ipHdr_;
 };
 
 
@@ -203,165 +239,184 @@ public:
     constexpr explicit IPv4HdrWriter() : ipHdr_{nullptr} {}
 
     /*!
-     * \brief Construct a header view starting at the address \p p.
+     * \brief Construct a header writer starting at the address \p p and
+     * set the IP version to 2, and the header size to 5 (20 bytes, default
+     * value).
      *
-     * @param p the address of the IPv4 header to view
+     * @param p the address of the IPv4 header to write to
      */
     PIMC_ALWAYS_INLINE
-    constexpr explicit IPv4HdrWriter(void const *p)
-    : ipHdr_{static_cast<ip const *>(p)} {}
+    constexpr explicit IPv4HdrWriter(void* p)
+            : ipHdr_{static_cast<ip*>(p)} {
+        ipHdr_->ip_v = 2u;
+        ipHdr_->ip_hl = 5u;
+    }
 
     /*!
      * \brief Assign the address \p p to the view.
      *
-     * @param p the address of the IPv4 header to view
+     * @param p the address of the IPv4 header to write to
      *
-     * @return a reference to this view
+     * @return a reference to this writer
      */
     PIMC_ALWAYS_INLINE
-    constexpr auto operator=(void const *p) -> IPv4HdrWriter & {
-        ipHdr_ = static_cast<ip const *>(p);
+    constexpr auto operator= (void* p) -> IPv4HdrWriter& {
+        ipHdr_ = static_cast<ip*>(p);
         return *this;
     }
 
     /*!
-     * \brief Returns the effective size of IPv4 header in 32-bit words.
+     * \brief Sets the effective size of IPv4 header in 32-bit words.
      *
-     * If the header contains any options, they are taken into account in
-     * this value. The minimum correct value of this field is 5.
+     * \note The constructor sets this value to 5, i.e. 20 bytes, which is
+     * the default IPv4 header size, that is the one that contains no
+     * options.
      *
-     * @return the size of the IPv4 header in 32-bit words
+     * @param ihlv the header length in 32-bit words
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint8_t ihl() const { return ipHdr_->ip_hl; }
-
-    /*!
-     * \brief Returns the effective size of IPv4 header in bytes.
-     *
-     * If the header* contains any options, they are taken into account in
-     * this value.
-     *
-     * \note The returned value is computed from IHL and it is in the
-     * host byte order.
-     *
-     * @return the size of the IPv4 header in bytes
-     */
-    [[nodiscard]]
-    PIMC_ALWAYS_INLINE
-    uint16_t headerSizeBytes() const {
-        return static_cast<uint16_t>(static_cast<uint16_t>(ihl()) << 2u);
+    IPv4HdrWriter& ihl(uint8_t ihlv) {
+        ipHdr_->ip_v = ihlv;
+        return *this;
     }
 
     /*!
-     * \brief Returns the IPv4 version number value.
+     * \brief Sets the TOS value.
      *
-     * If the pointer assigned to this view points to a valid IPv4 header,
-     * the returned value will always be 4. If the returned value is not 4,
-     * that means the pointer does not point at a valid header.
-     *
-     * @return the IPv4 version number value
+     * @param tosv the TOS value to set
+     * @return a reference this this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint8_t version() const { return ipHdr_->ip_v; }
+    IPv4HdrWriter& tos(uint8_t tosv) {
+        ipHdr_->ip_tos = tosv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the TOS value.
-     *
-     * @return the TOS value
-     */
-    [[nodiscard]]
-    PIMC_ALWAYS_INLINE
-    uint8_t tos() const { return ipHdr_->ip_tos; }
-
-    /*!
-     * \brief Returns the total length of the IP datagram including the
+     * \brief Sets the total length of the IP datagram including the
      * payload in bytes.
      *
-     * \note The returned value is in the network byte order
+     * \note \p lenv must be in the network byte order
      *
-     * @return the size of the IP datagram
+     * @param lenv the length of the IP datagram
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t totalLen() const { return ipHdr_->ip_len; }
+    IPv4HdrWriter& totalLen(uint16_t lenv) {
+        ipHdr_->ip_len = lenv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the ID field.
+     * \brief Sets the ID field.
      *
-     * @return the ID field
+     * \note \p idv must be in the network byte order
+     *
+     * @param idv the ID of the datagram
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t id() const { return ipHdr_->ip_id; }
+    IPv4HdrWriter& id(uint16_t idv) {
+        ipHdr_->ip_id = idv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns a byte containing the flags and the fragmentation
-     * offset.
+     * \brief Sets the 16-bit word in the header which contains the flags
+     * and the fragmentation offset.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p ffoffv must be in the network byte order.
      *
-     * @return a byte containing the flags and the fragmentation offset
+     * @param ffoffv the 16-bit word containing the flags and fragment offset
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t flagsAndFragOff() const { return ipHdr_->ip_off; }
+    IPv4HdrWriter& flagsAndFragOff(uint16_t ffoffv) {
+        ipHdr_->ip_off = ffoffv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the TTL of the IP datagram.
+     * \brief Sets the TTL of the IP datagram.
      *
-     * @return the TTL of the IP datagram
+     * @param ttlv the TTL value of the datagram
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint8_t ttl() const { return ipHdr_->ip_ttl; }
+    IPv4HdrWriter& ttl(uint8_t ttlv) {
+        ipHdr_->ip_ttl = ttlv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the number of the protocol whose data is in the IP
-     * datagram payload.
+     * \brief Sets the numeric value of the protocol whose data will reside
+     * in the IP datagram payload.
      *
-     * @return the protocol number
+     * @param protocolv the numeric protovol value
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint8_t protocol() const { return ipHdr_->ip_p; }
+    IPv4HdrWriter& protocol(uint8_t protocolv) {
+        ipHdr_->ip_p = protocolv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the header checksum.
+     * \brief Sets the header checksum.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p hcsv must be in in the network byte order.
      *
-     * @return the header checksum
+     * @param hcsv the header checksum
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint16_t hdrChecksum() const { return ipHdr_->ip_sum; }
+    IPv4HdrWriter& hdrChecksum(uint16_t hcsv) {
+        ipHdr_->ip_sum = hcsv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the source IP address.
+     * \brief Sets the source IP address.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p saddrv must be in the network byte order.
      *
-     * @return the source IP address
+     * @param saddrv the source IP address
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint32_t saddr() const { return ipHdr_->ip_src.s_addr; }
+    IPv4HdrWriter& saddr(uint32_t saddrv) {
+        ipHdr_->ip_src.s_addr = saddrv;
+        return *this;
+    }
 
     /*!
-     * \brief Returns the destination IP address.
+     * \brief Sets the destination IP address.
      *
-     * \note The returned value is in the network byte order.
+     * \note \p daddrv must be in the network byte order.
      *
-     * @return the destination IP address.
+     * @param daddrv the destination IP address
+     * @return a reference to this writer
      */
     [[nodiscard]]
     PIMC_ALWAYS_INLINE
-    uint32_t daddr() const { return ipHdr_->ip_dst.s_addr; }
+    IPv4HdrWriter& daddr(uint32_t daddrv) {
+        ipHdr_->ip_dst.s_addr = daddrv;
+        return *this;
+    }
+
 
 private:
-    ip const *ipHdr_;
+    ip *ipHdr_;
 };
 
 #endif

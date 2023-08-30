@@ -118,6 +118,8 @@ public:
     /*!
      * \brief Returns the ID field.
      *
+     * \note The returned value is in the network byte order.
+     *
      * @return the ID field
      */
     [[nodiscard]]
@@ -125,7 +127,7 @@ public:
     uint16_t id() const { return ipHdr_->id; }
 
     /*!
-     * \brief Returns a byte containing the flags and the fragmentation
+     * \brief Returns a 16-bit word containing the flags and the fragmentation
      * offset.
      *
      * \note The returned value is in the network byte order.
@@ -308,6 +310,8 @@ public:
     /*!
      * \brief Returns the ID field.
      *
+     * \note The returned value is in the network byte order.
+     *
      * @return the ID field
      */
     [[nodiscard]]
@@ -315,7 +319,7 @@ public:
     uint16_t id() const { return ipHdr_->ip_id; }
 
     /*!
-     * \brief Returns a byte containing the flags and the fragmentation
+     * \brief Returns a 16-bit word containing the flags and the fragmentation
      * offset.
      *
      * \note The returned value is in the network byte order.
