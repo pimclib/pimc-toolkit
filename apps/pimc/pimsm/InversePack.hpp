@@ -139,6 +139,17 @@ private:
             }
             ++c;
         }
+
+        if (pruneRP == 1) {
+            InverseGroupEntryBuilderImpl<V> geb{ge.group(), 1};
+            geb.prune(ge.rpt().value().rp(), true, true);
+            auto cnt = std::min(maxSources(c->remaining()), 1ul);
+            while (cnt == 0) {
+                ++c;
+                cnt = std::min(maxSources(c->remaining()), 1ul);
+            }
+            c.add(geb);
+        }
     }
 
     std::vector<Update<V>> build() {

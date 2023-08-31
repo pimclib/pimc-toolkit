@@ -72,7 +72,10 @@ TEST_F(PackingTests, AllTests) {
 
         auto rc = verifyUpdates(vcf.jpConfig(), updates);
         if (not rc)
-            ADD_FAILURE() << rc.error();
+            ADD_FAILURE()
+            << "Test: " << vcf.name() << "\n"
+            << "Sanity check failed\n"
+            << rc.error();
 
         auto expu = updatesText(vcf.updates());
         auto effu = updatesText(updates);
@@ -84,7 +87,10 @@ TEST_F(PackingTests, AllTests) {
 
         auto irc = verifyInverseUpdates(vcf.jpConfig(), inverseUpdates);
         if (not irc)
-            ADD_FAILURE() << irc.error();
+            ADD_FAILURE()
+            << "Test: " << vcf.name() << "\n"
+            << "Inverse sanity check failed\n"
+            << irc.error();
 
         auto expiu = updatesText(vcf.inverseUpdates());
         auto effiu = updatesText(inverseUpdates);
