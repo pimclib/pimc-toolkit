@@ -14,8 +14,10 @@ set(PIMUpdate
         pimsm/Update.hpp
         pimsm/UBCursor.hpp
         pimsm/Pack.hpp
-        pimsm/PackSanityCheck.hpp
         pimsm/InversePack.hpp
+        pimsm/SanityCheckUtils.hpp
+        pimsm/PackSanityCheck.hpp
+        pimsm/InversePackSanityCheck.hpp
         pimsm/UpdateFormatter.hpp
 )
 

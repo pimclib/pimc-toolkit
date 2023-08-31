@@ -9,10 +9,10 @@
 namespace pimc {
 
 template <IPVersion V>
-class GroupEntryBuilder final: BuilderBase {
+class GroupEntryBuiderImpl final: BuilderBase {
     using IPAddress = typename IP<V>::Address;
 public:
-    GroupEntryBuilder(
+    GroupEntryBuiderImpl(
             std::vector<yaml::ErrorContext>& errors,
             IPAddress group,
             int line)
@@ -235,7 +235,7 @@ public:
 
 private:
     std::vector<IPAddress> groups_;
-    std::unordered_map<IPAddress, GroupEntryBuilder<V>> groupBldMap_;
+    std::unordered_map<IPAddress, GroupEntryBuiderImpl<V>> groupBldMap_;
 };
 
 template <IPVersion V>

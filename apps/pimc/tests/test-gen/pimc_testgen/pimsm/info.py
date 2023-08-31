@@ -1,6 +1,6 @@
 import io
 import dataclasses
-from typing import Iterable, List
+from typing import Iterable, List, Union
 
 import pandas as pd
 
@@ -11,7 +11,7 @@ from .inverse_update import InverseUpdate
 from .utils import dump_struct
 
 
-def updates_summary(updates: List[Update]) -> pd.DataFrame:
+def updates_summary(updates: List[Union[Update, InverseUpdate]]) -> pd.DataFrame:
     return pd.DataFrame.from_records(
         {"update": n + 1, "update_size": u.size(), "update_rem_size": u.remaining()}
         | dataclasses.asdict(g.summary())

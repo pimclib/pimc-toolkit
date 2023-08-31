@@ -1,3 +1,5 @@
+#pragma once
+
 #include <deque>
 
 #include "pimc/net/IP.hpp"
@@ -95,7 +97,7 @@ class InverseUpdatePacker final {
     using IPAddress = typename IP<V>::Address;
 
     template <IPVersion U>
-    friend std::vector<Update<U>> pimc::inversePack(const JPConfig<V> &);
+    friend std::vector<Update<U>> pimc::inversePack(const JPConfig<U> &);
 
 private:
     InverseUpdatePacker(): start_{0} {
@@ -113,7 +115,7 @@ private:
 
     void fitGroup(GroupConfig<V> const& ge) {
         UBCursor c{&ubq_, start_};
-        unsigned pruneRP{ge.rpt().has_value() ? 1 : 0};
+        unsigned pruneRP{ge.rpt().has_value() ? 1u : 0u};
         auto const& spt = ge.spt();
         size_t srci{0};
 
@@ -122,7 +124,7 @@ private:
                     maxSources(c->remaining()),
                     pruneRP + spt.size() - srci);
             if (cnt > 0) {
-                InverseGroupEntryBuilderImpl<V> geb{ge.group(), cnt, 0};
+                InverseGroupEntryBuilderImpl<V> geb{ge.group(), cnt};
                 if (pruneRP == 1) {
                     geb.prune(ge.rpt().value().rp(), true, true);
                     pruneRP = 0;

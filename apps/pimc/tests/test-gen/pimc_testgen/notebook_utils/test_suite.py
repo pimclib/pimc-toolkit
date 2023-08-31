@@ -15,11 +15,11 @@ def test_suite(name: str, *gs):
     updates = pack(gs)
     inverse_updates = inverse_pack(gs)
 
-    df_sum = updates_summary(updates)
+    df_us = updates_summary(updates)
 
-    if len(df_sum) > 0:
+    if len(df_us) > 0:
         show_text(Tag("H1", "Update Summaries"))
-        gb = df_sum.groupby(["update", "update_size", "update_rem_size"])
+        gb = df_us.groupby(["update", "update_size", "update_rem_size"])
         for h, df in gb:
             show_text(
                 Tag(
@@ -32,6 +32,24 @@ def test_suite(name: str, *gs):
             show_df(df[["group", "joins", "prunes", "size"]])
     else:
         show_text(Tag("p", "Empty updates summary dataframe"))
+
+    df_ius = updates_summary(inverse_updates)
+
+    if len(df_ius) > 0:
+        show_text(Tag("H1", "Inverse Update Summaries"))
+        gb = df_ius.groupby(["update", "update_size", "update_rem_size"])
+        for h, df in gb:
+            show_text(
+                Tag(
+                    "p",
+                    Tag("b", f"Update {h[0]}"),
+                    ": ",
+                    f"size {h[1]}, remaining size {h[2]}",
+                )
+            )
+            show_df(df[["group", "joins", "prunes", "size"]])
+    else:
+        show_text(Tag("p", "Empty inverse updates summary dataframe"))
 
     diff = diff_jpcfg_vs_updates(gs, updates)
     if len(diff) > 0:
