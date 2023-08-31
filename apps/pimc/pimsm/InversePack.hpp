@@ -18,12 +18,12 @@ namespace pimsm_detail {
 template<IPVersion> class UpdatePacker;
 
 template <IPVersion V>
-class InverseGroupEntryBuilder final {
+class InverseGroupEntryBuilderImpl final {
     using IPAddress = typename IP<V>::Address;
 
 public:
 
-    InverseGroupEntryBuilder(IPAddress group, size_t pcnt)
+    InverseGroupEntryBuilderImpl(IPAddress group, size_t pcnt)
     : group_{group} {
         prunes_.reserve(pcnt);
     }
@@ -48,11 +48,11 @@ private:
 };
 
 template <IPVersion V>
-class InverseUpdateBuilder final {
+class InverseUpdateBuilderImpl final {
 public:
     using IPAddress = typename IP<V>::Address;
 
-    explicit InverseUpdateBuilder(): sz_{0ul} {}
+    explicit InverseUpdateBuilderImpl(): sz_{0ul} {}
 
     void add(GroupEntry<V> group, size_t sz) {
         chkSz(sz);
@@ -94,6 +94,9 @@ template<IPVersion V>
 class InverseUpdatePacker final {
     using IPAddress = typename IP<V>::Address;
 
+    template <IPVersion U>
+    friend std::vector<Update<U>> pimc::inversePack(const JPConfig<V> &);
+
 private:
     InverseUpdatePacker(): start_{0} {
         ubq_.emplace_back();
@@ -119,7 +122,7 @@ private:
                     maxSources(c->remaining()),
                     pruneRP + spt.size() - srci);
             if (cnt > 0) {
-                InverseGroupEntryBuilder<V> geb{ge.group(), cnt, 0};
+                InverseGroupEntryBuilderImpl<V> geb{ge.group(), cnt, 0};
                 if (pruneRP == 1) {
                     geb.prune(ge.rpt().value().rp(), true, true);
                     pruneRP = 0;
@@ -148,10 +151,9 @@ private:
     }
 
 private:
-    std::deque<InverseUpdateBuilder<V>> ubq_;
+    std::deque<InverseUpdateBuilderImpl<V>> ubq_;
     std::size_t start_;
 };
-
 
 } // namespace pimc::pimsm_detail
 

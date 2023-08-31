@@ -18,11 +18,11 @@ namespace pimsm_detail {
 template<IPVersion> class UpdatePacker;
 
 template <IPVersion V>
-class GroupEntryBuilder final {
+class GroupEntryBuilderImpl final {
     using IPAddress = typename IP<V>::Address;
 
 public:
-    GroupEntryBuilder(IPAddress group, size_t jcnt, size_t pcnt)
+    GroupEntryBuilderImpl(IPAddress group, size_t jcnt, size_t pcnt)
     : group_{group} {
         joins_.reserve(jcnt);
         prunes_.reserve(pcnt);
@@ -53,11 +53,11 @@ private:
 };
 
 template <IPVersion V>
-class UpdateBuilder final {
+class UpdateBuilderImpl final {
 public:
     using IPAddress = typename IP<V>::Address;
 
-    explicit UpdateBuilder(): sz_{0ul} {}
+    explicit UpdateBuilderImpl(): sz_{0ul} {}
 
     void add(GroupEntry<V> group, size_t sz) {
         chkSz(sz);
@@ -111,7 +111,7 @@ private:
         for (auto const& ge: jpCfg.groups()) fitGroup(ge);
     }
 
-    UpdateBuilder<V>* findRptUb(GroupConfig<V> const& ge) {
+    UpdateBuilderImpl<V>* findRptUb(GroupConfig<V> const& ge) {
         if (not ge.rpt()) return nullptr;
         auto const& rpt = ge.rpt().value();
         size_t rptSz{
@@ -140,7 +140,7 @@ private:
                         maxSources(c->remaining()),
                         spt.size() - srci);
                 if (cnt > 0) {
-                    GroupEntryBuilder<V> geb{ge.group(), cnt, 0};
+                    GroupEntryBuilderImpl<V> geb{ge.group(), cnt, 0};
                     for (size_t i{srci}; i < srci + cnt; ++i)
                         geb.join(spt[i], false, false);
                     c.add(geb);
@@ -153,7 +153,7 @@ private:
                                 c->remaining() -
                                 (pimsm::params<V>::SrcASize * (rpt.prunes().size() + 1))),
                         spt.size() - srci);
-                GroupEntryBuilder<V> geb{
+                GroupEntryBuilderImpl<V> geb{
                     ge.group(), cnt + 1, rpt.prunes().size()};
                 for (size_t i{srci}; i < srci + cnt; ++i)
                     geb.join(spt[i], false, false);
@@ -169,7 +169,7 @@ private:
 
         if (rptUb != nullptr) {
             auto const& rpt = ge.rpt().value();
-            GroupEntryBuilder<V> geb{ge.group(), 1, rpt.prunes().size()};
+            GroupEntryBuilderImpl<V> geb{ge.group(), 1, rpt.prunes().size()};
             geb.join(rpt.rp(), true, true);
             for (auto const& rptPruneSrc: rpt.prunes())
                 geb.prune(rptPruneSrc, false, true);
@@ -190,10 +190,9 @@ private:
     }
 
 private:
-    std::deque<UpdateBuilder<V>> ubq_;
+    std::deque<UpdateBuilderImpl<V>> ubq_;
     std::size_t start_;
 };
-
 
 } // namespace pimc::pimsm_detail
 

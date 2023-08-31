@@ -10,8 +10,8 @@
 
 namespace pimc {
 
-template <template <typename X> class UB, typename V>
-concept UpdateBuilderImpl =
+template <typename V, template <typename X> class UB>
+concept UpdateBuilder =
 IPVersion<V> and requires(UB<V> ub, GroupEntry<V> ge, size_t sz) {
     UB<V>{};
     { ub.add(ge, sz) };
@@ -19,15 +19,24 @@ IPVersion<V> and requires(UB<V> ub, GroupEntry<V> ge, size_t sz) {
     { ub.empty() } -> std::same_as<bool>;
 };
 
-template <template <typename X> class GEB, typename V>
-concept GroupEntryBuilderImpl =
+template <typename V, template <typename X> class GEB>
+concept GroupEntryBuilder =
 IPVersion<V> and requires(GEB<V> geb) {
     { geb.size() } -> std::same_as<size_t>;
     { geb.build() } -> std::same_as<GroupEntry<V>>;
 };
 
+/*!
+ * \brief An iterator like object, which provides access to the
+ * underlying queue of the update builder objects and auto-appends
+ * new builder objects at the end of the queue.
+ *
+ * @tparam V the IP version type
+ * @tparam UB An IP version parameterized update builder class
+ * template type
+ */
 template <IPVersion V, template <typename X> class UB>
-        requires UpdateBuilderImpl<UB, V>
+requires UpdateBuilder<V, UB>
 class UBCursor final {
 public:
 
@@ -54,7 +63,7 @@ public:
     }
 
     template <template <typename X> class GEB>
-            requires GroupEntryBuilderImpl<GEB, V>
+    requires GroupEntryBuilder<V, GEB>
     void add(GEB<V>& geb) {
         auto geSz = geb.size();
         (*ubq_)[i_].add(geb.build(), geSz);
@@ -72,6 +81,7 @@ public:
             ubq_->emplace_back();
     }
 
+private:
     std::deque<UB<V>>* ubq_;
     size_t& start_;
     size_t i_;

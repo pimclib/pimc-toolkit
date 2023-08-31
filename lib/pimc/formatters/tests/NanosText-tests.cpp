@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "pimc/text/NanosText.hpp"
+#include "pimc/formatters/NanosText.hpp"
 
 namespace pimc::testing {
 

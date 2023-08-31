@@ -4,8 +4,8 @@
 #include <gtest/gtest.h>
 
 #include "pimc/text/CString.hpp"
-#include "pimc/text/MemoryBuffer.hpp"
-#include "pimc/text/ConsumeIfUnlessEscaped.hpp"
+#include "pimc/formatters/MemoryBuffer.hpp"
+#include "pimc/formatters/ConsumeIfUnlessEscaped.hpp"
 
 using namespace std::string_literals;
 

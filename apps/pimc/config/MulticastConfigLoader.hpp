@@ -29,7 +29,7 @@ Result<typename IP<V>::Address, std::string> grpAddr(std::string const &g) {
 }
 
 template <typename GCB, typename V>
-concept GroupConfigBuilderImpl =
+concept GroupConfigBuilder =
 IPVersion<V> and requires(
         GCB gcb,
         std::vector<yaml::ErrorContext> &errors,
@@ -93,7 +93,7 @@ public:
 
 private:
     template <typename Self = GCB>
-    Self* impl() requires GroupConfigBuilderImpl<Self, V> {
+    Self* impl() requires GroupConfigBuilder<Self, V> {
         return static_cast<Self*>(this);
     }
 
@@ -222,7 +222,7 @@ private:
     std::unordered_map<IPAddress, JPSourceInfo> sources_;
 };
 
-template <IPVersion V, GroupConfigBuilderImpl<V> GCB>
+template <IPVersion V, GroupConfigBuilder<V> GCB>
 class MulticastConfigBuilder final : BuilderBase {
     using IPAddress = typename IP<V>::Address;
 public:
