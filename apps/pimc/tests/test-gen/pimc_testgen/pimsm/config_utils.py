@@ -8,11 +8,11 @@ from .info import dump_config
 
 
 def write_config(
-        yaml_file: str,
-        name: str,
-        jp_cfg: List[Group],
-        updates: List[Update],
-        inverse_updates: List[InverseUpdate],
+    yaml_file: str,
+    name: str,
+    jp_cfg: List[Group],
+    updates: List[Update],
+    inverse_updates: List[InverseUpdate],
 ):
     p = Path(yaml_file)
 

@@ -21,9 +21,10 @@ def updates_summary(updates: List[Update]) -> pd.DataFrame:
 
 
 def dump_config(
-        name: str, jp_cfg: List[Group],
-        updates: List[Update],
-        inverse_updates: List[InverseUpdate],
+    name: str,
+    jp_cfg: List[Group],
+    updates: List[Update],
+    inverse_updates: List[InverseUpdate],
 ) -> str:
     jp_cfg_d = dict()
     for maddr, ge in [g.as_jp_group_entry() for g in jp_cfg]:
@@ -38,7 +39,7 @@ def dump_config(
             "verify": {
                 "updates": [u.as_dict() for u in updates],
                 "inverse updates": [u.as_dict() for u in inverse_updates],
-            }
+            },
         }
     )
 

@@ -23,7 +23,9 @@ class InverseGroup:
 
     def size(self) -> int:
         if len(self.pruned_sources) == 0 and self.pruned_rp is None:
-            raise RuntimeError(f"group {self.addr}: no remaining pruned sources and no pruned RPT")
+            raise RuntimeError(
+                f"group {self.addr}: no remaining pruned sources and no pruned RPT"
+            )
 
         return (
             # Group header: IPv4 enc group   (8 bytes)

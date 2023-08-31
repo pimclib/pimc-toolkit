@@ -1,6 +1,6 @@
 from typing import List, Mapping, Any
 
-from .InverseGroup import InverseGroup
+from .inverse_group import InverseGroup
 
 
 class InverseUpdate:
