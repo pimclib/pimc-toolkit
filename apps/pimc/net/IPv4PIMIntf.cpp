@@ -10,6 +10,7 @@
 #include "pimc/formatters/FailureFormatter.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
 
+#include "pimsm/PIMSMParams.hpp"
 #include "IPv4PIMIntf.hpp"
 #include "IPv4RawSocket.hpp"
 #include "BindToDevice.hpp"
@@ -47,7 +48,22 @@ auto IPv4PIMIntf::create(
         return fail(std::move(rbd).error());
 
     d.cancel();
-    return IPv4PIMIntf{cfg, s};
+    return IPv4PIMIntf{s};
+}
+
+auto IPv4PIMIntf::send(
+        void const* pktData, size_t sz) const
+-> Result<void, std::string> {
+    sockaddr_in sinPim;
+    memset(&sinPim, 0, sizeof(sinPim));
+    sinPim.sin_family = AF_INET;
+    sinPim.sin_addr.s_addr = pimsm::params<IPv4>::AllPIMRouters.to_nl();
+
+    if (sendto(socket_, pktData, sz, 0,
+               reinterpret_cast<sockaddr*>(&sinPim), sizeof(sinPim)) == -1)
+        return sfail("unable to send PIM packet: {}", SysError{});
+
+    return {};
 }
 
 } // namespace pimc

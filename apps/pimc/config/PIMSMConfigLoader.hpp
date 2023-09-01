@@ -8,6 +8,7 @@
 
 #include "PIMSMConfig.hpp"
 #include "ConfigUtils.hpp"
+#include "pimsm/GenerationID.hpp"
 
 namespace pimc {
 
@@ -71,9 +72,12 @@ public:
 
     [[nodiscard]]
     PIMSMConfig<V> build() const {
+        GenerationID gid{};
+
         return PIMSMConfig<V>{
             neighbor_, intfIndex_, intfAddr_, intfName_,
-            helloPeriod_, helloHoldtime_, jpHoldtime_
+            helloPeriod_, helloHoldtime_, jpHoldtime_,
+            gid.next()
         };
     }
 

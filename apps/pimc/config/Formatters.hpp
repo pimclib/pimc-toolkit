@@ -62,11 +62,19 @@ struct formatter<pimc::PIMSMConfig<V>>: formatter<string_view> {
                 ctx.out(),
                 "PIM sparse-mode:\n"
                 "  neighbor: {}\n"
-                "  interface: {}, #{}, addr {}\n",
+                "  interface: {}, #{}, addr {}\n"
+                "  hello period: {}s\n"
+                "  hello hold time: {}s\n"
+                "  join/prune hold time: {}s\n"
+                "  generation ID: {:08x}\n",
                 pimsmConfig.neighbor(),
                 pimsmConfig.intfName(),
                 pimsmConfig.intfIndex(),
-                pimsmConfig.intfAddr());
+                pimsmConfig.intfAddr(),
+                pimsmConfig.helloPeriod(),
+                pimsmConfig.helloHoldtime(),
+                pimsmConfig.jpHoldtime(),
+                pimsmConfig.generationId());
     }
 };
 

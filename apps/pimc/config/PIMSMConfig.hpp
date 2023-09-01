@@ -16,14 +16,16 @@ public:
             std::string intfName,
             uint16_t helloPeriod,
             uint16_t helloHoldtime,
-            uint16_t jpHoldtime)
+            uint16_t jpHoldtime,
+            uint32_t generationId)
     : neighbor_{neighbor}
     , intfIndex_{intfIndex}
     , intfAddr_{intfAddr}
     , intfName_{std::move(intfName)}
     , helloPeriod_{helloPeriod}
     , helloHoldtime_{helloHoldtime}
-    , jpHoldtime_{jpHoldtime} {}
+    , jpHoldtime_{jpHoldtime}
+    , generationId_{generationId} {}
 
     [[nodiscard]]
     IPAddress neighbor() const { return neighbor_; }
@@ -46,6 +48,9 @@ public:
     [[nodiscard]]
     uint16_t jpHoldtime() const { return jpHoldtime_; }
 
+    [[nodiscard]]
+    uint32_t generationId() const { return generationId_; }
+
 private:
     IPAddress neighbor_;
     unsigned intfIndex_;
@@ -54,6 +59,7 @@ private:
     uint16_t helloPeriod_;
     uint16_t helloHoldtime_;
     uint16_t jpHoldtime_;
+    uint32_t generationId_;
 };
 
 } // namespace pimc

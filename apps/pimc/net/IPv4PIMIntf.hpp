@@ -13,7 +13,7 @@ public:
     -> Result<IPv4PIMIntf, std::string>;
 
     IPv4PIMIntf(IPv4PIMIntf const&) = delete;
-    IPv4PIMIntf(IPv4PIMIntf&& rhs) noexcept: cfg_{rhs.cfg_}, socket_{rhs.socket_} {
+    IPv4PIMIntf(IPv4PIMIntf&& rhs) noexcept: socket_{rhs.socket_} {
         rhs.socket_ = -1;
     }
 
@@ -27,6 +27,8 @@ public:
         return *this;
     }
 
+    auto send(void const* pktData, size_t sz) const -> Result<void, std::string>;
+
     ~IPv4PIMIntf() {
         if (socket_ != -1) {
             int rc;
@@ -37,11 +39,9 @@ public:
     }
 
 private:
-    constexpr IPv4PIMIntf(PIMCConfig<IPv4> const& cfg, int socket)
-    : cfg_{cfg}, socket_{socket} {}
+    constexpr explicit IPv4PIMIntf(int socket): socket_{socket} {}
 
 private:
-    PIMCConfig<IPv4> const& cfg_;
     int socket_;
 };
 
