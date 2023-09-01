@@ -1,3 +1,5 @@
+#pragma once
+
 #include <concepts>
 #include <unordered_map>
 #include <stdexcept>
@@ -8,8 +10,8 @@
 #include "pimc/formatters/IPFormatters.hpp"
 
 #include "pimc/yaml/BuilderBase.hpp"
+#include "pimsm/PIMSMParams.hpp"
 #include "ConfigUtils.hpp"
-#include "PIMSMParams.hpp"
 #include "JPConfig.hpp"
 
 namespace pimc {

@@ -2,9 +2,9 @@
 
 #include "pimc/net/IP.hpp"
 
-#include "config/PIMSMParams.hpp"
-#include "config/ConfigUtils.hpp"
+#include "pimsm/PIMSMParams.hpp"
 #include "pimsm/Update.hpp"
+#include "config/ConfigUtils.hpp"
 
 namespace pimc {
 

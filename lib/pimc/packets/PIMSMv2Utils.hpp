@@ -16,7 +16,7 @@ namespace pimc::pimsmv2 {
  * @param pw the packet writer to which to write the header
  * @param type the type of the PIM SM message
  */
-constexpr void writeHdr(PacketWriter& pw, uint8_t type) {
+inline constexpr void writeHdr(PacketWriter& pw, uint8_t type) {
     auto* hdr = next<PIMSMv2Hdr>(pw);
     hdr->Version = 2u;
     hdr->Type = 0xf & type;
@@ -33,7 +33,7 @@ constexpr void writeHdr(PacketWriter& pw, uint8_t type) {
  * @param pw the packet writer positioned at the PIM header
  * @param sz the size of the PIM payload
  */
-void writeChkSum(PacketWriter pw, size_t sz) {
+inline void writeChkSum(PacketWriter pw, size_t sz) {
     auto const* data = pw.data();
     auto* hdr = next<PIMSMv2Hdr>(pw);
     hdr->Checksum = ipChecksumNs(data, sz);
@@ -45,7 +45,7 @@ void writeChkSum(PacketWriter pw, size_t sz) {
  * @param pw the packet writer
  * @param uaddr the address to encode
  */
-void writeIPv4Addr(PacketWriter& pw, IPv4Address uaddr) {
+inline void writeIPv4Addr(PacketWriter& pw, IPv4Address uaddr) {
     auto* h = next<PIMSMv2EncUAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
@@ -62,7 +62,7 @@ void writeIPv4Addr(PacketWriter& pw, IPv4Address uaddr) {
  * @param grpNum the number of groups in this update
  * @param holdtime the PIM hold time in the host byte order
  */
-void writeIPv4JPHdr(
+inline void writeIPv4JPHdr(
         PacketWriter& pw, IPv4Address neighbor, uint8_t grpNum, uint16_t holdtime) {
     writeIPv4Addr(pw, neighbor);
     auto* reserved = next<uint8_t>(pw);
@@ -80,7 +80,7 @@ void writeIPv4JPHdr(
  * @param pw the packet writer
  * @param group the multicast group to encode
  */
-void writeIPv4Grp(PacketWriter& pw, IPv4Address group) {
+inline void writeIPv4Grp(PacketWriter& pw, IPv4Address group) {
     auto* h = next<PIMSMv2EncGAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
@@ -103,7 +103,7 @@ void writeIPv4Grp(PacketWriter& pw, IPv4Address group) {
  * @param rpt the flag specifying if the source is on the shared or
  * shortest path tree
  */
-void writeIPv4Src(PacketWriter& pw, IPv4Address src, bool rpt, bool wc) {
+inline void writeIPv4Src(PacketWriter& pw, IPv4Address src, bool rpt, bool wc) {
     auto* h = next<PIMSMv2EncSrcAddr>(pw);
     h->Family = IPv4_FAMILY_NUMBER;
     h->EncodingType = PIMSMv2_NATIVE_ENCODING;
@@ -124,9 +124,9 @@ void writeIPv4Src(PacketWriter& pw, IPv4Address src, bool rpt, bool wc) {
  * down. This message is otherwise known as a `goodbye`.
  *
  * @param pw the packet writer
- * @param holdtime the holdtime
+ * @param holdtime the holdtime in the host byte order
  */
-void writeOptHoldtime(PacketWriter& pw, uint16_t holdtime) {
+inline void writeOptHoldtime(PacketWriter& pw, uint16_t holdtime) {
     auto* h = next<PIMSMv2HelloOption>(pw);
     h->Type = htons(PIMSMv2_OPT_HOLDTIME);
     h->Length = htons(2u);
@@ -142,9 +142,9 @@ void writeOptHoldtime(PacketWriter& pw, uint16_t holdtime) {
  * for the router to become a DR.
  *
  * @param pw the packet writer
- * @param drPrio the DR priority
+ * @param drPrio the DR priority in the host byte order
  */
-void writeOptDrPriority(PacketWriter& pw, uint32_t drPrio) {
+inline void writeOptDrPriority(PacketWriter& pw, uint32_t drPrio) {
     auto* h = next<PIMSMv2HelloOption>(pw);
     h->Type = htons(PIMSMv2_OPT_DR_PRIORITY);
     h->Length = htons(4u);
@@ -156,9 +156,9 @@ void writeOptDrPriority(PacketWriter& pw, uint32_t drPrio) {
  * \brief Writes a PIM SM generation ID with the specified value \p genId.
  *
  * @param pw the packet writer
- * @param genId the generation ID
+ * @param genId the generation ID in the host byte order
  */
-void writeOptGenerationId(PacketWriter& pw, uint32_t genId) {
+inline void writeOptGenerationId(PacketWriter& pw, uint32_t genId) {
     auto* h = next<PIMSMv2HelloOption>(pw);
     h->Type = htons(PIMSMv2_OPT_GENERATION_ID);
     h->Length = htons(4u);

@@ -4,8 +4,8 @@ set(PIMSMConfig
 )
 
 set(JPConfig
+        pimsm/PIMSMParams.hpp
         config/JPConfig.hpp
-        config/PIMSMParams.hpp
         config/MulticastConfigLoader.hpp
         config/JPConfigLoader.hpp
 )
@@ -19,6 +19,7 @@ set(PIMUpdate
         pimsm/PackSanityCheck.hpp
         pimsm/InversePackSanityCheck.hpp
         pimsm/UpdateFormatter.hpp
+        pimsm/GenerationID.hpp
 )
 
 add_executable(
@@ -41,6 +42,8 @@ add_executable(
         net/BindToDeviceMacos.icc
         net/IPv4PIMIntf.hpp
         net/IPv4PIMIntf.cpp
+        packets/IPv4PIMHello.hpp
+        packets/IPv4PIMHello.cpp
         packets/IPv4PIMUpdatePacket.hpp
         packets/IPv4PIMUpdatePacket.cpp
 )

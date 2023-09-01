@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "pimc/net/IP.hpp"
-#include "config/PIMSMParams.hpp"
+#include "PIMSMParams.hpp"
 
 namespace pimc {
 
@@ -115,7 +115,7 @@ public:
         for (auto const& gs: groups_)
             size_ += gs.size();
 
-        remaining_ = pimsm::params<V>::capacity - size_;
+        remaining_ = pimsm::params<V>::JPCapacity - size_;
     }
 
     [[nodiscard]]

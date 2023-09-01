@@ -14,8 +14,6 @@ namespace pimc {
 
 namespace {
 
-IPv4Address AllPIMRouters{224, 0, 0, 13};
-
 void writeGroupEntry(PacketWriter& pw, GroupEntry<IPv4> const& ge) {
     pimsmv2::writeIPv4Grp(pw, ge.group());
     auto* jnp = next<uint16_t>(pw);
@@ -48,7 +46,7 @@ IPv4PIMUpdatePacket IPv4PIMUpdatePacket::create(
             .flagsAndFragOff(htons(IP_DF))
             .ttl(1)
             .saddr(source.to_nl())
-            .daddr(AllPIMRouters.to_nl());
+            .daddr(pimsm::params<IPv4>::AllPIMRouters.to_nl());
 
     // Take a snapshot at the current position, so we could compute the
     // PIM data checksum at the end
@@ -66,7 +64,8 @@ IPv4PIMUpdatePacket IPv4PIMUpdatePacket::create(
     // Sanity check
     if (pw.size() != sz)
         raise<std::logic_error>(
-                "expecting PIM packet size {}, whereas the encoded size is {} "
+                "expecting PIM Join/Prune update packet of size {},"
+                " whereas the encoded size is {} "
                 "(including the IPv4 header)",
                 sz, pw.size());
 

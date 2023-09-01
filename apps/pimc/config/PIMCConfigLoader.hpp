@@ -14,6 +14,8 @@
 #include "pimsm/Update.hpp"
 #include "pimsm/Pack.hpp"
 #include "pimsm/PackSanityCheck.hpp"
+#include "pimsm/InversePack.hpp"
+#include "pimsm/InversePackSanityCheck.hpp"
 
 namespace pimc {
 
@@ -64,10 +66,17 @@ public:
         if (not r)
             throw std::logic_error{r.error()};
 
+        auto inverseUpdates = inversePack(jpConfig_.value());
+        auto ri = verifyInverseUpdates(jpConfig_.value(), inverseUpdates);
+
+        if (not ri)
+            throw std::logic_error{ri.error()};
+
         return PIMCConfig{
             std::move(pimsmConfig_).value(),
             std::move(jpConfig_).value(),
             std::move(updates),
+            std::move(inverseUpdates),
         };
     }
 

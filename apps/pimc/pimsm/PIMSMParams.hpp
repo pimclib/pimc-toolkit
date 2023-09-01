@@ -11,6 +11,8 @@ struct params {
 
 template<>
 struct params<IPv4> {
+    static constexpr IP<IPv4>::Address AllPIMRouters{224, 0, 0, 13};
+
     /// The capacity of the IPv4 Join/Prune message for the group entries
     /// in bytes:
     ///
@@ -32,15 +34,20 @@ struct params<IPv4> {
     ///   Number of groups   1 byte
     ///   Hold time          2 bytes
     ///                     14 bytes (subtotal)
-    ///           1466 bytes remaining for group entries
+    ///           1466 bytes remaining for group entries in a Join/Prune update
 
     /// The IPv4 PIM header size [4 bytes]
     static constexpr size_t PIMHdrSize{4ul};
+
+    /// The IPv4 Hello option header size [4 bytes]
+    static constexpr size_t HelloOptionHdrSize{4ul};
+
     /// The IPv4 PIM Join/Prune message header size, which includes the
-    /// PIM header.
+    /// PIM header [14 bytes]
     static constexpr size_t PIMJPHdrSize{PIMHdrSize + 10ul};
-    /// IPv4 PIM packet capacity after the PIM header
-    static constexpr size_t capacity{1466ul};
+    /// The IPv4 PIM Join/Prune update packet capacity after the PIM header
+    /// and J/P header
+    static constexpr size_t JPCapacity{1466ul};
     /// PIM-SM encoded IPv4 multicast address size [8 bytes]
     static constexpr size_t GrpASize{PIMSMv2EncGIPv4AddrSize};
     /// PIM-SM group "header" size [12 bytes]

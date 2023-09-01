@@ -1,10 +1,12 @@
+#pragma once
+
 #include <deque>
 
 #include "pimc/net/IP.hpp"
 #include "pimc/system/Exceptions.hpp"
 
-#include "config/PIMSMParams.hpp"
 #include "config/JPConfig.hpp"
+#include "PIMSMParams.hpp"
 #include "Update.hpp"
 #include "UBCursor.hpp"
 
@@ -70,7 +72,7 @@ public:
 
     [[nodiscard]]
     size_t remaining() const {
-        return static_cast<size_t>(pimsm::params<V>::capacity - sz_);
+        return static_cast<size_t>(pimsm::params<V>::JPCapacity - sz_);
     }
 
     Update<V> build() {
@@ -78,10 +80,10 @@ public:
     }
 
     void chkSz(size_t sz) {
-        if (sz_ + sz > pimsm::params<V>::capacity)
+        if (sz_ + sz > pimsm::params<V>::JPCapacity)
             raise<std::logic_error>(
                     "pim-update capacity {}, current size {}, update size {}",
-                    pimsm::params<V>::capacity, sz_, sz);
+                    pimsm::params<V>::JPCapacity, sz_, sz);
     }
 
     [[nodiscard]]
