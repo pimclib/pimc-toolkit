@@ -46,7 +46,6 @@ add_executable(
         packets/IPv4PIMHello.cpp
         packets/IPv4PIMUpdatePacket.hpp
         packets/IPv4PIMUpdatePacket.cpp
-        scheduler/EventQueue.hpp
 )
 
 target_include_directories(

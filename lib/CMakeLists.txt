@@ -14,11 +14,13 @@ target_sources(
         pimc/yaml/LoadAll.cpp
     PUBLIC
         pimc/core/CompilerUtils.hpp
+        pimc/core/Meta.hpp
         pimc/core/TypeUtils.hpp
         pimc/core/Deferred.hpp
         pimc/core/OptionalResultHelpers.hpp
         pimc/core/Optional.hpp
         pimc/core/Result.hpp
+        pimc/core/TupleUtils.hpp
         pimc/core/Endian.hpp
         pimc/net/IP.hpp
         pimc/net/IPv4Address.hpp
@@ -63,6 +65,7 @@ target_sources(
         pimc/unix/CapNetRaw.hpp
         pimc/unix/GetOptLong.hpp
         pimc/unix/TerminalColors.hpp
+        pimc/events/FixedEventQueue.hpp
         pimc/yaml/Structured.hpp
         pimc/yaml/BuilderBase.hpp
         pimc/yaml/ErrorHandler.hpp
