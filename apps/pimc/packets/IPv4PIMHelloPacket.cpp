@@ -8,7 +8,7 @@
 #include "pimc/system/Exceptions.hpp"
 
 #include "pimsm/PIMSMParams.hpp"
-#include "IPv4PIMHello.hpp"
+#include "IPv4PIMHelloPacket.hpp"
 
 namespace pimc {
 IPv4PIMHelloPacket IPv4PIMHelloPacket::create(

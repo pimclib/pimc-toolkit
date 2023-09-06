@@ -18,7 +18,11 @@ public:
     using IPAddress = typename IP<V>::Address;
 
     constexpr explicit PIMSMConfigLoader(std::vector<yaml::ErrorContext>& errors)
-    : BuilderBase{errors}, helloPeriod_{30u}, helloHoldtime_{105u}, jpHoldtime_{210u} {}
+    : BuilderBase{errors}
+    , helloPeriod_{30u}
+    , helloHoldtime_{105u}
+    , jpHoldtime_{210u}
+    , drPriority_{0u} {}
 
     void loadPIMSMConfig(
             yaml::ValueContext const& vCtx, IntfTable const& intfTable) {
@@ -89,6 +93,7 @@ private:
     uint16_t helloPeriod_;
     uint16_t helloHoldtime_;
     uint16_t jpHoldtime_;
+    uint32_t drPriority_;
 };
 
 template <IPVersion V>

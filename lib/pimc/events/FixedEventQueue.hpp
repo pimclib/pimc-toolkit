@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "pimc/core/Meta.hpp"
+#include "pimc/core/Result.hpp"
 #include "pimc/core/TupleUtils.hpp"
 
 namespace pimc {
@@ -14,13 +15,13 @@ namespace pimc {
  *
  * @tparam EH The candidate event handler type
  */
-template <typename EH>
+template <typename EH, typename E>
 concept EventHandler = requires(EH e) {
     { e.ready() } -> std::same_as<bool>;
-    { e.fire() };
+    { e.fire() } -> std::same_as<Result<void, E>>;
 };
 
-template <EventHandler ...> class FixedEventQueue;
+template <typename E, EventHandler<E> ...> class FixedEventQueue;
 
 namespace fixed_event_queue_detail {
 
@@ -30,7 +31,7 @@ namespace fixed_event_queue_detail {
  * @tparam EH the type that the entry holds must meet the EvenHandler
  * requirements
  */
-template <size_t Idx, EventHandler EH>
+template <size_t Idx, typename E, EventHandler<E> EH>
 class EventEntry {
 public:
     template <StdTuple ArgsTuple>
@@ -49,34 +50,34 @@ private:
     EH eh_;
 };
 
-template <size_t Idx, typename ... Ts>
+template <size_t Idx, typename E, EventHandler<E> ... Ts>
 class FixedEventQueueImpl {};
 
-template <size_t Idx, typename First, typename ... Rest>
-class FixedEventQueueImpl<Idx, First, Rest...>:
-        protected EventEntry<Idx, First>,
-        protected FixedEventQueueImpl<Idx + 1, Rest...> {
-    template <EventHandler ...>
+template <size_t Idx, typename E, EventHandler<E> First, EventHandler<E> ... Rest>
+class FixedEventQueueImpl<Idx, E, First, Rest...>:
+        protected EventEntry<Idx, E, First>,
+        protected FixedEventQueueImpl<Idx + 1, E, Rest...> {
+    template <typename E1, EventHandler<E1> ...>
     friend class ::pimc::FixedEventQueue;
 
-    template <size_t, typename...> friend class FixedEventQueueImpl;
+    template <size_t, typename E1, EventHandler<E1> ...> friend class FixedEventQueueImpl;
 
     template <StdTuple T, StdTuple ... Ts>
     FixedEventQueueImpl(int, T&& first, Ts ... rest)
-    : EventEntry<0ul, First>{0ul, std::forward<T>(first)}
-    , FixedEventQueueImpl<Idx + 1ul, Rest...>{0ul, std::forward<Ts>(rest)...} {}
+    : EventEntry<0ul, E, First>{0ul, std::forward<T>(first)}
+    , FixedEventQueueImpl<Idx + 1ul, E, Rest...>{0ul, std::forward<Ts>(rest)...} {}
 };
 
-template <size_t Idx, typename T>
-class FixedEventQueueImpl<Idx, T>: protected EventEntry<Idx, T> {
-    template <EventHandler ...>
+template <size_t Idx, typename E, EventHandler<E> T>
+class FixedEventQueueImpl<Idx, E, T>: protected EventEntry<Idx, E, T> {
+    template <typename E1, EventHandler<E1> ...>
     friend class FixedEventQueue;
 
-    template <size_t, typename...> friend class FixedEventQueueImpl;
+    template <size_t, typename E1, EventHandler<E1> ...> friend class FixedEventQueueImpl;
 
     template <StdTuple Last>
     FixedEventQueueImpl(int, Last&& last)
-    : EventEntry<Idx, T>{0, std::forward<Last>(last)} {}
+    : EventEntry<Idx, E, T>{0, std::forward<Last>(last)} {}
 };
 
 } // namespace fixed_event_queue_detail
@@ -87,10 +88,10 @@ class FixedEventQueueImpl<Idx, T>: protected EventEntry<Idx, T> {
  *
  * @tparam EHs The types of event handler objects
  */
-template <EventHandler ... EHs>
+template <typename E, EventHandler<E> ... EHs>
 class FixedEventQueue final:
-        fixed_event_queue_detail::FixedEventQueueImpl<0, EHs...> {
-    using Base = fixed_event_queue_detail::FixedEventQueueImpl<0, EHs...>;
+        fixed_event_queue_detail::FixedEventQueueImpl<0, E, EHs...> {
+    using Base = fixed_event_queue_detail::FixedEventQueueImpl<0, E, EHs...>;
 public:
     template <StdTuple ... Ts>
     explicit FixedEventQueue(Ts&& ... args)
@@ -108,9 +109,9 @@ public:
      */
     template <size_t Idx>
     constexpr auto elem() -> TypeAt_t<Idx, EHs...>& {
-        static_assert(Idx >= sizeof...(EHs), "Event index out of bound");
+        static_assert(Idx < sizeof...(EHs), "Event index out of bound");
         using EH = TypeAt_t<Idx, EHs...>;
-        using ElemT = fixed_event_queue_detail::EventEntry<Idx, EH>;
+        using ElemT = fixed_event_queue_detail::EventEntry<Idx, E, EH>;
         return static_cast<ElemT&>(*this).value();
     }
 
@@ -118,26 +119,34 @@ public:
      * \brief For each event handler this function first calls ready() and
      * if it returns true, it then calls fire() on that event handler.
      *
-     * @return the number of events that fired
+     * If any of the event handlers' fire() function returns a result in
+     * the error state, the error is returned right away, and no further
+     * events are queried.
+     *
+     * @return a result containing the number of events that fired, or an
+     * error even any of the events failed to fire
      */
-    int runOnce() {
-        return runOnceImpl(std::make_index_sequence<sizeof...(EHs)>{});
+    Result<unsigned, E> runOnce() {
+        return chainEvents<0>(0u);
     }
 private:
 
     template <size_t Idx>
-    int runEvent() {
-        auto& eh = elem<Idx>();
-        if (eh.ready()) {
-            eh.fire();
-            return 1;
-        }
-        return 0;
-    }
+    Result<unsigned, E> chainEvents(unsigned count) {
+        if constexpr (Idx < sizeof...(EHs)) {
+            auto &eh = elem<Idx>();
+            if (eh.ready()) {
+                auto r = eh.fire();
 
-    template <size_t ... Idxs>
-    int runOnceImpl(std::index_sequence<Idxs...>) {
-        return (... + runEvent<Idxs>());
+                if (r)
+                    return chainEvents<Idx + 1>(count + 1);
+
+                return std::move(r).map([]() -> unsigned {return 0u; });
+            }
+
+            return chainEvents<Idx + 1>(count);
+        }
+        return count;
     }
 
 private:

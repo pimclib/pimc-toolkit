@@ -17,6 +17,7 @@ public:
             uint16_t helloPeriod,
             uint16_t helloHoldtime,
             uint16_t jpHoldtime,
+            uint32_t drPriority,
             uint32_t generationId)
     : neighbor_{neighbor}
     , intfIndex_{intfIndex}
@@ -25,6 +26,7 @@ public:
     , helloPeriod_{helloPeriod}
     , helloHoldtime_{helloHoldtime}
     , jpHoldtime_{jpHoldtime}
+    , drPriority_{drPriority}
     , generationId_{generationId} {}
 
     [[nodiscard]]
@@ -49,6 +51,9 @@ public:
     uint16_t jpHoldtime() const { return jpHoldtime_; }
 
     [[nodiscard]]
+    uint32_t drPriority() const { return drPriority_; }
+
+    [[nodiscard]]
     uint32_t generationId() const { return generationId_; }
 
 private:
@@ -59,6 +64,7 @@ private:
     uint16_t helloPeriod_;
     uint16_t helloHoldtime_;
     uint16_t jpHoldtime_;
+    uint32_t drPriority_;
     uint32_t generationId_;
 };
 

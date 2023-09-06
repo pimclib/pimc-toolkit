@@ -42,15 +42,15 @@ add_executable(
         net/BindToDeviceMacos.icc
         net/IPv4PIMIntf.hpp
         net/IPv4PIMIntf.cpp
-        packets/IPv4PIMHello.hpp
-        packets/IPv4PIMHello.cpp
+        packets/IPv4PIMHelloPacket.hpp
+        packets/IPv4PIMHelloPacket.cpp
         packets/IPv4PIMUpdatePacket.hpp
         packets/IPv4PIMUpdatePacket.cpp
         scheduler/Timer.hpp
-        scheduler/HelloEvent.hpp
-        scheduler/JPUpdateEvent.hpp
-        scheduler/GoodbyeEvent.hpp
-        scheduler/GoodbyeJPUpdateEvent.hpp
+        scheduler/IPv4HelloEvent.hpp
+        scheduler/IPv4JPUpdateEvent.hpp
+        scheduler/IPv4GoodbyeEvent.hpp
+        scheduler/IPv4GoodbyeJPUpdateEvent.hpp
 )
 
 target_include_directories(
