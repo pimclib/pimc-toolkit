@@ -46,6 +46,11 @@ add_executable(
         packets/IPv4PIMHello.cpp
         packets/IPv4PIMUpdatePacket.hpp
         packets/IPv4PIMUpdatePacket.cpp
+        scheduler/Timer.hpp
+        scheduler/HelloEvent.hpp
+        scheduler/JPUpdateEvent.hpp
+        scheduler/GoodbyeEvent.hpp
+        scheduler/GoodbyeJPUpdateEvent.hpp
 )
 
 target_include_directories(

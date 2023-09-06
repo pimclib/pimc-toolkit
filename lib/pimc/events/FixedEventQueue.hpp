@@ -8,6 +8,12 @@
 
 namespace pimc {
 
+/*!
+ * \brief A concept which expresses requirements for the event
+ * handlers for FixedEventQueue
+ *
+ * @tparam EH The candidate event handler type
+ */
 template <typename EH>
 concept EventHandler = requires(EH e) {
     { e.ready() } -> std::same_as<bool>;
@@ -75,21 +81,45 @@ class FixedEventQueueImpl<Idx, T>: protected EventEntry<Idx, T> {
 
 } // namespace fixed_event_queue_detail
 
+/*!
+ * \brief A fixed event queue is a tuple-like object, which stores event
+ * handlers in its storage, and allows firing all of them in one go.
+ *
+ * @tparam EHs The types of event handler objects
+ */
 template <EventHandler ... EHs>
 class FixedEventQueue final:
         fixed_event_queue_detail::FixedEventQueueImpl<0, EHs...> {
     using Base = fixed_event_queue_detail::FixedEventQueueImpl<0, EHs...>;
 public:
     template <StdTuple ... Ts>
-    explicit FixedEventQueue(Ts&& ... args): Base{0ul, std::forward<Ts>(args)...} {}
+    explicit FixedEventQueue(Ts&& ... args)
+    : Base{0ul, std::forward<Ts>(args)...} {}
 
+    /*!
+     * \brief returns a reference to the event handler with the index
+     * \p Idx.
+     *
+     * \note This is a constant time function.
+     *
+     * @tparam Idx the index of the event handler to retrieve
+     * @return a reference to the event handler with the specified
+     * index
+     */
     template <size_t Idx>
-    auto elem() -> TypeAt_t<Idx, EHs...>& {
+    constexpr auto elem() -> TypeAt_t<Idx, EHs...>& {
+        static_assert(Idx >= sizeof...(EHs), "Event index out of bound");
         using EH = TypeAt_t<Idx, EHs...>;
         using ElemT = fixed_event_queue_detail::EventEntry<Idx, EH>;
         return static_cast<ElemT&>(*this).value();
     }
 
+    /*!
+     * \brief For each event handler this function first calls ready() and
+     * if it returns true, it then calls fire() on that event handler.
+     *
+     * @return the number of events that fired
+     */
     int runOnce() {
         return runOnceImpl(std::make_index_sequence<sizeof...(EHs)>{});
     }
