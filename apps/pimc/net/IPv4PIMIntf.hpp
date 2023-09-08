@@ -27,7 +27,8 @@ public:
         return *this;
     }
 
-    auto send(void const* pktData, size_t sz) const -> Result<void, std::string>;
+    auto send(void const* pktData, size_t sz, std::string const& pktName)
+    const -> Result<void, std::string>;
 
     ~IPv4PIMIntf() {
         if (socket_ != -1) {

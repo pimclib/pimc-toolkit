@@ -52,7 +52,7 @@ auto IPv4PIMIntf::create(
 }
 
 auto IPv4PIMIntf::send(
-        void const* pktData, size_t sz) const
+        void const* pktData, size_t sz, std::string const& pktName) const
 -> Result<void, std::string> {
     sockaddr_in sinPim;
     memset(&sinPim, 0, sizeof(sinPim));
@@ -61,7 +61,7 @@ auto IPv4PIMIntf::send(
 
     if (sendto(socket_, pktData, sz, 0,
                reinterpret_cast<sockaddr*>(&sinPim), sizeof(sinPim)) == -1)
-        return sfail("unable to send PIM packet: {}", SysError{});
+        return sfail("unable to send PIM {} packet: {}", pktName, SysError{});
 
     return {};
 }

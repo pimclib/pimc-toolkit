@@ -17,6 +17,9 @@ public:
     }
 
     [[nodiscard]]
+    uint64_t cts() const { return ts_; }
+
+    [[nodiscard]]
     PIMC_ALWAYS_INLINE
     uint64_t inSec(uint64_t seconds) const {
         return ts_ + (NanosInSecond * seconds);

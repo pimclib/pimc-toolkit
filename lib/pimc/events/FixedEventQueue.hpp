@@ -141,7 +141,7 @@ private:
                 if (r)
                     return chainEvents<Idx + 1>(count + 1);
 
-                return std::move(r).map([]() -> unsigned {return 0u; });
+                return std::move(r).map([]() -> unsigned { return 0u; });
             }
 
             return chainEvents<Idx + 1>(count);
