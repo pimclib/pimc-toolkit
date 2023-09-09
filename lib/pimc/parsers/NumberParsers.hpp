@@ -117,7 +117,8 @@ auto parseDecimalUInt64(R&& r) -> Result<uint64_t, NumberParseError> {
  * @return a result containing the parsed uint64_t or an error code if the
  * input is invalid
  */
-auto parseDecimalUInt64(char const* s) -> Result<uint64_t, NumberParseError> {
+inline auto parseDecimalUInt64(char const* s)
+-> Result<uint64_t, NumberParseError> {
     return parseDecimalUInt64(s, cssentinel{});
 }
 
@@ -162,7 +163,8 @@ auto parseDecimalUInt32(R&& r) -> Result<uint32_t, NumberParseError> {
  * @return a result containing the parsed uint32_t or an error code if the
  * input is invalid
  */
-auto parseDecimalUInt32(char const* s) -> Result<uint32_t, NumberParseError> {
+inline auto parseDecimalUInt32(char const* s)
+-> Result<uint32_t, NumberParseError> {
     return parseDecimalUInt32(s, cssentinel{});
 }
 
@@ -207,7 +209,8 @@ auto parseDecimalUInt16(R&& r) -> Result<uint16_t, NumberParseError> {
  * @return a result containing the parsed uint16_t or an error code if the
  * input is invalid
  */
-auto parseDecimalUInt16(char const* s) -> Result<uint16_t, NumberParseError> {
+inline auto parseDecimalUInt16(char const* s)
+-> Result<uint16_t, NumberParseError> {
     return parseDecimalUInt16(s, cssentinel{});
 }
 
@@ -252,7 +255,8 @@ auto parseDecimalUInt8(R&& r) -> Result<uint8_t, NumberParseError> {
  * @return a result containing the parsed uint8_t or an error code if the
  * input is invalid
  */
-auto parseDecimalUInt8(char const* s) -> Result<uint8_t, NumberParseError> {
+inline auto parseDecimalUInt8(char const* s)
+-> Result<uint8_t, NumberParseError> {
     return parseDecimalUInt8(s, cssentinel{});
 }
 
@@ -364,7 +368,8 @@ auto parseDecimalInt64(R&& r) -> Result<int64_t, NumberParseError> {
  * @return a result containing the parsed int64_t or an error code if the
  * input is invalid
  */
-auto parseDecimalInt64(char const* s) -> Result<int64_t, NumberParseError> {
+inline auto parseDecimalInt64(char const* s)
+-> Result<int64_t, NumberParseError> {
     return parseDecimalInt64(s, cssentinel{});
 }
 
@@ -409,7 +414,8 @@ auto parseDecimalInt32(R&& r) -> Result<int32_t, NumberParseError> {
  * @return a result containing the parsed int32_t or an error code if the
  * input is invalid
  */
-auto parseDecimalInt32(char const* s) -> Result<int32_t, NumberParseError> {
+inline auto parseDecimalInt32(char const* s)
+-> Result<int32_t, NumberParseError> {
     return parseDecimalInt32(s, cssentinel{});
 }
 
@@ -454,7 +460,8 @@ auto parseDecimalInt16(R&& r) -> Result<int16_t, NumberParseError> {
  * @return a result containing the parsed int16_t or an error code if the
  * input is invalid
  */
-auto parseDecimalInt16(char const* s) -> Result<int16_t, NumberParseError> {
+inline auto parseDecimalInt16(char const* s)
+-> Result<int16_t, NumberParseError> {
     return parseDecimalInt16(s, cssentinel{});
 }
 
@@ -499,7 +506,8 @@ auto parseDecimalInt8(R&& r) -> Result<int8_t, NumberParseError> {
  * @return a result containing the parsed int8_t or an error code if the
  * input is invalid
  */
-auto parseDecimalInt8(char const* s) -> Result<int8_t, NumberParseError> {
+inline auto parseDecimalInt8(char const* s)
+-> Result<int8_t, NumberParseError> {
     return parseDecimalInt8(s, cssentinel{});
 }
 
