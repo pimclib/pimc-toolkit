@@ -65,6 +65,7 @@ struct formatter<pimc::PIMSMConfig<V>>: formatter<string_view> {
                 "  interface: {}, #{}, addr {}\n"
                 "  hello period: {}s\n"
                 "  hello hold time: {}s\n"
+                "  join/prune period: {}s\n"
                 "  join/prune hold time: {}s\n"
                 "  generation ID: {:08x}\n",
                 pimsmConfig.neighbor(),
@@ -73,6 +74,7 @@ struct formatter<pimc::PIMSMConfig<V>>: formatter<string_view> {
                 pimsmConfig.intfAddr(),
                 pimsmConfig.helloPeriod(),
                 pimsmConfig.helloHoldtime(),
+                pimsmConfig.jpPeriod(),
                 pimsmConfig.jpHoldtime(),
                 pimsmConfig.generationId());
     }

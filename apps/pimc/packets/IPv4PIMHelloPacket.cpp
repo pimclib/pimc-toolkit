@@ -11,7 +11,8 @@
 #include "IPv4PIMHelloPacket.hpp"
 
 namespace pimc {
-IPv4PIMHelloPacket IPv4PIMHelloPacket::create(
+
+IPv4PIMHelloPacket::IPv4PIMHelloPacket(
         IPv4Address source,
         uint16_t helloHoldtime, uint32_t drPriority, uint32_t generationId) {
     constexpr size_t pimSz =
@@ -23,11 +24,10 @@ IPv4PIMHelloPacket IPv4PIMHelloPacket::create(
             // Option 20: Generation ID
             pimsm::params<IPv4>::HelloOptionHdrSize + 4ul;
     constexpr size_t sz = IPv4HdrWriter::HdrSize + pimSz;
-    std::vector<uint8_t> data;
-    data.reserve(sz);
-    data.resize(sz);
+    data_.reserve(sz);
+    data_.resize(sz);
 
-    PacketWriter pw{static_cast<void*>(data.data())};
+    PacketWriter pw{static_cast<void*>(data_.data())};
 
     next<IPv4HdrWriter>(pw, IPv4HdrWriter::HdrSize)
             .tos(192)
@@ -60,8 +60,6 @@ IPv4PIMHelloPacket IPv4PIMHelloPacket::create(
                 sz, pw.size());
 
     pimsmv2::writeChkSum(pimPw, pimSz);
-
-    return IPv4PIMHelloPacket{std::move(data)};
 }
 
 }

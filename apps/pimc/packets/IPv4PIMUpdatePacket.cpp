@@ -26,18 +26,17 @@ void writeGroupEntry(PacketWriter& pw, GroupEntry<IPv4> const& ge) {
 
 } // anon.namespace
 
-IPv4PIMUpdatePacket IPv4PIMUpdatePacket::create(
+IPv4PIMUpdatePacket::IPv4PIMUpdatePacket(
         Update<IPv4> const& update,
         IPv4Address source, IPv4Address neighbor, uint16_t holdtime) {
     UpdateSummary<IPv4> us{0, update};
 
     size_t pimSz = pimsm::params<IPv4>::PIMJPHdrSize + us.size();
     size_t sz = IPv4HdrWriter::HdrSize + pimSz;
-    std::vector<uint8_t> data;
-    data.reserve(sz);
-    data.resize(sz);
+    data_.reserve(sz);
+    data_.resize(sz);
 
-    PacketWriter pw{static_cast<void*>(data.data())};
+    PacketWriter pw{static_cast<void*>(data_.data())};
 
     next<IPv4HdrWriter>(pw, IPv4HdrWriter::HdrSize)
             .tos(192)
@@ -70,8 +69,6 @@ IPv4PIMUpdatePacket IPv4PIMUpdatePacket::create(
                 sz, pw.size());
 
     pimsmv2::writeChkSum(pimPw, pimSz);
-
-    return IPv4PIMUpdatePacket{std::move(data)};
 }
 
 } // namespace pimc

@@ -21,6 +21,7 @@ public:
     : BuilderBase{errors}
     , helloPeriod_{30u}
     , helloHoldtime_{105u}
+    , jpPeriod_{60u}
     , jpHoldtime_{210u}
     , drPriority_{0u} {}
 
@@ -80,8 +81,8 @@ public:
 
         return PIMSMConfig<V>{
             neighbor_, intfIndex_, intfAddr_, intfName_,
-            helloPeriod_, helloHoldtime_, jpHoldtime_,
-            gid.next()
+            helloPeriod_, helloHoldtime_, jpPeriod_, jpHoldtime_,
+            drPriority_, gid.next()
         };
     }
 
@@ -92,6 +93,7 @@ private:
     std::string intfName_;
     uint16_t helloPeriod_;
     uint16_t helloHoldtime_;
+    unsigned jpPeriod_;
     uint16_t jpHoldtime_;
     uint32_t drPriority_;
 };

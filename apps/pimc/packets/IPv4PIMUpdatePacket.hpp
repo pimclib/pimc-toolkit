@@ -9,7 +9,7 @@ namespace pimc {
 
 class IPv4PIMUpdatePacket final {
 public:
-    static IPv4PIMUpdatePacket create(
+    IPv4PIMUpdatePacket(
             Update<IPv4> const& update,
             IPv4Address source, IPv4Address neighbor, uint16_t holdtime);
 
@@ -18,8 +18,6 @@ public:
 
     [[nodiscard]]
     size_t size() const { return data_.size(); }
-private:
-    explicit IPv4PIMUpdatePacket(std::vector<uint8_t> data): data_{std::move(data)} {}
 
 private:
     std::vector<uint8_t> data_;

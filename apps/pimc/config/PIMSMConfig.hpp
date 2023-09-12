@@ -16,6 +16,7 @@ public:
             std::string intfName,
             uint16_t helloPeriod,
             uint16_t helloHoldtime,
+            unsigned jpPeriod,
             uint16_t jpHoldtime,
             uint32_t drPriority,
             uint32_t generationId)
@@ -25,6 +26,7 @@ public:
     , intfName_{std::move(intfName)}
     , helloPeriod_{helloPeriod}
     , helloHoldtime_{helloHoldtime}
+    , jpPeriod_{jpPeriod}
     , jpHoldtime_{jpHoldtime}
     , drPriority_{drPriority}
     , generationId_{generationId} {}
@@ -48,6 +50,9 @@ public:
     uint16_t helloHoldtime() const { return helloHoldtime_; }
 
     [[nodiscard]]
+    unsigned jpPeriod() const { return jpPeriod_; }
+
+    [[nodiscard]]
     uint16_t jpHoldtime() const { return jpHoldtime_; }
 
     [[nodiscard]]
@@ -63,6 +68,7 @@ private:
     std::string intfName_;
     uint16_t helloPeriod_;
     uint16_t helloHoldtime_;
+    unsigned jpPeriod_;
     uint16_t jpHoldtime_;
     uint32_t drPriority_;
     uint32_t generationId_;

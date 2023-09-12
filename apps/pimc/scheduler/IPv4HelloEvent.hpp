@@ -15,19 +15,18 @@ public:
             PIMSMConfig<IPv4> const& cfg)
             : pimIntf_{pimIntf}
             , timer_{timer}
-            , pkt_{IPv4PIMHelloPacket::create(
-                    cfg.intfAddr(),
-                    cfg.helloHoldtime(),
-                    cfg.drPriority(),
-                    cfg.generationId())}
+            , pkt_{cfg.intfAddr(),
+                   cfg.helloHoldtime(),
+                   cfg.drPriority(),
+                   cfg.generationId()}
             , helloPeriod_{cfg.helloPeriod()}
-            , nextTs_{timer.cts()}
+            , nextEventTime_{timer.cts()}
             , pktName_{"Hello"}{}
 
     [[nodiscard]]
     bool ready() {
-        if (timer_.cts() > nextTs_) {
-            nextTs_ += pimc::NanosInSecond * helloPeriod_;
+        if (timer_.cts() >= nextEventTime_) {
+            nextEventTime_ = timer_.inSec(helloPeriod_);
             return true;
         }
 
@@ -44,7 +43,7 @@ private:
     Timer& timer_;
     IPv4PIMHelloPacket pkt_;
     unsigned helloPeriod_;
-    uint64_t nextTs_;
+    uint64_t nextEventTime_;
     std::string pktName_;
 };
 
