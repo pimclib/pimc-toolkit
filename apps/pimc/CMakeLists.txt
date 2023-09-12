@@ -22,6 +22,15 @@ set(PIMUpdate
         pimsm/GenerationID.hpp
 )
 
+set(Logging
+        logging/Logging.hpp
+        logging/LevelFormatter.hpp
+        logging/ConsoleLogger.hpp
+        logging/ConsoleLogger.cpp
+        logging/FileLogger.hpp
+        logging/FileLogger.cpp
+)
+
 add_executable(
         pimc
         Main.cpp
@@ -33,6 +42,7 @@ add_executable(
         ${PIMSMConfig}
         ${JPConfig}
         config/Formatters.hpp
+        ${Logging}
         ${PIMUpdate}
         net/IPv4RawSocket.hpp
         net/IPv4RawSocket.cpp

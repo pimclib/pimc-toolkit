@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 
+#include "pimc/time/Timestamp.hpp"
 #include "pimc/formatters/Fmt.hpp"
 #include "pimc/formatters/FmtChrono.hpp"
 
@@ -29,10 +30,6 @@ struct Interface {
 
 struct TTL {
     int value;
-};
-
-struct Timestamp {
-    uint64_t value;
 };
 
 struct BeaconTime {

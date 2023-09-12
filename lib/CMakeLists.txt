@@ -61,6 +61,8 @@ target_sources(
         pimc/text/SCLine.hpp
         pimc/text/Plural.hpp
         pimc/text/Location.hpp
+        pimc/time/TimeUtils.hpp
+        pimc/time/Timestamp.hpp
         pimc/unix/SignalHandler.hpp
         pimc/unix/CapNetRaw.hpp
         pimc/unix/GetOptLong.hpp
@@ -122,5 +124,4 @@ target_sources(
             pimc/formatters/tests/IPv4Output-Tests.cpp
             pimc/formatters/tests/ConsumeIfUnlessEscaped-tests.cpp
             pimc/formatters/tests/NanosText-tests.cpp
-            pimc/time/TimeUtils.hpp
 )
