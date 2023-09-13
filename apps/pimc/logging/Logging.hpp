@@ -4,18 +4,10 @@
 #include <cstddef>
 #include <memory>
 
+#include "pimc/logging/LoggingLevel.hpp"
 #include "pimc/formatters/Fmt.hpp"
 
 namespace pimc {
-
-enum class Level : int {
-    None = 0,
-    Critical = 1,
-    Error = 2,
-    Warning = 3,
-    Info = 4,
-    Debug = 5
-};
 
 struct ILogger {
     virtual void log(uint64_t ts, Level level, char const* message, size_t sz) = 0;

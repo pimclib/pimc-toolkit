@@ -7,8 +7,8 @@
 #include "pimc/time/Timestamp.hpp"
 #include "pimc/formatters/FmtChrono.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
+#include "pimc/formatters/LoggingLevelFormatter.hpp"
 
-#include "LevelFormatter.hpp"
 #include "FileLogger.hpp"
 
 namespace fs = std::filesystem;

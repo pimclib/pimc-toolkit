@@ -72,6 +72,8 @@ public:
                     }
                 }
             }
+
+            chkExtraneous(rPIMSMCfg.value());
         }
     }
 
@@ -105,7 +107,7 @@ auto loadPIMSMConfig(
     std::vector<yaml::ErrorContext> errors;
     PIMSMConfigLoader<V> pimsmCfgLdr{errors};
     pimsmCfgLdr.loadPIMSMConfig(pimsmCfgCtx, intfTable);
-    if (not errors.empty()) return fail(errors);
+    if (not errors.empty()) return fail(std::move(errors));
     return pimsmCfgLdr.build();
 }
 

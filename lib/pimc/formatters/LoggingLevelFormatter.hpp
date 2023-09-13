@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Logging.hpp"
+#include "pimc/logging/LoggingLevel.hpp"
+#include "Fmt.hpp"
 
 namespace fmt {
 template<>
@@ -26,4 +27,5 @@ struct formatter<pimc::Level> : formatter<string_view> {
         return fmt::format_to(ctx.out(), "Level {}", static_cast<int>(level));
     }
 };
+
 } // namespace fmt

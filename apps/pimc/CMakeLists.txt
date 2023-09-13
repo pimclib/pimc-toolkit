@@ -23,8 +23,9 @@ set(PIMUpdate
 )
 
 set(Logging
+        config/LoggingConfig.hpp
+        config/LoggingConfigLoader.hpp
         logging/Logging.hpp
-        logging/LevelFormatter.hpp
         logging/ConsoleLogger.hpp
         logging/ConsoleLogger.cpp
         logging/FileLogger.hpp

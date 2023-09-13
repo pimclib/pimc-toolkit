@@ -1,13 +1,33 @@
 #pragma once
 
 #include "pimc/formatters/Fmt.hpp"
-
+#include "pimc/formatters/LoggingLevelFormatter.hpp"
 #include "pimc/formatters/IPv4Formatters.hpp"
 
+#include "LoggingConfig.hpp"
 #include "JPConfig.hpp"
 #include "PIMSMConfig.hpp"
 
 namespace fmt {
+
+template <>
+struct formatter<pimc::LoggingConfig>: formatter<string_view> {
+    template <typename FormatContext>
+    auto format(pimc::LoggingConfig const& loggingConfig, FormatContext& ctx) {
+        auto out = fmt::format_to(
+                ctx.out(),
+                "Logging level: {}\n",
+                loggingConfig.level());
+        if (loggingConfig.logFileName()) {
+            return fmt::format_to(
+                    out,
+                    "Logging to: '{}'\n",
+                    loggingConfig.logFileName().value());
+        }
+
+        return fmt::format_to(out, "Logging to: stdout\n");
+    }
+};
 
 template <pimc::IPVersion V>
 struct formatter<pimc::RPT<V>>: formatter<string_view> {

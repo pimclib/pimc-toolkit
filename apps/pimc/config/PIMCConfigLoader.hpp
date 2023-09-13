@@ -8,6 +8,8 @@
 #include "pimc/yaml/Structured.hpp"
 
 #include "ConfigUtils.hpp"
+#include "LoggingConfig.hpp"
+#include "LoggingConfigLoader.hpp"
 #include "PIMCConfig.hpp"
 #include "PIMSMConfigLoader.hpp"
 #include "JPConfigLoader.hpp"
@@ -32,6 +34,11 @@ public:
         auto rCfg = chk(vCtx.getMapping());
 
         if (rCfg) {
+            auto rLoggingCfg = chkErrors(
+                    loadLoggingConfig(rCfg->optional("logging")));
+            if (rLoggingCfg)
+                loggingConfig_ = std::move(rLoggingCfg).value();
+
             auto rPIMSMCfgCtx = chk(rCfg->required("pim"));
 
             if (rPIMSMCfgCtx) {
@@ -73,6 +80,7 @@ public:
             throw std::logic_error{ri.error()};
 
         return PIMCConfig{
+            std::move(loggingConfig_).value(),
             std::move(pimsmConfig_).value(),
             std::move(jpConfig_).value(),
             std::move(updates),
@@ -80,6 +88,7 @@ public:
         };
     }
 
+    Optional<LoggingConfig> loggingConfig_;
     Optional<PIMSMConfig<V>> pimsmConfig_;
     Optional<JPConfig<V>> jpConfig_;
 };

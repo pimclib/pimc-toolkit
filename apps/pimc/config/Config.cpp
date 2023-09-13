@@ -81,6 +81,7 @@ PIMCConfig<IPv4> loadIPv4Config(int argc, char** argv) {
     if (args.flag(OID(ShowConfig))) {
         auto& mb = getMemoryBuffer();
         auto bi = std::back_inserter(mb);
+        fmt::format_to(bi, "{}\n", pimcCfg.loggingConfig());
         fmt::format_to(bi, "{}\n", pimcCfg.pimsmConfig());
         fmt::format_to(bi, "{}\n", pimcCfg.jpConfig());
         fmt::format_to(

@@ -43,6 +43,7 @@ target_sources(
         pimc/formatters/SysErrorFormatter.hpp
         pimc/formatters/IPv4Ostream.hpp
         pimc/formatters/SysErrorOstream.hpp
+        pimc/formatters/LoggingLevelFormatter.hpp
         pimc/parsers/IPParsers.hpp
         pimc/parsers/IPv4Parsers.hpp
         pimc/parsers/NumberParsers.hpp
@@ -58,6 +59,7 @@ target_sources(
         pimc/system/SysError.hpp
         pimc/text/NumberLengths.hpp
         pimc/text/CString.hpp
+        pimc/text/StringUtils.hpp
         pimc/text/SCLine.hpp
         pimc/text/Plural.hpp
         pimc/text/Location.hpp
@@ -67,6 +69,7 @@ target_sources(
         pimc/unix/CapNetRaw.hpp
         pimc/unix/GetOptLong.hpp
         pimc/unix/TerminalColors.hpp
+        pimc/logging/LoggingLevel.hpp
         pimc/events/FixedEventQueue.hpp
         pimc/yaml/Structured.hpp
         pimc/yaml/BuilderBase.hpp
