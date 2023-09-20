@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "config/PIMCConfig.hpp"
+#include "logging/Logging.hpp"
 #include "net/IPv4PIMIntf.hpp"
 #include "packets/IPv4PIMUpdatePacket.hpp"
 
@@ -15,8 +16,10 @@ private:
     -> std::vector<IPv4PIMUpdatePacket> {
         std::vector<IPv4PIMUpdatePacket> pkts;
         pkts.reserve(cfg.inverseUpdates().size());
+        unsigned n{1};
         for (auto const& update: cfg.inverseUpdates())
             pkts.emplace_back(
+                    n++,
                     update,
                     cfg.pimsmConfig().intfAddr(),
                     cfg.pimsmConfig().neighbor(),
@@ -26,9 +29,11 @@ private:
 
 public:
     explicit IPv4GoodbyeJPUpdateEvent(
+            Logger& log,
             IPv4PIMIntf& pimIntf,
             PIMCConfig<IPv4> const& cfg)
-            : pimIntf_{pimIntf}
+            : log_{log}
+            , pimIntf_{pimIntf}
             , inverseUpdatePackets_{inverseUpdatePackets(cfg)}
             , pktName_{"Goodbye Join/Prune Update"} {}
 
@@ -39,12 +44,15 @@ public:
             auto r = pimIntf_.send(pkt.data(), pkt.size(), pktName_);
             if (not r)
                 return r;
+
+            log_.debug("Successfully sent {}", pkt.descr());
         }
 
         return {};
     }
 
 private:
+    Logger& log_;
     IPv4PIMIntf& pimIntf_;
     std::vector<IPv4PIMUpdatePacket> inverseUpdatePackets_;
     std::string pktName_;

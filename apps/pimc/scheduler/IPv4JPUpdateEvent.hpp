@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "config/PIMCConfig.hpp"
+#include "logging/Logging.hpp"
 #include "net/IPv4PIMIntf.hpp"
 #include "packets/IPv4PIMUpdatePacket.hpp"
 #include "Timer.hpp"
@@ -16,8 +17,10 @@ private:
     -> std::vector<IPv4PIMUpdatePacket> {
         std::vector<IPv4PIMUpdatePacket> pkts;
         pkts.reserve(cfg.updates().size());
+        unsigned n{1};
         for (auto const& update: cfg.updates())
             pkts.emplace_back(
+                    n++,
                     update,
                     cfg.pimsmConfig().intfAddr(),
                     cfg.pimsmConfig().neighbor(),
@@ -27,10 +30,12 @@ private:
 
 public:
     explicit IPv4JPUpdateEvent(
+            Logger& log,
             IPv4PIMIntf& pimIntf,
             Timer& timer,
             PIMCConfig<IPv4> const& cfg)
-            : pimIntf_{pimIntf}
+            : log_{log}
+            , pimIntf_{pimIntf}
             , timer_{timer}
             , updatePackets_{updatePackets(cfg)}
             , jpPeriod_{cfg.pimsmConfig().jpPeriod()}
@@ -53,12 +58,15 @@ public:
             auto r = pimIntf_.send(pkt.data(), pkt.size(), pktName_);
             if (not r)
                 return r;
+
+            log_.debug("Successfully sent {}", pkt.descr());
         }
 
         return {};
     }
 
 private:
+    Logger& log_;
     IPv4PIMIntf& pimIntf_;
     Timer& timer_;
     std::vector<IPv4PIMUpdatePacket> updatePackets_;

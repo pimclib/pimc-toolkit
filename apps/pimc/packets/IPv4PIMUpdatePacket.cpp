@@ -6,8 +6,12 @@
 #include "pimc/packets/IPv4HdrWriter.hpp"
 #include "pimc/packets/PIMSMv2Utils.hpp"
 #include "pimc/system/Exceptions.hpp"
+#include "pimc/formatters/Fmt.hpp"
+#include "pimc/formatters/IPv4Formatters.hpp"
+#include "pimc/formatters/MemoryBuffer.hpp"
 
 #include "pimsm/Update.hpp"
+#include "pimsm/UpdateFormatter.hpp"
 #include "IPv4PIMUpdatePacket.hpp"
 
 namespace pimc {
@@ -27,6 +31,7 @@ void writeGroupEntry(PacketWriter& pw, GroupEntry<IPv4> const& ge) {
 } // anon.namespace
 
 IPv4PIMUpdatePacket::IPv4PIMUpdatePacket(
+        unsigned n,
         Update<IPv4> const& update,
         IPv4Address source, IPv4Address neighbor, uint16_t holdtime) {
     UpdateSummary<IPv4> us{0, update};
@@ -69,6 +74,18 @@ IPv4PIMUpdatePacket::IPv4PIMUpdatePacket(
                 sz, pw.size());
 
     pimsmv2::writeChkSum(pimPw, pimSz);
+
+    auto& mb = getMemoryBuffer();
+    auto bi = std::back_inserter(mb);
+    auto const& groups = update.groups();
+    fmt::format_to(
+            bi, "IPv4 Join/Prune Update packet #{} with {} groups, "
+                "neighbor {}, holdtime {}s\n",
+            n, groups.size(), neighbor, holdtime);
+    for (auto const& ge: groups)
+        fmt::format_to(bi, "{}", ge);
+
+    descr_ = fmt::to_string(mb);
 }
 
 } // namespace pimc

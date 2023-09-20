@@ -18,13 +18,15 @@
 namespace pimc {
 
 auto IPv4PIMIntf::create(
-        char const* progname, PIMCConfig<IPv4> const& cfg)
+        char const* progname, PIMCConfig<IPv4> const& cfg, Logger& log)
 -> Result<IPv4PIMIntf, std::string> {
     auto rs = openIPv4PIMSocket(progname)
             .flatMap([] (int s) { return allowReuse(s); });
 
     if (not rs)
         return fail(std::move(rs).error());
+
+    log.debug("Successfully created IPv4 PIM socket");
 
     int s = rs.value();
     auto d = defer([s] {
@@ -46,6 +48,10 @@ auto IPv4PIMIntf::create(
 
     if (not rbd)
         return fail(std::move(rbd).error());
+
+    log.debug(
+            "Successfully bound the IPv4 PIM socket to device {} (#{})",
+            cfg.pimsmConfig().intfName(), cfg.pimsmConfig().intfIndex());
 
     d.cancel();
     return IPv4PIMIntf{s};

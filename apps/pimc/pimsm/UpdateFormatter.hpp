@@ -74,7 +74,7 @@ struct formatter<std::tuple<unsigned, pimc::Update<V> const&>>: formatter<string
         auto const& groups = update.groups();
         auto out = fmt::format_to(
                 ctx.out(),
-                "Update # {} with {} group{}:\n",
+                "Update #{} with {} group{}:\n",
                 n, groups.size(), pimc::plural(groups));
         for (auto const& ge: groups)
             out = fmt::format_to(out, "{}", ge);

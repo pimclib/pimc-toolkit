@@ -26,6 +26,7 @@ set(Logging
         config/LoggingConfig.hpp
         config/LoggingConfigLoader.hpp
         logging/Logging.hpp
+        logging/Logging.cpp
         logging/ConsoleLogger.hpp
         logging/ConsoleLogger.cpp
         logging/FileLogger.hpp
@@ -62,6 +63,8 @@ add_executable(
         scheduler/IPv4JPUpdateEvent.hpp
         scheduler/IPv4GoodbyeEvent.hpp
         scheduler/IPv4GoodbyeJPUpdateEvent.hpp
+        scheduler/IPv4Exec.hpp
+        scheduler/IPv4Exec.cpp
 )
 
 target_include_directories(

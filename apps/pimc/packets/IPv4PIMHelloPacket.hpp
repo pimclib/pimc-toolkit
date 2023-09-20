@@ -19,8 +19,12 @@ public:
     [[nodiscard]]
     size_t size() const { return data_.size(); }
 
+    [[nodiscard]]
+    std::string const& descr() const { return descr_; }
+
 private:
     std::vector<uint8_t> data_;
+    std::string descr_;
 };
 
 } // namespace pimc

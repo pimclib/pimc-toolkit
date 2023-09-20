@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "pimc/core/CompilerUtils.hpp"
 #include "pimc/core/Meta.hpp"
 #include "pimc/core/Result.hpp"
 #include "pimc/core/TupleUtils.hpp"
@@ -108,6 +109,7 @@ public:
      * index
      */
     template <size_t Idx>
+    PIMC_ALWAYS_INLINE
     constexpr auto elem() -> TypeAt_t<Idx, EHs...>& {
         static_assert(Idx < sizeof...(EHs), "Event index out of bound");
         using EH = TypeAt_t<Idx, EHs...>;
@@ -132,6 +134,7 @@ public:
 private:
 
     template <size_t Idx>
+    PIMC_ALWAYS_INLINE
     Result<unsigned, E> chainEvents(unsigned count) {
         if constexpr (Idx < sizeof...(EHs)) {
             auto &eh = elem<Idx>();

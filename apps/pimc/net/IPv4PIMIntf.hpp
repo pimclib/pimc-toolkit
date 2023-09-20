@@ -4,12 +4,14 @@
 
 #include "pimc/core/Result.hpp"
 #include "config/PIMCConfig.hpp"
+#include "logging/Logging.hpp"
 
 namespace pimc {
 
 class IPv4PIMIntf final {
 public:
-    static auto create(char const* progname, PIMCConfig<IPv4> const& cfg)
+    static auto create(
+            char const* progname, PIMCConfig<IPv4> const& cfg, Logger& log)
     -> Result<IPv4PIMIntf, std::string>;
 
     IPv4PIMIntf(IPv4PIMIntf const&) = delete;
