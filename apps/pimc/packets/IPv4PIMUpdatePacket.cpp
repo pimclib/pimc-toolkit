@@ -83,7 +83,7 @@ IPv4PIMUpdatePacket::IPv4PIMUpdatePacket(
     auto bi = std::back_inserter(mb);
     auto const& groups = update.groups();
     fmt::format_to(
-            bi, "IPv4 Join/Prune Update packet #{} with {} groups, "
+            bi, "IPv4 PIM Join/Prune Update packet #{} with {} groups, "
                 "neighbor {}, holdtime {}s\n",
             n, groups.size(), neighbor, holdtime);
     for (auto const& ge: groups)

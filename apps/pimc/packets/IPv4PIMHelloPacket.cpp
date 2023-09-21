@@ -65,10 +65,10 @@ IPv4PIMHelloPacket::IPv4PIMHelloPacket(
 
     if (helloHoldtime > 0)
         descr_ = fmt::format(
-                "IPv4 Hello [holdtime {}s, DR priority {}, generation ID {:08x}]",
+                "IPv4 PIM Hello [holdtime {}s, DR priority {}, generation ID {:08x}]",
                 helloHoldtime, drPriority, generationId);
     else descr_ = fmt::format(
-                "IPv4 Goodbye [DR priority {}, generation ID {:08x}]",
+                "IPv4 PIM Goodbye [DR priority {}, generation ID {:08x}]",
                 drPriority, generationId);
 }
 
