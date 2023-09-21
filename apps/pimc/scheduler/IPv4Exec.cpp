@@ -3,7 +3,6 @@
 
 #include "pimc/formatters/Fmt.hpp"
 #include "pimc/events/FixedEventQueue.hpp"
-#include "pimc/unix/GetOptLong.hpp"
 #include "pimc/time/TimeUtils.hpp"
 #include "pimc/formatters/MemoryBuffer.hpp"
 #include "pimc/text/Plural.hpp"
@@ -28,7 +27,7 @@ bool ipv4exec(
         PIMCConfig<IPv4> const& cfg, Logger& log, char const* progname, bool& stopped) {
     auto ts = gethostnanos();
     log.debug(ts, "PIM SM config:\n{}", cfg.pimsmConfig());
-    log.debug(ts, "Join/Prune Config:\n {}\n", cfg.jpConfig());
+    log.debug(ts, "Join/Prune Config:\n {}", cfg.jpConfig());
     if (log.enabled(Level::Debug)) {
         auto const& updates = cfg.updates();
         auto& mb = getMemoryBuffer();
@@ -102,4 +101,4 @@ bool ipv4exec(
     return true;
 }
 
-}
+} // namespace pimc

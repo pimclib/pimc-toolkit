@@ -26,6 +26,8 @@ void writeGroupEntry(PacketWriter& pw, GroupEntry<IPv4> const& ge) {
     *pnp = htons(static_cast<uint16_t>(ge.prunes().size()));
     for (auto const& s: ge.joins())
         pimsmv2::writeIPv4Src(pw, s.addr(), s.rpt(), s.wildcard());
+    for (auto const& s: ge.prunes())
+        pimsmv2::writeIPv4Src(pw, s.addr(), s.rpt(), s.wildcard());
 }
 
 } // anon.namespace
