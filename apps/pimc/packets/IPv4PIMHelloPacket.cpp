@@ -36,6 +36,7 @@ IPv4PIMHelloPacket::IPv4PIMHelloPacket(
             .id(0)
             .flagsAndFragOff(htons(IP_DF))
             .ttl(1)
+            .protocol(IPPROTO_PIM)
             .saddr(source.to_nl())
             .daddr(pimsm::params<IPv4>::AllPIMRouters.to_nl());
 

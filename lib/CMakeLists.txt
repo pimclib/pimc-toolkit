@@ -66,7 +66,7 @@ target_sources(
         pimc/time/TimeUtils.hpp
         pimc/time/Timestamp.hpp
         pimc/unix/SignalHandler.hpp
-        pimc/unix/CapNetRaw.hpp
+        pimc/unix/CapState.hpp
         pimc/unix/GetOptLong.hpp
         pimc/unix/TerminalColors.hpp
         pimc/logging/LoggingLevel.hpp

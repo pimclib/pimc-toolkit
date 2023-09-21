@@ -99,8 +99,9 @@ template <PacketWriterObject PWO>
 [[nodiscard]]
 PIMC_ALWAYS_INLINE
 constexpr auto next(PacketWriter& pw, size_t sz) -> PWO {
+    auto* p = pw.end_;
     pw.end_ += sz;
-    return PWO{static_cast<void*>(pw.end_)};
+    return PWO{static_cast<void*>(p)};
 }
 
 } // namespace pimc

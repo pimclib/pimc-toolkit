@@ -45,7 +45,7 @@ public:
             if (not r)
                 return r;
 
-            log_.debug("Successfully sent {}", pkt.descr());
+            log_.debug("sent {}", pkt.descr());
         }
 
         return {};

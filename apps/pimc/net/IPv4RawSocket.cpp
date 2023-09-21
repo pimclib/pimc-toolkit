@@ -1,12 +1,10 @@
 #include <string>
 
 #include "pimc/core/Result.hpp"
-#include "pimc/unix/CapNetRaw.hpp"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "pimc/formatters/Fmt.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
 #include "pimc/formatters/FailureFormatter.hpp"
@@ -28,12 +26,7 @@ char const* LastResortMsg =
 
 } // anon.namespace
 
-Result<int, std::string> openIPv4PIMSocket(char const* progname) {
-    auto rc = CapNetRaw::raise(progname);
-
-    if (not rc)
-        return fail(std::move(rc).error());
-
+Result<int, std::string> openIPv4PIMSocket() {
     int s = socket(AF_INET, SOCK_RAW, IPPROTO_PIM);
 
     if (s == -1) {

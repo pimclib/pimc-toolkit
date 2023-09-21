@@ -46,7 +46,7 @@ public:
 private:
     template <typename ArgsTuple, size_t ... Idxs>
     EventEntry(ArgsTuple&& args, std::index_sequence<Idxs...>)
-            : eh_{std::get<Idxs>(args)...} {}
+            : eh_{std::get<Idxs>(std::forward<ArgsTuple>(args))...} {}
 private:
     EH eh_;
 };

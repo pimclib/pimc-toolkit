@@ -40,8 +40,8 @@ public:
     PIMC_ALWAYS_INLINE
     constexpr explicit IPv4HdrWriter(void* p)
     : ipHdr_{static_cast<iphdr*>(p)} {
-        ipHdr_->version = 2;
-        ipHdr_->ihl = 5;
+        ipHdr_->version = 4u;
+        ipHdr_->ihl = 5u;
     }
 
     /*!
@@ -238,7 +238,7 @@ public:
     PIMC_ALWAYS_INLINE
     constexpr explicit IPv4HdrWriter(void* p)
             : ipHdr_{static_cast<ip*>(p)} {
-        ipHdr_->ip_v = 2u;
+        ipHdr_->ip_v = 4u;
         ipHdr_->ip_hl = 5u;
     }
 

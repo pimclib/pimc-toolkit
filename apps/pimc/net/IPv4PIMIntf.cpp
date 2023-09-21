@@ -4,6 +4,7 @@
 
 #include "pimc/core/Deferred.hpp"
 #include "pimc/core/Result.hpp"
+#include "pimc/unix/CapState.hpp"
 #include "pimc/net/SocketUtils.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/formatters/Fmt.hpp"
@@ -20,13 +21,18 @@ namespace pimc {
 auto IPv4PIMIntf::create(
         char const* progname, PIMCConfig<IPv4> const& cfg, Logger& log)
 -> Result<IPv4PIMIntf, std::string> {
-    auto rs = openIPv4PIMSocket(progname)
+    auto rcap = CapState::raiseFor(progname, CAP_(NET_RAW), CAP_(NET_BIND_SERVICE));
+
+    if (not rcap)
+        return fail(std::move(rcap).error());
+
+    auto rs = openIPv4PIMSocket()
             .flatMap([] (int s) { return allowReuse(s); });
 
     if (not rs)
         return fail(std::move(rs).error());
 
-    log.debug("Successfully created IPv4 PIM socket");
+    log.debug("created IPv4 PIM socket");
 
     int s = rs.value();
     auto d = defer([s] {
@@ -50,7 +56,7 @@ auto IPv4PIMIntf::create(
         return fail(std::move(rbd).error());
 
     log.debug(
-            "Successfully bound the IPv4 PIM socket to device {} (#{})",
+            "bound the IPv4 PIM socket to device {} (#{})",
             cfg.pimsmConfig().intfName(), cfg.pimsmConfig().intfIndex());
 
     d.cancel();

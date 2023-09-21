@@ -40,7 +40,7 @@ public:
     Result<void, std::string> fire() {
         auto r = pimIntf_.send(pkt_.data(), pkt_.size(), pktName_);
         if (r)
-            log_.debug("Successfully sent {}", pkt_.descr());
+            log_.debug("sent {}", pkt_.descr());
 
         return r;
     }

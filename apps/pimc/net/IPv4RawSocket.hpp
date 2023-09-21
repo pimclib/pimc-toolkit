@@ -6,6 +6,6 @@
 
 namespace pimc {
 
-Result<int, std::string> openIPv4PIMSocket(char const* progname);
+Result<int, std::string> openIPv4PIMSocket();
 
 } // namespace pimc
