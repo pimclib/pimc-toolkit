@@ -13,12 +13,18 @@
 
 namespace fs = std::filesystem;
 
+namespace {
+
+struct FL {};
+
+} // anon.namespace
+
 namespace fmt {
 
 template <>
-struct formatter<pimc::Timestamp>: formatter<string_view> {
+struct formatter<pimc::TimeValue<FL>>: formatter<string_view> {
     template <typename FormatContext>
-    auto format(pimc::Timestamp const& ts, FormatContext& ctx) {
+    auto format(pimc::TimeValue<FL> const& ts, FormatContext& ctx) {
         auto tt = static_cast<time_t>(ts.value / 1'000'000'000ul);
         uint64_t nanos = ts.value / 1'000'000'000ul;
         tm tms;
@@ -59,7 +65,7 @@ FileLogger::FileLogger(std::string const& logFileName) {
 void FileLogger::log(
         uint64_t ts, Level level, char const* message, size_t sz) {
     char buf[256];
-    auto p = fmt::format_to(buf, "{} {}: ", Timestamp{.value = ts}, level);
+    auto p = fmt::format_to(buf, "{} {}: ", TimeValue<FL>{.value = ts}, level);
     auto n = fwrite(buf, static_cast<size_t>(p - buf), 1, fp_);
     if (n != 1)
         raise<std::runtime_error>(
