@@ -5,6 +5,7 @@
 #include "pimc/core/Deferred.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
+#include "pimc/formatters/FailureFormatter.hpp"
 #include "LoadAll.hpp"
 
 namespace fs = std::filesystem;
@@ -15,18 +16,18 @@ auto loadAll(char const* ymlfn) -> Result<std::vector<YAML::Node>, std::string> 
     fs::path yml{ymlfn};
 
     if (not fs::exists(yml))
-        return fail(fmt::format("file '{}' does not exist", ymlfn));
+        return sfail("file '{}' does not exist", ymlfn);
 
     if (fs::is_directory(yml))
-        return fail(fmt::format("'{}' is a directory", yml.native()));
+        return sfail("'{}' is a directory", yml.native());
 
     if (not fs::is_regular_file(yml))
-        return fail(fmt::format("'{}' is not a regular file", yml.native()));
+        return sfail("'{}' is not a regular file", yml.native());
 
     FILE* fp = fopen(yml.c_str(), "r");
     if (fp == nullptr)
-        return fail(fmt::format(
-                "unable to open file '{}': {}", yml.native(), pimc::SysError{}));
+        return sfail(
+                "unable to open file '{}': {}", yml.native(), pimc::SysError{});
 
     auto fpc = defer([fp] { fclose(fp); });
 
@@ -36,20 +37,20 @@ auto loadAll(char const* ymlfn) -> Result<std::vector<YAML::Node>, std::string> 
         buf.push_back(static_cast<char>(c));
 
     if (ferror(fp))
-        return fail(fmt::format(
+        return sfail(
                 "I/O error while reading file '{}': {}",
-                yml.native(), pimc::SysError{}));
+                yml.native(), pimc::SysError{});
 
     buf.push_back(static_cast<char>(0));
 
     try {
         return YAML::LoadAll(buf.data());
     } catch (YAML::ParserException const& expt) {
-        return fail(fmt::format(
+        return sfail(
                 "{}, {}: {}",
                 yml.native(),
                 expt.mark.line + 1,
-                expt.msg));
+                expt.msg);
     }
 }
 

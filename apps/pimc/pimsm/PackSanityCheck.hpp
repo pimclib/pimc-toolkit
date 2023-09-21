@@ -141,7 +141,7 @@ auto convertUpdatesToJPConfig(std::vector<Update<V>> const &updates)
     if (not errors.empty())
         return fail(std::move(errors));
 
-    return std::move(jpCfg);
+    return jpCfg;
 }
 
 template<IPVersion V>

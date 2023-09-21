@@ -8,6 +8,7 @@
 #include "pimc/parsers/IPParsers.hpp"
 #include "pimc/formatters/Fmt.hpp"
 #include "pimc/formatters/IPFormatters.hpp"
+#include "pimc/formatters/FailureFormatter.hpp"
 
 #include "pimc/yaml/BuilderBase.hpp"
 #include "pimsm/PIMSMParams.hpp"
@@ -20,12 +21,12 @@ template <IPVersion V>
 Result<typename IP<V>::Address, std::string> grpAddr(std::string const &g) {
     auto oga = parse<V>::address(g);
     if (not oga)
-        return fail(fmt::format("invalid multicast {} group address '{}'", V{}, g));
+        return sfail("invalid multicast {} group address '{}'", V{}, g);
 
     auto ga = oga.value();
     if (not ga.isMcast())
-        return fail(fmt::format(
-                "invalid multicast {} group address {}: not multicast", V{}, ga));
+        return sfail(
+                "invalid multicast {} group address {}: not multicast", V{}, ga);
 
     return ga;
 }

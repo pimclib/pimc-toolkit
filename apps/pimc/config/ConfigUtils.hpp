@@ -6,6 +6,7 @@
 #include "pimc/net/IP.hpp"
 #include "pimc/parsers/IPParsers.hpp"
 #include "pimc/formatters/IPFormatters.hpp"
+#include "pimc/formatters/FailureFormatter.hpp"
 #include "pimc/yaml/Structured.hpp"
 #include "pimc/yaml/BuilderBase.hpp"
 
@@ -86,19 +87,19 @@ inline auto ucAddr(std::string const& s, UCAddrType typ)
 -> Result<typename IP<V>::Address, std::string> {
     auto osa = parse<V>::address(s);
     if (not osa)
-        return fail(fmt::format("invalid {} {} address '{}'", V{}, typ, s));
+        return sfail("invalid {} {} address '{}'", V{}, typ, s);
 
     IPv4Address sa = osa.value();
     if (sa.isDefault() or sa.isLocalBroadcast())
-        return fail(fmt::format("invalid {} {} address {}", V{}, typ, sa));
+        return sfail("invalid {} {} address {}", V{}, typ, sa);
 
     if (sa.isLoopback())
-        return fail(fmt::format(
-                "invalid {} {} address {}: address may not be loopback", V{}, typ, sa));
+        return sfail(
+                "invalid {} {} address {}: address may not be loopback", V{}, typ, sa);
 
     if (sa.isMcast())
-        return fail(fmt::format(
-                "invalid {} {} address {}: address may not be multicast", V{}, typ, sa));
+        return sfail(
+                "invalid {} {} address {}: address may not be multicast", V{}, typ, sa);
 
     return sa;
 }

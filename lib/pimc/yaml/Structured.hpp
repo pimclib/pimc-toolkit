@@ -9,7 +9,9 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
+#if __GNUC__ >= 13
 #pragma GCC diagnostic ignored "-Wdangling-pointer"
+#endif
 #include <yaml-cpp/yaml.h>
 #pragma GCC diagnostic pop
 

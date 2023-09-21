@@ -19,7 +19,10 @@
 #include <string>
 
 #include "pimc/core/Result.hpp"
+#include "pimc/system/SysError.hpp"
 #include "pimc/formatters/Fmt.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
+#include "pimc/formatters/FailureFormatter.hpp"
 
 namespace pimc {
 
@@ -54,29 +57,29 @@ public:
 
         caps = cap_get_proc();
         if (caps == nullptr)
-            return fail(fmt::format("cap_get_proc() failed: {}", SysError{}));
+            return sfail("cap_get_proc() failed: {}", SysError{});
 
         capv[0] = CAP_NET_RAW;
         if (cap_set_flag(caps, CAP_EFFECTIVE, 1, capv, CAP_SET) == -1) {
             cap_free(caps);
-            return fail(fmt::format("cap_set_flag() failed: {}", SysError{}));
+            return sfail("cap_set_flag() failed: {}", SysError{});
         }
 
         if (cap_set_proc(caps) == -1) {
             cap_free(caps);
             auto ec = errno;
             if (ec == EPERM)
-                return fail(fmt::format(
+                return sfail(
                         "unable to raise CAP_NET_RAW capability: "
                         "try running under sudo or "
                         "grant {} the CAP_NET_RAW capability by running "
-                        "setcap cap_net_raw=p {}", progname, progname));
+                        "setcap cap_net_raw=p {}", progname, progname);
 
-            return fail(fmt::format("cap_set_proc() failed: {}", SysError{ec}));
+            return sfail("cap_set_proc() failed: {}", SysError{ec});
         }
 
         if (cap_free(caps) == -1)
-            return fail(fmt::format("cap_free() failed: {}", SysError{}));
+            return sfail("cap_free() failed: {}", SysError{});
 
         return CapNetRaw{true};
     }

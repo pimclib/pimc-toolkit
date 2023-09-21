@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <vector>
+#include <netinet/ip.h>
 
 #include "pimc/net/IPv4Address.hpp"
 #include "pimc/packets/PacketWriter.hpp"
