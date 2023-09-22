@@ -5,6 +5,7 @@ SphinxManPages(
         man-pages
         man-source
         mclst
+        pimc
 )
 
 if (${BuildApiDocs})

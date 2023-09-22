@@ -13,12 +13,16 @@ DESCRIPTION
 The pimc program is a network application, which allows subscribing to multicast
 using the PIM sparse-mode version 2 protocol.
 
+To run pimc it should be given the configuration file as the sole command line
+parameter. It will run indefinitely or until stopped by being interrupted with
+SIGINT, SIGTERM, or SIGHUP.
+
 The program requires a configuration file in the YAML format with the following
 structure:
 
 .. code-block:: yaml
 
----
+   ---
 
    pim:
      neighbor: 172.16.0.1
@@ -63,13 +67,13 @@ state that the host will send to the PIM neighbor. Each entry in the ``multicast
 section is a multicast group address. Under the multicast group there may be two
 possible entries: ``Join*`` and ``Join``.
 
-The ``Join*`` entry describes the shared tree, which results in Join(*,G) and optionally
+The ``Join*`` entry describes the shared tree, which results in Join(\*,G) and optionally
 Prune(S,G,rpt) states sent to the PIM neighbor. The ``Join*`` entry requires the ``RP``
 entry, which specifies the IP address of the RP for the group. Optionally, the entry
 ``Prune`` may be specified, which contains a list of the sources, which must be pruned
 from the shared tree. If the ``Join*`` entry is accompanied only by the ``RP`` entry,
-the result is that the host will send Join(*,G) state for the group to the neighbor.
-In the presence of the optional ``Prune`` list of sources, the Join(*,G) will be
+the result is that the host will send Join(\*,G) state for the group to the neighbor.
+In the presence of the optional ``Prune`` list of sources, the Join(\*,G) will be
 accompanied by the Prune(S,G,rpt) states for all of the sources in the ``Prune`` list.
 
 .. note::
