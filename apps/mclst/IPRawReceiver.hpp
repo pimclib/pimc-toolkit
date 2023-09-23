@@ -42,7 +42,7 @@ protected:
 
 public:
     auto openSocket(char const* progname) -> int {
-        auto r = CapState::raiseFor(progname, CAP_(NET_RAW));
+        auto r = CapState::program(progname).raise(CAP_(NET_RAW));
         if (not r)
             throw std::runtime_error{r.error()};
 

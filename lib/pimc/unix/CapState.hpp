@@ -56,17 +56,17 @@ private:
         });
     }
 
-    template <typename OI, std::same_as<CapArg> Last>
-    static void joinCaps(OI bi, Last&& arg) {
-        fmt::format_to(bi, "{}", std::get<1>(std::forward<Last>(arg)));
+    template <typename OI, std::same_as<CapArg> CA>
+    static void joinCaps(OI bi, CA&& arg) {
+        fmt::format_to(bi, "{}", std::get<1>(std::forward<CA>(arg)));
     }
 
     template <typename OI,
-              std::same_as<CapArg> First,
-              std::same_as<CapArg> ... Rest>
-    static void joinCaps(OI bi, First&& arg, Rest&& ... args) {
-        fmt::format_to(bi, "{},", std::get<1>(std::forward<First>(arg)));
-        joinCaps(bi, std::forward<Rest>(args)...);
+              std::same_as<CapArg> CA,
+              std::same_as<CapArg> ... CAs>
+    static void joinCaps(OI bi, CA&& arg1, CA&& arg2, CAs&& ... args) {
+        fmt::format_to(bi, "{},", std::get<1>(std::forward<CA>(arg1)));
+        joinCaps(bi, std::forward<CA>(arg2), std::forward<CAs>(args)...);
     }
 
 public:
@@ -92,30 +92,6 @@ public:
             dropAllCaps();
     }
 
-    template <std::same_as<CapArg> ... ArgTuples>
-    static Result<CapState, std::string> raiseFor(
-            char const* progName, ArgTuples&& ... args) {
-        auto r = raiseImpl(std::forward<ArgTuples>(args)...);
-        if (r)
-            return std::move(r).value();
-
-        auto e = std::move(r).error();
-        if (e.capName != nullptr) {
-            fmt::memory_buffer mb;
-            auto bi = std::back_inserter(mb);
-            fmt::format_to(
-                    bi,
-                    "unable to raise {} capability: "
-                    "try running under sudo or grant {} the required capabilities "
-                    "by running sudo setcap ",
-                    e.capName, progName);
-            joinCaps(bi, std::forward<ArgTuples>(args)...);
-            fmt::format_to(bi, "=p {}", progName);
-            return fail(fmt::to_string(mb));
-        }
-
-        return fail(std::move(e.msg));
-    }
 
 private:
     constexpr explicit CapState(): capRaised_{true} {}
@@ -187,6 +163,44 @@ private:
         return raiseImpl(std::forward<Rest>(args)...);
     }
 
+public:
+    class Builder final {
+        friend class CapState;
+    public:
+        template <std::same_as<CapArg> ... ArgTuples>
+        Result<CapState, std::string> raise(ArgTuples&& ... args) {
+            auto r = CapState::raiseImpl(std::forward<ArgTuples>(args)...);
+            if (r)
+                return std::move(r).value();
+
+            auto e = std::move(r).error();
+            if (e.capName != nullptr) {
+                fmt::memory_buffer mb;
+                auto bi = std::back_inserter(mb);
+                fmt::format_to(
+                        bi,
+                        "unable to raise {} capability: "
+                        "try running under sudo or grant {} the required capabilities "
+                        "by running sudo setcap ",
+                        e.capName, progName_);
+                CapState::joinCaps(bi, std::forward<ArgTuples>(args)...);
+                fmt::format_to(bi, "=p {}", progName_);
+                return fail(fmt::to_string(mb));
+            }
+
+            return fail(std::move(e.msg));
+        }
+    private:
+        constexpr explicit Builder(char const* progName): progName_{progName} {}
+    private:
+        char const* progName_;
+    };
+
+    friend class Builder;
+
+    inline constexpr static Builder program(char const* progName) {
+        return Builder{progName};
+    }
 private:
     bool capRaised_;
 };
@@ -209,9 +223,21 @@ public:
 
     ~CapState() = default;
 
-    template <std::same_as<CapArg> ... ArgTuples>
-    static Result<CapState, std::string> raiseFor(char const*, ArgTuples&& ...) {
-        return CapState{};
+    class Builder final {
+        friend class CapState;
+    public:
+        template<std::same_as<CapArg> ... ArgTuples>
+        Result<CapState, std::string> raise(ArgTuples &&...) {
+            return CapState{};
+        }
+    private:
+        Builder() = default;
+    };
+
+    friend class Builder;
+
+    inline static Builder program(char const*) {
+        return Builder{};
     }
 
 private:

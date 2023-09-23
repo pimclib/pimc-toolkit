@@ -21,7 +21,8 @@ namespace pimc {
 auto IPv4PIMIntf::create(
         char const* progname, PIMCConfig<IPv4> const& cfg, Logger& log)
 -> Result<IPv4PIMIntf, std::string> {
-    auto rcap = CapState::raiseFor(progname, CAP_(NET_RAW), CAP_(NET_BIND_SERVICE));
+    auto rcap = CapState::program(progname)
+            .raise(CAP_(NET_RAW), CAP_(NET_BIND_SERVICE));
 
     if (not rcap)
         return fail(std::move(rcap).error());
