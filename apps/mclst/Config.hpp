@@ -4,7 +4,7 @@
 #include <string>
 
 #include "pimc/net/IPv4Address.hpp"
-#include "pimc/net/IPv4IntfTable.hpp"
+#include "pimc/net/IntfTable.hpp"
 
 namespace pimc {
 
@@ -18,7 +18,7 @@ public:
     Config& operator= (Config&&) noexcept = default;
 
     [[nodiscard]]
-    net::IPv4Address group() const { return group_; }
+    IPv4Address group() const { return group_; }
 
     [[nodiscard]]
     uint16_t dport() const { return dport_; }
@@ -30,7 +30,7 @@ public:
     std::string const& intf() const { return intf_; }
 
     [[nodiscard]]
-    net::IPv4Address intfAddr() const { return intfAddr_; }
+    IPv4Address intfAddr() const { return intfAddr_; }
 
     /*!
      * If the returned address is default, the subscription is (*,G),
@@ -41,7 +41,7 @@ public:
      * or the default address for the any-source subscriptions.
      */
     [[nodiscard]]
-    net::IPv4Address source() const { return source_; }
+    IPv4Address source() const { return source_; }
 
     [[nodiscard]]
     unsigned timeoutSec() const { return timeoutSec_; }
@@ -62,7 +62,7 @@ public:
     bool colors() const { return colors_; }
 
     [[nodiscard]]
-    IPv4IntfTable const& intfTable() const { return intfTable_; };
+    IntfTable const& intfTable() const { return intfTable_; };
 
     [[nodiscard]]
     bool showConfig() const { return showConfig_; }
@@ -71,19 +71,19 @@ public:
 
 private:
     Config(
-        net::IPv4Address group,
+        IPv4Address group,
         uint16_t dport,
         bool wildcard,
         std::string intf,
-        net::IPv4Address intfAddr,
-        net::IPv4Address source,
+        IPv4Address intfAddr,
+        IPv4Address source,
         unsigned timeoutSec,
         bool sender,
         unsigned ttl,
         uint64_t count,
         bool showPayload,
         bool colors,
-        IPv4IntfTable intfTable,
+        IntfTable intfTable,
         bool showConfig)
         : group_{group}
         , dport_{dport}
@@ -101,21 +101,21 @@ private:
         , showConfig_{showConfig} {}
 
 private:
-    net::IPv4Address group_;
+    IPv4Address group_;
     uint16_t dport_;
     bool wildcard_;
     std::string intf_;
-    net::IPv4Address intfAddr_;
+    IPv4Address intfAddr_;
     // If this is 0.0.0.0, we're subscribing to (*,G)
     // otherwise to (S,G) where S is the source_
-    net::IPv4Address source_;
+    IPv4Address source_;
     unsigned timeoutSec_;
     bool sender_;
     unsigned ttl_;
     uint64_t count_;
     bool showPayload_;
     bool colors_;
-    IPv4IntfTable intfTable_;
+    IntfTable intfTable_;
     bool showConfig_;
 };
 

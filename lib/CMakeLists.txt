@@ -1,93 +1,130 @@
-add_custom_target(
-        ProjectVersionHeader
-        ALL
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/version_internal.hpp
-)
-
-add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/version_internal.hpp
-        COMMAND ${CMAKE_COMMAND}
-                -DGIT=${GIT}
-                -DINPUT_TEMPLATE_FILE=${CMAKE_CURRENT_LIST_DIR}/version_internal.hpp.in
-                -DOUTPUT_HEADER_FILE=${CMAKE_CURRENT_BINARY_DIR}/include/version_internal.hpp
-                -P ${CMAKE_SOURCE_DIR}/cmake/update_version_header.cmake
-        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/version_internal.hpp.in
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-
 set_target_properties(
         PimcLib
         PROPERTIES EFFECTIVE_SOURCES_DIR ${CMAKE_CURRENT_LIST_DIR}
 )
 
-add_dependencies(PimcLib ProjectVersionHeader)
-
 target_sources(
     PimcLib
     PRIVATE
-        version.cpp
-        net/IPv4IntfTable.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/include/version_internal.hpp
+        pimc/net/IntfTable.cpp
+        pimc/net/SocketUtils.cpp
+        pimc/packets/IPChecksum.cpp
+        pimc/unix/GetOptLong.cpp
+        pimc/yaml/Structured.cpp
+        pimc/yaml/LoadAll.cpp
     PUBLIC
-        version.hpp
-        core/CompilerUtils.hpp
-        core/TypeUtils.hpp
-        core/Deferred.hpp
-        core/Result.hpp
-        core/Endian.hpp
-        net/IPv4HdrView.hpp
-        net/UDPHdrView.hpp
-        net/IPv4PktInfo.hpp
-        net/IPv4Prefix.hpp
-        net/IPv4Address.hpp
-        net/IPv4IntfTable.hpp
-        formatters/detect_strerror_r.hpp
-        formatters/IPv4Formatters.hpp
-        formatters/SysErrorFormatter.hpp
-        formatters/IPv4Ostream.hpp
-        formatters/SysErrorOstream.hpp
-        parsers/IPv4Parsers.hpp
-        parsers/NumberParsers.hpp
-        dissect/PacketView.hpp
-        system/Exceptions.hpp
-        system/SysError.hpp
-        text/MemoryBuffer.hpp
-        text/NumberLengths.hpp
-        text/ConsumeIfUnlessEscaped.hpp
-        text/HexAsciiBlock.hpp
-        text/NanosText.hpp
-        text/IndentBlock.hpp
-        text/CString.hpp
-        text/SCLine.hpp
-        unix/SignalHandler.hpp
-        unix/GetOptLong.hpp
-        unix/GetOptLong.cpp
-        unix/TerminalColors.hpp
+        pimc/core/CompilerUtils.hpp
+        pimc/core/Meta.hpp
+        pimc/core/TypeUtils.hpp
+        pimc/core/Deferred.hpp
+        pimc/core/OptionalResultHelpers.hpp
+        pimc/core/Optional.hpp
+        pimc/core/Result.hpp
+        pimc/core/TupleUtils.hpp
+        pimc/core/Endian.hpp
+        pimc/net/IP.hpp
+        pimc/net/IPv4Address.hpp
+        pimc/net/IPv4Prefix.hpp
+        pimc/net/IPv4PktInfo.hpp
+        pimc/net/IntfTable.hpp
+        pimc/net/SocketUtils.hpp
+        pimc/formatters/Fmt.hpp
+        pimc/formatters/FmtChrono.hpp
+        pimc/formatters/MemoryBuffer.hpp
+        pimc/formatters/FailureFormatter.hpp
+        pimc/formatters/IPFormatters.hpp
+        pimc/formatters/ConsumeIfUnlessEscaped.hpp
+        pimc/formatters/HexAsciiBlock.hpp
+        pimc/formatters/NanosText.hpp
+        pimc/formatters/IndentBlock.hpp
+        pimc/formatters/detect_strerror_r.hpp
+        pimc/formatters/IPv4Formatters.hpp
+        pimc/formatters/IntfTableFormatter.hpp
+        pimc/formatters/SysErrorFormatter.hpp
+        pimc/formatters/IPv4Ostream.hpp
+        pimc/formatters/SysErrorOstream.hpp
+        pimc/formatters/LoggingLevelFormatter.hpp
+        pimc/parsers/IPParsers.hpp
+        pimc/parsers/IPv4Parsers.hpp
+        pimc/parsers/NumberParsers.hpp
+        pimc/packets/PacketView.hpp
+        pimc/packets/PacketWriter.hpp
+        pimc/packets/IPv4HdrView.hpp
+        pimc/packets/IPv4HdrWriter.hpp
+        pimc/packets/UDPHdrView.hpp
+        pimc/packets/IPChecksum.hpp
+        pimc/packets/PIMSMv2.hpp
+        pimc/packets/PIMSMv2Utils.hpp
+        pimc/system/Exceptions.hpp
+        pimc/system/SysError.hpp
+        pimc/text/NumberLengths.hpp
+        pimc/text/CString.hpp
+        pimc/text/StringUtils.hpp
+        pimc/text/SCLine.hpp
+        pimc/text/Plural.hpp
+        pimc/text/Location.hpp
+        pimc/time/TimeUtils.hpp
+        pimc/time/Timestamp.hpp
+        pimc/unix/SignalHandler.hpp
+        pimc/unix/CapState.hpp
+        pimc/unix/GetOptLong.hpp
+        pimc/unix/TerminalColors.hpp
+        pimc/logging/LoggingLevel.hpp
+        pimc/events/FixedEventQueue.hpp
+        pimc/yaml/Structured.hpp
+        pimc/yaml/BuilderBase.hpp
+        pimc/yaml/ErrorHandler.hpp
+        pimc/yaml/LoadAll.hpp
 )
 
-export_headers(PimcLib ${CMAKE_CURRENT_LIST_DIR} pimc)
+find_file(CAPABILITY_H sys/capability.h)
+find_library(LIBCAP cap)
+
+if ((NOT CAPABILITY_H) OR (NOT LIBCAP))
+    message(
+            STATUS
+            "PimcLib: sys/capability.h is not found, consider installing libcap-devel"
+    )
+    set(EXTRA_LIBS)
+else()
+    target_compile_definitions(
+            PimcLib
+            PUBLIC
+            WITH_LIBCAP)
+    set(EXTRA_LIBS ${LIBCAP})
+endif()
+
+
+target_include_directories(
+        PimcLib
+        PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}
+)
 
 target_link_libraries(
         PimcLib
         PUBLIC
             ProjectSettings
             fmt::fmt
+            yaml-cpp
+            ${EXTRA_LIBS}
 )
 
 target_sources(
         Tests
         PRIVATE
-            core/tests/TypeUtils-Tests.cpp
-            core/tests/Failure-Tests.cpp
-            core/tests/ResultConstexpr-Tests.cpp
-            core/tests/Result-Tests.cpp
-            core/tests/Result-AdHoc-Tests.cpp
-            core/tests/Deferred-Tests.cpp
-            net/tests/IPv4Net-tests.cpp
-            parsers/tests/IPv4Parser-tests.cpp
-            parsers/tests/NumberParsers-Tests.cpp
-            formatters/tests/IPv4Output-Tests.cpp
-            text/tests/ConsumeIfUnlessEscaped-tests.cpp
-            text/tests/NanosText-tests.cpp
-            time/TimeUtils.hpp
+            pimc/core/tests/TypeUtils-Tests.cpp
+            pimc/core/tests/Optional-Result-TestUtils.hpp
+            pimc/core/tests/Optional-Tests.cpp
+            pimc/core/tests/Failure-Tests.cpp
+            pimc/core/tests/ResultConstexpr-Tests.cpp
+            pimc/core/tests/Result-Tests.cpp
+            pimc/core/tests/Result-AdHoc-Tests.cpp
+            pimc/core/tests/Deferred-Tests.cpp
+            pimc/net/tests/IPv4Net-tests.cpp
+            pimc/parsers/tests/IPv4Parser-tests.cpp
+            pimc/parsers/tests/NumberParsers-Tests.cpp
+            pimc/formatters/tests/IPv4Output-Tests.cpp
+            pimc/formatters/tests/ConsumeIfUnlessEscaped-tests.cpp
+            pimc/formatters/tests/NanosText-tests.cpp
 )

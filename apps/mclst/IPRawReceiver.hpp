@@ -1,109 +1,35 @@
 #pragma once
 
-#ifdef WITH_LIBCAP
-#include <unistd.h>
-#include <sys/capability.h>
-#endif
+#include "pimc/unix/CapState.hpp"
 
-#include <fmt/format.h>
+#include "pimc/formatters/Fmt.hpp"
 
 #include "pimc/core/Result.hpp"
 #include "pimc/system/SysError.hpp"
 
-#include "pimc/net/IPv4HdrView.hpp"
-#include "pimc/net/UDPHdrView.hpp"
+#include "pimc/packets/IPv4HdrView.hpp"
+#include "pimc/packets/UDPHdrView.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
 
-#ifdef WITH_LIBCAP
-
-#define LAST_RESORT_MSG                                               \
-        "permission to receive multicast on all UDP ports denied "    \
-        "even though the process now has the effective CAP_NET_RAW; " \
-        "as a last resort try running under sudo"
-
-namespace pimc {
-
-static inline Result<void, std::string> raiseCapNetRaw() {
-    cap_t caps;
-    cap_value_t capv[1];
-
-    caps = cap_get_proc();
-    if (caps == nullptr)
-        return fail(fmt::format("cap_get_proc() failed: {}", SysError{}));
-
-    capv[0] = CAP_NET_RAW;
-    if (cap_set_flag(caps, CAP_EFFECTIVE, 1, capv, CAP_SET) == -1) {
-        cap_free(caps);
-        return fail(fmt::format("cap_set_flag() failed: {}", SysError{}));
-    }
-
-    if (cap_set_proc(caps) == -1) {
-        cap_free(caps);
-        auto ec = errno;
-        if (ec == EPERM)
-            return fail(
-                    "cap_set_proc() failed; try running under sudo or "
-                    "grant mclst the CAP_NET_RAW capability by running "
-                    "setcap cap_net_raw=p mclst");
-
-        return fail(fmt::format("cap_set_proc() failed: {}", SysError{ec}));
-    }
-
-    if (cap_free(caps) == -1)
-        return fail(fmt::format("cap_free() failed: {}", SysError{}));
-
-    return {};
-}
-
-static inline Result<void, std::string> dropAllCaps() {
-    cap_t empty;
-
-    empty = cap_init();
-    if (empty == nullptr)
-        return fail(fmt::format("cap_init() failed: {}", SysError{}));
-
-    if (cap_set_proc(empty) == -1) {
-        cap_free(empty);
-        return fail(fmt::format(
-                "unable to drop capabilities: cap_set_proc() failed: {}", SysError{}));
-    }
-
-    if (cap_free(empty) == -1)
-        return fail(fmt::format("cap_free() failed: {}", SysError{}));
-
-    return {};
-}
-
-} // namespace pimc
-#else
-
-#define LAST_RESORT_MSG                                             \
-        "permission to receive multicast on all UDP ports denied, " \
-        "try running under sudo"
-
-namespace pimc {
-
-static inline Result<void, std::string> raiseCapNetRaw() {
-    return {};
-}
-
-static inline Result<void, std::string> dropAllCaps() {
-    return {};
-}
-
-} // namespace pimc
-
-#endif
 
 #include "ReceiverBase.hpp"
 
 namespace pimc {
 
-
-
 template <Limiter Limit>
 class IPRawReceiver: public ReceiverBase<IPRawReceiver<Limit>, Limit> {
     using Base = ReceiverBase<IPRawReceiver<Limit>, Limit>;
+
+    inline static char const* LastResortMsg =
+#ifdef WITH_LIBCAP
+        "permission to receive multicast on all UDP ports denied "
+        "even though the process now has the effective CAP_NET_RAW; "
+        "as a last resort try running under sudo";
+#else
+        "permission to receive multicast on all UDP ports denied, "
+        "try running under sudo";
+#endif
+
 public:
 
     IPRawReceiver(Config const& cfg, OutputHandler& oh, bool& stopped)
@@ -115,8 +41,8 @@ protected:
     using Base::dissectMclstBeaconPayload;
 
 public:
-    auto openSocket() -> int {
-        auto r = raiseCapNetRaw();
+    auto openSocket(char const* progname) -> int {
+        auto r = CapState::program(progname).raise(CAP_(NET_RAW));
         if (not r)
             throw std::runtime_error{r.error()};
 
@@ -124,14 +50,10 @@ public:
 
         if (s == -1) {
             if (errno == EPERM)
-                raise<std::runtime_error>(LAST_RESORT_MSG);
+                throw std::runtime_error{LastResortMsg};
             else raise<std::runtime_error>(
                     "unable to open raw IP socket: {}", SysError{});
         }
-
-        r = dropAllCaps();
-        if (not r)
-            throw std::runtime_error{r.error()};
 
         return s;
     }
@@ -189,7 +111,7 @@ public:
             return PacketStatus::AcceptedNoShow;
         }
 
-        pktInfo.source = net::IPv4Address::from_nl(ipHdr.saddr());
+        pktInfo.source = IPv4Address::from_nl(ipHdr.saddr());
         pktInfo.sport = ntohs(udpHdr.sport());
         pktInfo.dport = ntohs(udpHdr.dport());
 

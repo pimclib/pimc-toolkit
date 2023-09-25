@@ -1,10 +1,4 @@
-#if __GNUC__ >= 13
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdangling-reference"
-#endif
-
-#include <fmt/format.h>
-
+#include "pimc/formatters/Fmt.hpp"
 #include "pimc/unix/SignalHandler.hpp"
 
 #include "Config.hpp"
@@ -20,6 +14,7 @@ bool stopped{false};
 } // anon.namespace
 
 int main(int argc, char** argv) {
+    char const* progname = argv[0];
     try {
         auto const cfg = pimc::Config::fromArgs(argc, argv);
 
@@ -36,18 +31,18 @@ int main(int argc, char** argv) {
             if (cfg.count() == 0) {
                 if (not cfg.wildcard()) {
                     pimc::Receiver<pimc::UnlimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 } else {
                     pimc::IPRawReceiver<pimc::UnlimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 }
             } else {
                 if (not cfg.wildcard()) {
                     pimc::Receiver<pimc::LimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 } else {
                     pimc::IPRawReceiver<pimc::LimitedPackets> r{cfg, oh, stopped};
-                    r.run();
+                    r.run(progname);
                 }
             }
         } else {
@@ -61,7 +56,3 @@ int main(int argc, char** argv) {
         return 1;
     }
 }
-
-#if __GNUC__ >= 13
-#pragma GCC diagnostic pop
-#endif

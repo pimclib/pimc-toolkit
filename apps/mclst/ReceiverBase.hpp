@@ -11,7 +11,7 @@
 #include "pimc/system/Exceptions.hpp"
 #include "pimc/system/SysError.hpp"
 #include "pimc/net/IPv4PktInfo.hpp"
-#include "pimc/dissect/PacketView.hpp"
+#include "pimc/packets/PacketView.hpp"
 #include "pimc/formatters/SysErrorFormatter.hpp"
 
 #include "MclstBeacon.hpp"
@@ -68,9 +68,9 @@ enum class PacketStatus: unsigned {
 
 template <typename T>
 concept ReceiverProvider = requires(
-        T rcvp, sockaddr_in const& sender, PacketInfo& pktInfo) {
+        T rcvp, char const* progname, sockaddr_in const& sender, PacketInfo& pktInfo) {
     // The provider must throw an exception instead of returning -1
-    { rcvp.openSocket() } -> std::same_as<int>;
+    { rcvp.openSocket(progname) } -> std::same_as<int>;
     { rcvp.processPacket(sender, pktInfo) } -> std::same_as<PacketStatus>;
 };
 
@@ -119,8 +119,8 @@ private:
         return static_cast<Self&>(*this);
     }
 
-    void configure() {
-        socket_ = impl().openSocket();
+    void configure(char const* progname) {
+        socket_ = impl().openSocket(progname);
 
         // Make socket non-blocking
         int flags = fcntl(socket_, F_GETFL);
@@ -178,7 +178,7 @@ private:
     }
 
     void join() {
-        if (cfg_.source() != net::IPv4Address{}) {
+        if (cfg_.source() != IPv4Address{}) {
             ip_mreq_source mreq_source{};
             mreq_source.imr_interface.s_addr = cfg_.intfAddr().to_nl();
             mreq_source.imr_multiaddr.s_addr = cfg_.group().to_nl();
@@ -314,8 +314,8 @@ private:
     }
 
 public:
-    void run() {
-        configure();
+    void run(char const* progname) {
+        configure(progname);
         join();
         receiveLoop();
         oh_.showRxStats(rxStats_, stopped_);

@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.20)
 project(PIMC-Toolkit)
 
+option(BuildApiDocs "Build API Docs using doxygen and sphinx")
+
+if (APPLE)
+    set(DOXY_OS_DEF "__APPLE__")
+elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+    set(DOXY_OS_DEF "__linux__")
+else()
+    message(FATAL_ERROR "Unable to build for ${CMAKE_SYSTEM_NAME}")
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
@@ -18,6 +28,9 @@ add_library(ProjectSettings INTERFACE)
 set_project_warnings(ProjectSettings)
 
 add_subdirectory(external)
+
+add_library(VersionLib STATIC)
+add_subdirectory(version)
 
 add_library(PimcLib STATIC)
 

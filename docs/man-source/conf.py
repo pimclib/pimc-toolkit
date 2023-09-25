@@ -21,13 +21,22 @@ project = "PIMC Toolkit"
 # copyright = '2023, Kesha Rudenko'
 #author = 'Kesha Rudenko'
 
-man_pages = [(
-    "mclst",
-    "mclst",
-    "multicast listener and sender tool",
-    "Kesha Rudenko",
-    "1"
-)]
+man_pages = [
+    (
+        "mclst",
+        "mclst",
+        "multicast listener and sender tool",
+        "Kesha Rudenko",
+        "1"
+    ),
+    (
+        "pimc",
+        "pimc",
+        "PIM sparse-mode v2 client",
+        "Kesha Rudenko",
+        "1"
+    ),
+]
 
 # -- General configuration ---------------------------------------------------
 

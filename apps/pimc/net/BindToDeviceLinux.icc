@@ -1,0 +1,38 @@
+#ifdef __linux__
+
+#include <net/if.h>
+#include <sys/ioctl.h>
+
+#include <cstring>
+#include <string>
+
+#include "pimc/core/Result.hpp"
+#include "pimc/system/SysError.hpp"
+#include "pimc/formatters/Fmt.hpp"
+#include "pimc/formatters/FailureFormatter.hpp"
+#include "pimc/formatters/SysErrorFormatter.hpp"
+
+#include "BindToDevice.hpp"
+
+namespace pimc {
+
+Result<int, std::string> bindToDevice(
+        int s, bool, char const* intfName, unsigned) {
+    ifreq ifr;
+    memset(&ifr, 0, sizeof(ifr));
+
+    constexpr size_t IfrNameSz{sizeof(ifr.ifr_name) - 1};
+    strncpy(ifr.ifr_name, intfName, IfrNameSz);
+
+    if (ioctl(s, SIOCGIFINDEX, &ifr) < 0)
+        return sfail("ioctl() failed to find interface {}: {}", intfName, SysError{});
+
+    if (setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) == -1)
+        return sfail("unable to bind PIM socket to interface {}: {}", intfName, SysError{});
+
+    return s;
+}
+
+} // namespace pimc
+
+#endif
