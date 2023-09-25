@@ -31,17 +31,15 @@ structure:
    multicast:
      239.1.2.3:
        Join*:
-         # RP may not appear is the sources listed in Join and Prune (rpt)
-         # sections
+         # The RP is required to create a Join(*,G)
          RP: 192.168.0.55
-         # None of the sources listed in Prune rpt may appear
-         # in Joins
+         # The RP is also required to add any sources to the
+	 # Prune(S,G,rpt) list
          Prune:
            - 192.168.5.100
            - 192.168.5.101
            - 192.168.5.102
-       # None of the joined sources may be equal to RP or appear in the
-       # Prune (rpt) list
+       # These sources are essentially PIM SSM Join(S,G) entries
        Join:
          - 192.168.0.35
          - 192.168.0.36
@@ -131,17 +129,11 @@ Example
    multicast:
      239.1.2.3:
        Join*:
-         # RP may not appear is the sources listed in Join and Prune (rpt)
-         # sections
          RP: 192.168.0.55
-         # None of the sources listed in Prune rpt may appear
-         # in Joins
          Prune:
            - 192.168.5.100
            - 192.168.5.101
            - 192.168.5.102
-       # None of the joined sources may be equal to RP or appear in the
-       # Prune (rpt) list
        Join:
          - 192.168.0.35
          - 192.168.0.36
