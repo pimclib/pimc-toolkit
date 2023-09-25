@@ -93,6 +93,21 @@ Group 239.1.2.3
 18:09:25.695662 DEBUG: created IPv4 PIM socket
 18:09:25.695662 DEBUG: bound the IPv4 PIM socket to device enp0s6 (#3)
 18:09:25.695662 DEBUG: sent IPv4 PIM Hello [holdtime 105s, DR priority 0, generation ID 79b3e424]
+18:09:56.695662 DEBUG: sent IPv4 PIM Hello [holdtime 105s, DR priority 0, generation ID 79b3e424]
+18:10:25.695662 DEBUG: sent IPv4 PIM Join/Prune Update packet #1 with 1 group, neighbor 10.1.1.3, holdtime 210s
+Group 239.1.2.3
+ 3 joins, 3 prunes
+ Joins:
+   10.1.2.100
+   10.1.2.101
+   10.0.0.1, WC, rpt
+ Prunes:
+   10.1.3.100, rpt
+   10.1.3.101, rpt
+   10.1.3.102, rpt
+
+18:10:26.695662 DEBUG: sent IPv4 PIM Hello [holdtime 105s, DR priority 0, generation ID 79b3e424]
+18:10:56.695662 DEBUG: sent IPv4 PIM Hello [holdtime 105s, DR priority 0, generation ID 79b3e424]
 ```
 
 A Cisco IOS router does see the host where **pimc** is running an a PIM neighbor,
