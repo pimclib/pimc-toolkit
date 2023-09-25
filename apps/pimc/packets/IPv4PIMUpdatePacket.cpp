@@ -10,6 +10,7 @@
 #include "pimc/formatters/Fmt.hpp"
 #include "pimc/formatters/IPv4Formatters.hpp"
 #include "pimc/formatters/MemoryBuffer.hpp"
+#include "pimc/text/Plural.hpp"
 
 #include "pimsm/Update.hpp"
 #include "pimsm/UpdateFormatter.hpp"
@@ -83,9 +84,9 @@ IPv4PIMUpdatePacket::IPv4PIMUpdatePacket(
     auto bi = std::back_inserter(mb);
     auto const& groups = update.groups();
     fmt::format_to(
-            bi, "IPv4 PIM Join/Prune Update packet #{} with {} groups, "
+            bi, "IPv4 PIM Join/Prune Update packet #{} with {} group{}, "
                 "neighbor {}, holdtime {}s\n",
-            n, groups.size(), neighbor, holdtime);
+            n, groups.size(), plural(groups), neighbor, holdtime);
     for (auto const& ge: groups)
         fmt::format_to(bi, "{}", ge);
 
