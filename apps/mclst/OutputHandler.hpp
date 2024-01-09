@@ -43,6 +43,10 @@ struct Duration {
 struct SourceAndPort {
     IPv4Address source;
     uint16_t sport;
+
+    std::string to_string() {
+        return fmt::format("{}:{}", source, sport);
+    }
 };
 
 } // namespace pimc
@@ -331,7 +335,7 @@ public:
         for (auto const& fsv: fsvs)
             fmt::format_to(
                     bi, fmt::runtime(fs),
-                    fsv.sp(), fsv.dport(), fsv.packets(),
+                    fsv.sp().to_string(), fsv.dport(), fsv.packets(),
                     fsv.bytes(), fsv.aps(), fsv.rate());
         buf.push_back(static_cast<char>(0));
         fputs(buf.data(), stdout);
