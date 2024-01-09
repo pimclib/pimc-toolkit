@@ -93,7 +93,7 @@ protected:
                 pktInfo_.remoteSeq = be64toh(hdr.seq);
                 pktInfo_.remoteTimestamp = be64toh(hdr.timeNs);
                 pktInfo_.remoteMsgLen = be16toh(hdr.dataLen);
-            }
+            } else return;
         }))) return;
 
         if (PIMC_UNLIKELY(not pv.take(pktInfo_.remoteMsgLen, [this] (auto const* p) {
